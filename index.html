@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FMOD Music Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* Main App Layout */
+        .app {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* Title Bar */
+        .title-bar {
+            height: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid #444;
+            flex-shrink: 0;
+        }
+
+        .waveedit .title-bar {
+            background: linear-gradient(90deg, #8e44ad, #9b59b6);
+        }
+
+        .title-text {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .window-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .minimize {
+            background: #f39c12;
+        }
+
+        .maximize {
+            background: #27ae60;
+        }
+
+        .close {
+            background: #e74c3c;
+        }
+
+        /* Menu Bar */
+        .menu-bar {
+            height: 30px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            background: #2c2c2c;
+            border-bottom: 1px solid #444;
+            gap: 20px;
+            flex-shrink: 0;
+        }
+
+        .menu-item {
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+
+        .menu-item:hover {
+            background: #404040;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Panel (Tools for WaveEdit) */
+        .left-panel {
+            width: 200px;
+            background: #2a2a2a;
+            border-right: 1px solid #444;
+            padding: 10px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .plugin-section {
+            margin-bottom: 15px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 10px;
+            background: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .plugin-section:hover:not(.disabled) {
+            background: #404040;
+            border-color: #9b59b6;
+        }
+
+        .plugin-section.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .plugin-section.active {
+            border-color: #9b59b6;
+            background: #443355;
+        }
+
+        .plugin-section.active .plugin-title {
+            color: #9b59b6;
+        }
+
+        .plugin-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Center Panel */
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1e1e1e;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Transport Controls */
+        .transport-controls {
+            height: 60px;
+            background: #252525;
+            border-bottom: 1px solid #444;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .transport-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+            background: #404040;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .transport-btn:hover {
+            background: #505050;
+        }
+
+        .time-display {
+            margin-left: auto;
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+
+        /* Timeline */
+        .timeline-container {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+            position: relative;
+        }
+
+        .timeline-ruler {
+            height: 30px;
+            background: #2a2a2a;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            border-radius: 3px;
+        }
+
+        .time-marker {
+            margin-right: 40px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* Merged View */
+        .merged-view {
+            height: 80px;
+            background: #333;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .merged-view::before {
+            content: "MERGED VIEW";
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .merged-waveform {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            right: 30px;
+            height: 15px;
+            border-radius: 2px;
+            opacity: 0.8;
+        }
+
+        .merged-waveform.layer-1 {
+            background: linear-gradient(90deg, #8e44ad 0%, #8e44ad 15%, transparent 15%, transparent 25%, #8e44ad 25%, #8e44ad 40%, transparent 40%, transparent 100%);
+            bottom: 15px;
+        }
+
+        .merged-waveform.layer-2 {
+            background: linear-gradient(90deg, transparent 0%, transparent 20%, #9b59b6 20%, #9b59b6 35%, transparent 35%, transparent 60%, #9b59b6 60%, #9b59b6 75%, transparent 75%, transparent 100%);
+            bottom: 25px;
+        }
+
+        .merged-waveform.layer-3 {
+            background: linear-gradient(90deg, #e74c3c 0%, #e74c3c 10%, transparent 10%, transparent 45%, #e74c3c 45%, #e74c3c 55%, transparent 55%, transparent 80%, #e74c3c 80%, #e74c3c 90%, transparent 90%, transparent 100%);
+            bottom: 35px;
+        }
+
+        .merged-waveform.layer-4 {
+            background: repeating-linear-gradient(90deg, #555 0px, #666 2px, #555 2px, #666 4px);
+            bottom: 45px;
+            opacity: 0.4;
+        }
+
+        /* Track Layers */
+        .track-layer {
+            height: 60px;
+            background: #2a2a2a;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            position: relative;
+        }
+
+        .track-info {
+            width: 150px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 4px 0;
+            line-height: 0.6;
+        }
+
+        .track-controls {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+            margin-right: 10px;
+        }
+
+        .track-content {
+            flex: 1;
+            height: 30px;
+            margin-left: 20px;
+            position: relative;
+            background: #1a1a1a;
+            border-radius: 3px;
+        }
+
+        /* Analyze button overlay */
+        .analyze-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .analyze-btn {
+            padding: 8px 16px;
+            background: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .analyze-btn:hover {
+            background: #8e44ad;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Analysis minigame styles */
+        .track-layer:not(#merged) {
+            display: none;
+        }
+
+        .analysis-clip {
+            position: absolute;
+            height: 20px;
+            top: 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 2px solid #f39c12;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+            user-select: none;
+            transition: all 0.2s ease;
+            z-index: 20;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(243, 156, 18, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+            }
+        }
+
+        .analysis-clip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Audio clip styling */
+        .audio-clip {
+            position: absolute;
+            height: 20px;
+            top: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .audio-clip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .audio-clip.selected {
+            border: 2px solid #f39c12;
+            box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+        }
+
+        .audio-clip.dragging {
+            z-index: 1000;
+            transform: rotate(5deg);
+            opacity: 0.8;
+        }
+
+        /* Plugin applied effects */
+        .clip-volume-boost {
+            border-top: 2px solid #1abc9c;
+        }
+
+        .clip-volume-boost::before {
+            content: '🔊';
+            position: absolute;
+            top: -12px;
+            left: 2px;
+            font-size: 8px;
+        }
+
+        .clip-denoise {
+            opacity: 0.8;
+            border-top: 2px solid #95a5a6;
+        }
+
+        .clip-denoise::before {
+            content: '🌫';
+            position: absolute;
+            top: -12px;
+            left: 2px;
+            font-size: 8px;
+        }
+
+        .clip-frequency {
+            border-top: 2px solid #3498db;
+        }
+
+        .clip-frequency::before {
+            content: '📊';
+            position: absolute;
+            top: -12px;
+            left: 2px;
+            font-size: 8px;
+        }
+
+        .clip-speed {
+            font-style: italic;
+            border-top: 2px solid #e67e22;
+        }
+
+        .clip-speed::before {
+            content: '⚡';
+            position: absolute;
+            top: -12px;
+            left: 2px;
+            font-size: 8px;
+        }
+
+        /* Track states */
+        .track-muted {
+            opacity: 0.4;
+        }
+
+        .track-soloed {
+            box-shadow: 0 0 5px #f39c12;
+        }
+
+        .track-stereo .track-content {
+            height: 50px;
+        }
+
+        .track-stereo .track-content::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            height: 18px;
+            background: inherit;
+            opacity: 0.6;
+            border-radius: 3px;
+        }
+
+        /* Drag and drop zones */
+        .drop-zone {
+            min-height: 30px;
+            border: 2px dashed transparent;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #1abc9c;
+            background: rgba(26, 188, 156, 0.1);
+        }
+
+        /* Audio control buttons */
+        .audio-control {
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            border: 1px solid transparent;
+        }
+
+        .audio-control:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .audio-control.active {
+            background: rgba(243, 156, 18, 0.3);
+            border-color: #f39c12;
+        }
+
+        .audio-control.muted {
+            color: #e74c3c;
+        }
+
+        .audio-control.soloed {
+            color: #f39c12;
+            background: rgba(243, 156, 18, 0.2);
+        }
+
+        /* Color themes */
+        .waveedit .track-layer {
+            border-left: 3px solid #9b59b6;
+        }
+
+        .waveedit .transport-controls {
+            border-bottom-color: #9b59b6;
+        }
+
+        /* Tools Panel States */
+        .tools-message {
+            color: #888;
+            font-size: 14px;
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            border-bottom: 1px solid #444;
+            margin-bottom: 15px;
+        }
+
+        .tools-container {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .plugin-section {
+            margin-bottom: 15px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 10px;
+            background: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .plugin-section:hover:not(.disabled) {
+            background: #404040;
+            border-color: #9b59b6;
+        }
+
+        .plugin-section.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .plugin-section.active {
+            border-color: #9b59b6;
+            background: #443355;
+        }
+
+        .plugin-section.active .plugin-title {
+            color: #9b59b6;
+        }
+
+        .plugin-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Clip effect icons */
+        .clip-effect {
+            position: absolute;
+            top: -12px;
+            left: 2px;
+            font-size: 8px;
+            z-index: 10;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+        }
+
+        .clip-effect+.clip-effect {
+            left: 14px;
+        }
+
+        .clip-effect+.clip-effect+.clip-effect {
+            left: 26px;
+        }
+
+        .clip-effect+.clip-effect+.clip-effect+.clip-effect {
+            left: 38px;
+        }
+
+        /* Selected Clip Display */
+        .selected-clip-display {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .selected-clip-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .selected-clip-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .selected-clip-waveform {
+            height: 20px;
+            background: #333;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .selected-clip-waveform::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg,
+                    transparent 0%, transparent 1%,
+                    currentColor 1%, currentColor 2%,
+                    transparent 2%, transparent 3%,
+                    currentColor 3%, currentColor 4%,
+                    transparent 4%, transparent 5%,
+                    currentColor 5%, currentColor 6%,
+                    transparent 6%, transparent 7%,
+                    currentColor 7%, currentColor 8%,
+                    transparent 8%, transparent 9%,
+                    currentColor 9%, currentColor 10%,
+                    transparent 10%, transparent 11%,
+                    currentColor 11%, currentColor 12%,
+                    transparent 12%, transparent 13%,
+                    currentColor 13%, currentColor 14%,
+                    transparent 14%, transparent 15%,
+                    currentColor 15%, currentColor 16%,
+                    transparent 16%, transparent 17%,
+                    currentColor 17%, currentColor 18%,
+                    transparent 18%, transparent 19%,
+                    currentColor 19%, currentColor 20%,
+                    transparent 20%, transparent 21%,
+                    currentColor 21%, currentColor 22%,
+                    transparent 22%, transparent 23%,
+                    currentColor 23%, currentColor 24%,
+                    transparent 24%, transparent 25%,
+                    currentColor 25%, currentColor 26%,
+                    transparent 26%, transparent 27%,
+                    currentColor 27%, currentColor 28%,
+                    transparent 28%, transparent 29%,
+                    currentColor 29%, currentColor 30%,
+                    transparent 30%, transparent 31%,
+                    currentColor 31%, currentColor 32%,
+                    transparent 32%, transparent 33%,
+                    currentColor 33%, currentColor 34%,
+                    transparent 34%, transparent 35%,
+                    currentColor 35%, currentColor 36%,
+                    transparent 36%, transparent 37%,
+                    currentColor 37%, currentColor 38%,
+                    transparent 38%, transparent 39%,
+                    currentColor 39%, currentColor 40%,
+                    transparent 40%, transparent 41%,
+                    currentColor 41%, currentColor 42%,
+                    transparent 42%, transparent 43%,
+                    currentColor 43%, currentColor 44%,
+                    transparent 44%, transparent 45%,
+                    currentColor 45%, currentColor 46%,
+                    transparent 46%, transparent 47%,
+                    currentColor 47%, currentColor 48%,
+                    transparent 48%, transparent 49%,
+                    currentColor 49%, currentColor 50%,
+                    transparent 50%, transparent 51%,
+                    currentColor 51%, currentColor 52%,
+                    transparent 52%, transparent 53%,
+                    currentColor 53%, currentColor 54%,
+                    transparent 54%, transparent 55%,
+                    currentColor 55%, currentColor 56%,
+                    transparent 56%, transparent 57%,
+                    currentColor 57%, currentColor 58%,
+                    transparent 58%, transparent 59%,
+                    currentColor 59%, currentColor 60%,
+                    transparent 60%, transparent 61%,
+                    currentColor 61%, currentColor 62%,
+                    transparent 62%, transparent 63%,
+                    currentColor 63%, currentColor 64%,
+                    transparent 64%, transparent 65%,
+                    currentColor 65%, currentColor 66%,
+                    transparent 66%, transparent 67%,
+                    currentColor 67%, currentColor 68%,
+                    transparent 68%, transparent 69%,
+                    currentColor 69%, currentColor 70%,
+                    transparent 70%, transparent 71%,
+                    currentColor 71%, currentColor 72%,
+                    transparent 72%, transparent 73%,
+                    currentColor 73%, currentColor 74%,
+                    transparent 74%, transparent 75%,
+                    currentColor 75%, currentColor 76%,
+                    transparent 76%, transparent 77%,
+                    currentColor 77%, currentColor 78%,
+                    transparent 78%, transparent 79%,
+                    currentColor 79%, currentColor 80%,
+                    transparent 80%, transparent 81%,
+                    currentColor 81%, currentColor 82%,
+                    transparent 82%, transparent 83%,
+                    currentColor 83%, currentColor 84%,
+                    transparent 84%, transparent 85%,
+                    currentColor 85%, currentColor 86%,
+                    transparent 86%, transparent 87%,
+                    currentColor 87%, currentColor 88%,
+                    transparent 88%, transparent 89%,
+                    currentColor 89%, currentColor 90%,
+                    transparent 90%, transparent 91%,
+                    currentColor 91%, currentColor 92%,
+                    transparent 92%, transparent 93%,
+                    currentColor 93%, currentColor 94%,
+                    transparent 94%, transparent 95%,
+                    currentColor 95%, currentColor 96%,
+                    transparent 96%, transparent 97%,
+                    currentColor 97%, currentColor 98%,
+                    transparent 98%, transparent 99%,
+                    currentColor 99%, currentColor 100%);
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Landing Screen -->
+    <!-- Removed landing screen div -->
+
+    <!-- Assembly App -->
+    <!-- Removed Assembly app div -->
+
+    <!-- WaveEdit App -->
+    <div id="waveedit" class="app waveedit active">
+        <div class="title-bar">
+            <div class="title-text">
+                ⚙ FMOD Music - WaveEdit
+            </div>
+            <div class="window-controls">
+                <button class="window-btn minimize">−</button>
+                <button class="window-btn maximize">□</button>
+                <button class="window-btn close">✕</button>
+            </div>
+        </div>
+
+        <div class="menu-bar">
+            <span class="menu-item">Load</span>
+            <span class="menu-item">Save</span>
+            <span class="menu-item">Analyze</span>
+            <span class="menu-item">Details</span>
+            <span class="menu-item">Plugins</span>
+            <span class="menu-item">Help</span>
+            <span class="menu-item">License</span>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div id="tools-message" class="tools-message">Completely analyze the track to enable tools</div>
+                <div id="selected-clip-display" class="selected-clip-display" style="display: none;">
+                    <div class="selected-clip-title">Selected Clip:</div>
+                    <div class="selected-clip-name"></div>
+                    <div class="selected-clip-waveform"></div>
+                </div>
+                <div id="tools-container" class="tools-container" style="display: none;">
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('volume')">
+                        <div class="plugin-title">🔊 Volume</div>
+                        <div style="margin: 5px 0;">──●──── +</div>
+                        <div style="font-size: 11px; color: #888;">Adjust volume levels</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('denoise')">
+                        <div class="plugin-title">🌫 De-noise</div>
+                        <div style="font-size: 11px; color: #888;">Remove background noise</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('speed')">
+                        <div class="plugin-title">⚡ Speed</div>
+                        <div style="font-size: 11px; color: #888;">Adjust playback speed</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('frequency')">
+                        <div class="plugin-title">📊 Frequency</div>
+                        <div style="font-size: 11px; color: #888;">Modify frequency spectrum</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('enhance')">
+                        <div class="plugin-title">✨ Enhance</div>
+                        <div style="font-size: 11px; color: #888;">Boost quality and clarity</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('master')">
+                        <div class="plugin-title">🎚 Master</div>
+                        <div style="font-size: 11px; color: #888;">Final mix adjustments</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="center-panel">
+                <div class="transport-controls">
+                    <button class="transport-btn">⏸</button>
+                    <button class="transport-btn">▶</button>
+                    <button class="transport-btn">⏹</button>
+                    <button class="transport-btn">⏮</button>
+                    <button class="transport-btn">⏭</button>
+                    <div class="time-display">00:00.000 / 00:47.000</div>
+                </div>
+
+                <div class="timeline-container">
+                    <div class="timeline-ruler">
+                        <span class="time-marker">0.0</span>
+                        <span class="time-marker">3.4</span>
+                        <span class="time-marker">6.7</span>
+                        <span class="time-marker">10.1</span>
+                        <span class="time-marker">13.4</span>
+                        <span class="time-marker">16.8</span>
+                        <span class="time-marker">20.1</span>
+                        <span class="time-marker">23.5</span>
+                        <span class="time-marker">26.8</span>
+                        <span class="time-marker">30.2</span>
+                        <span class="time-marker">33.5</span>
+                        <span class="time-marker">36.9</span>
+                        <span class="time-marker">40.2</span>
+                        <span class="time-marker">43.6</span>
+                        <span class="time-marker">47.0</span>
+                    </div>
+
+                    <div class="track-layer" id="merged">
+                        <div class="track-info">
+                            <span style="font-size: 0.8em; color: #95a5a6;">crime_scene.wav</span><br>
+                            <span style="font-weight: bold; color: #ecf0f1;">All Layers</span>
+                        </div>
+                        <div class="track-content"
+                            style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative; height: 60px;"
+                            onclick="selectClip(event)">
+                            <!-- Waveform visualization -->
+                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: 
+                                linear-gradient(90deg,
+                                    #34495e 0%, #34495e 1%,
+                                    #2c3e50 1%, #2c3e50 2%,
+                                    #3498db 2%, #3498db 3%,
+                                    #2980b9 3%, #2980b9 4%,
+                                    #1abc9c 4%, #1abc9c 5%,
+                                    #16a085 5%, #16a085 6%,
+                                    #e74c3c 6%, #e74c3c 7%,
+                                    #c0392b 7%, #c0392b 8%,
+                                    #f1c40f 8%, #f1c40f 9%,
+                                    #f39c12 9%, #f39c12 10%,
+                                    #e67e22 10%, #e67e22 11%,
+                                    #d35400 11%, #d35400 12%,
+                                    #9b59b6 12%, #9b59b6 13%,
+                                    #8e44ad 13%, #8e44ad 14%,
+                                    #34495e 14%, #34495e 15%,
+                                    #2c3e50 15%, #2c3e50 16%,
+                                    #3498db 16%, #3498db 17%,
+                                    #2980b9 17%, #2980b9 18%,
+                                    #1abc9c 18%, #1abc9c 19%,
+                                    #16a085 19%, #16a085 20%,
+                                    #e74c3c 20%, #e74c3c 21%,
+                                    #c0392b 21%, #c0392b 22%,
+                                    #f1c40f 22%, #f1c40f 23%,
+                                    #f39c12 23%, #f39c12 24%,
+                                    #e67e22 24%, #e67e22 25%,
+                                    #d35400 25%, #d35400 26%,
+                                    #9b59b6 26%, #9b59b6 27%,
+                                    #8e44ad 27%, #8e44ad 28%,
+                                    #34495e 28%, #34495e 29%,
+                                    #2c3e50 29%, #2c3e50 30%,
+                                    #3498db 30%, #3498db 31%,
+                                    #2980b9 31%, #2980b9 32%,
+                                    #1abc9c 32%, #1abc9c 33%,
+                                    #16a085 33%, #16a085 34%,
+                                    #e74c3c 34%, #e74c3c 35%,
+                                    #c0392b 35%, #c0392b 36%,
+                                    #f1c40f 36%, #f1c40f 37%,
+                                    #f39c12 37%, #f39c12 38%,
+                                    #e67e22 38%, #e67e22 39%,
+                                    #d35400 39%, #d35400 40%,
+                                    #9b59b6 40%, #9b59b6 41%,
+                                    #8e44ad 41%, #8e44ad 42%,
+                                    #34495e 42%, #34495e 43%,
+                                    #2c3e50 43%, #2c3e50 44%,
+                                    #3498db 44%, #3498db 45%,
+                                    #2980b9 45%, #2980b9 46%,
+                                    #1abc9c 46%, #1abc9c 47%,
+                                    #16a085 47%, #16a085 48%,
+                                    #e74c3c 48%, #e74c3c 49%,
+                                    #c0392b 49%, #c0392b 50%,
+                                    #f1c40f 50%, #f1c40f 51%,
+                                    #f39c12 51%, #f39c12 52%,
+                                    #e67e22 52%, #e67e22 53%,
+                                    #d35400 53%, #d35400 54%,
+                                    #9b59b6 54%, #9b59b6 55%,
+                                    #8e44ad 55%, #8e44ad 56%,
+                                    #34495e 56%, #34495e 57%,
+                                    #2c3e50 57%, #2c3e50 58%,
+                                    #3498db 58%, #3498db 59%,
+                                    #2980b9 59%, #2980b9 60%,
+                                    #1abc9c 60%, #1abc9c 61%,
+                                    #16a085 61%, #16a085 62%,
+                                    #e74c3c 62%, #e74c3c 63%,
+                                    #c0392b 63%, #c0392b 64%,
+                                    #f1c40f 64%, #f1c40f 65%,
+                                    #f39c12 65%, #f39c12 66%,
+                                    #e67e22 66%, #e67e22 67%,
+                                    #d35400 67%, #d35400 68%,
+                                    #9b59b6 68%, #9b59b6 69%,
+                                    #8e44ad 69%, #8e44ad 70%,
+                                    #34495e 70%, #34495e 71%,
+                                    #2c3e50 71%, #2c3e50 72%,
+                                    #3498db 72%, #3498db 73%,
+                                    #2980b9 73%, #2980b9 74%,
+                                    #1abc9c 74%, #1abc9c 75%,
+                                    #16a085 75%, #16a085 76%,
+                                    #e74c3c 76%, #e74c3c 77%,
+                                    #c0392b 77%, #c0392b 78%,
+                                    #f1c40f 78%, #f1c40f 79%,
+                                    #f39c12 79%, #f39c12 80%,
+                                    #e67e22 80%, #e67e22 81%,
+                                    #d35400 81%, #d35400 82%,
+                                    #9b59b6 82%, #9b59b6 83%,
+                                    #8e44ad 83%, #8e44ad 84%,
+                                    #34495e 84%, #34495e 85%,
+                                    #2c3e50 85%, #2c3e50 86%,
+                                    #3498db 86%, #3498db 87%,
+                                    #2980b9 87%, #2980b9 88%,
+                                    #1abc9c 88%, #1abc9c 89%,
+                                    #16a085 89%, #16a085 90%,
+                                    #e74c3c 90%, #e74c3c 91%,
+                                    #c0392b 91%, #c0392b 92%,
+                                    #f1c40f 92%, #f1c40f 93%,
+                                    #f39c12 93%, #f39c12 94%,
+                                    #e67e22 94%, #e67e22 95%,
+                                    #d35400 95%, #d35400 96%,
+                                    #9b59b6 96%, #9b59b6 97%,
+                                    #8e44ad 97%, #8e44ad 98%,
+                                    #34495e 98%, #34495e 99%,
+                                    #2c3e50 99%, #2c3e50 100%
+                                );">
+                            </div>
+                            <!-- Zig-zag line overlay -->
+                            <svg
+                                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; width: 100%;">
+                                <polyline
+                                    points="0,30 20,10 40,50 60,20 80,40 100,15 120,35 140,25 160,45 180,20 200,30 220,15 240,35 260,25 280,45 300,20 320,30 340,15 360,35 380,25 400,45 420,20 440,30 460,15 480,35 500,25 520,45 540,20 560,30 580,15 600,35 620,25 640,45 660,20 680,30 700,15 720,35 740,25 760,45 780,20 800,30 820,15 840,35 860,25 880,45 900,20 920,30 940,15 960,35 980,25 1000,45"
+                                    style="fill: none; stroke: #ecf0f1; stroke-width: 2; opacity: 0.7; width: 100%;" />
+                            </svg>
+                            <!-- Analyze button overlay -->
+                            <div class="analyze-overlay">
+                                <button class="analyze-btn" onclick="analyzeWaveform(event)">Analyze</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="track-layer" id="evidence-recording">
+                        <div class="track-info">
+                            <span style="font-size: 0.8em; color: #95a5a6;">Layer 1</span><br>
+                            <span style="font-weight: bold; color: #ecf0f1;">Evidence_Recording</span>
+                        </div>
+                        <div class="track-content"
+                            style="background: linear-gradient(90deg, #555 0%, #555 100%); position: relative;"
+                            onclick="selectClip(event)">
+                            <div class="audio-clip" data-clip="initial_scream"
+                                style="left: 5%; width: 15%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
+                                title="Initial scream">initial_scream</div>
+                            <div class="audio-clip" data-clip="struggle_sounds"
+                                style="left: 25%; width: 20%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
+                                title="Struggle sounds">struggle_sounds</div>
+                            <div class="audio-clip" data-clip="last_words"
+                                style="left: 80%; width: 15%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
+                                title="Last words">last_words</div>
+                        </div>
+
+                    </div>
+
+                    <div class="track-layer" id="ghost-voices">
+                        <div class="track-info">
+                            <span style="font-size: 0.8em; color: #95a5a6;">Layer 2</span><br>
+                            <span style="font-weight: bold; color: #ecf0f1;">Ghost_Voices</span>
+                        </div>
+                        <div class="track-content"
+                            style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative;"
+                            onclick="selectClip(event)">
+                            <div class="audio-clip" data-clip="whisper_2"
+                                style="left: 20%; width: 6%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                                title="Second whisper">whisper_1</div>
+                            <div class="audio-clip" data-clip="whisper_3"
+                                style="left: 35%; width: 10%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                                title="Third whisper">whisper_2</div>
+                            <div class="audio-clip" data-clip="whisper_4"
+                                style="left: 55%; width: 7%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                                title="Fourth whisper">whisper_3</div>
+                            <div class="audio-clip" data-clip="whisper_5"
+                                style="left: 70%; width: 5%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                                title="Fifth whisper">whisper_4</div>
+                        </div>
+
+                    </div>
+
+                    <div class="track-layer" id="investigation">
+                        <div class="track-info">
+                            <span style="font-size: 0.8em; color: #95a5a6;">Layer 3</span><br>
+                            <span style="font-weight: bold; color: #ecf0f1;">Investigation_Notes</span>
+                        </div>
+                        <div class="track-content"
+                            style="background: linear-gradient(90deg, #34495e 0%, #34495e 100%); position: relative;"
+                            onclick="selectClip(event)">
+                            <div class="audio-clip" data-clip="police_report"
+                                style="left: 10%; width: 15%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
+                                title="Police recording">police_report</div>
+                            <div class="audio-clip" data-clip="witness_statement"
+                                style="left: 30%; width: 20%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
+                                title="Witness statement">witness_statement</div>
+                        </div>
+
+                    </div>
+
+                    <div class="track-layer" id="ambient-static-wave">
+                        <div class="track-info">
+                            <span style="font-size: 0.8em; color: #95a5a6;">Layer 4</span><br>
+                            <span style="font-weight: bold; color: #ecf0f1;">Ambient_Static</span>
+                        </div>
+                        <div class="track-content"
+                            style="background: linear-gradient(90deg, #1a1a1a 0%, #1a1a1a 100%); position: relative;"
+                            onclick="selectClip(event)">
+                            <div class="audio-clip" data-clip="room_tone"
+                                style="left: 0%; width: 30%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
+                                title="Room tone">room_tone</div>
+                            <div class="audio-clip" data-clip="static_burst"
+                                style="left: 35%; width: 20%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
+                                title="Static burst">static_burst</div>
+                            <div class="audio-clip" data-clip="tape_hiss"
+                                style="left: 60%; width: 40%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
+                                title="Tape hiss">tape_hiss</div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPlugin = null;
+        let selectedClip = null;
+        let draggedClip = null;
+        let remainingClips = [];
+        let currentAnalysisClip = null;
+        let discoveredClips = new Set();
+        let isAnalyzed = false;
+
+        // Initialize the analysis minigame
+        function initAnalysisGame() {
+            console.log('Initializing game');
+            // Collect all clips from layers 1-4
+            remainingClips = [];
+            const layers = ['evidence-recording', 'ghost-voices', 'investigation', 'ambient-static-wave'];
+
+            layers.forEach(layerId => {
+                const layer = document.getElementById(layerId);
+                console.log('Checking layer:', layerId, layer);
+                if (!layer) {
+                    console.error('Layer not found:', layerId);
+                    return;
+                }
+                const clips = layer.querySelectorAll('.audio-clip');
+                console.log('Found clips:', clips.length);
+                // Hide all clips initially
+                clips.forEach(clip => {
+                    clip.style.display = 'none';
+                    remainingClips.push({
+                        id: clip.dataset.clip,
+                        layer: layerId,
+                        left: clip.style.left,
+                        width: clip.style.width,
+                        background: clip.style.background
+                    });
+                });
+            });
+
+            console.log('Total clips collected:', remainingClips.length);
+
+            // Hide all layers except merged
+            layers.forEach(layerId => {
+                const layer = document.getElementById(layerId);
+                if (layer) {
+                    layer.style.display = 'none';
+                }
+            });
+
+            // Show first random clip
+            showNextAnalysisClip();
+        }
+
+        function handleAnalysisClipClick(event) {
+            const clip = event.target;
+            const layerId = clip.dataset.layer;
+            const clipId = clip.dataset.clip;
+
+            // Show the layer
+            const layer = document.getElementById(layerId);
+            if (layer) {
+                layer.style.display = 'flex';
+
+                // Show only this specific clip
+                const targetClip = layer.querySelector(`.audio-clip[data-clip="${clipId}"]`);
+                if (targetClip) {
+                    targetClip.style.display = 'flex';
+                    discoveredClips.add(clipId); // Mark as discovered
+                }
+            }
+
+            // Remove from remaining clips
+            remainingClips = remainingClips.filter(c => c.id !== clipId);
+
+            // Remove analysis clip
+            clip.remove();
+            currentAnalysisClip = null;
+
+            // Show next clip
+            showNextAnalysisClip();
+
+            // If all clips are discovered, enable tools
+            if (remainingClips.length === 0) {
+                enableTools();
+            }
+        }
+
+        function enableTools() {
+            isAnalyzed = true;
+            document.getElementById('tools-message').textContent = 'Select a clip in a layer to use tools';
+            document.getElementById('tools-container').style.display = 'block';
+
+            // Make all clips clickable
+            document.querySelectorAll('.audio-clip').forEach(clip => {
+                clip.style.pointerEvents = 'auto';
+                clip.style.cursor = 'pointer';
+            });
+        }
+
+        function selectClip(event) {
+            if (!event.target.classList.contains('audio-clip')) return;
+            if (!isAnalyzed) return; // Don't allow selection before analysis
+
+            event.stopPropagation();
+
+            // Remove selection from all clips
+            document.querySelectorAll('.audio-clip').forEach(clip => {
+                clip.classList.remove('selected');
+            });
+
+            // Select clicked clip
+            event.target.classList.add('selected');
+            selectedClip = event.target;
+
+            // Update message and enable tools
+            document.getElementById('tools-message').textContent = 'Tools enabled - click to toggle effects';
+            document.querySelectorAll('.plugin-section').forEach(section => {
+                section.classList.remove('disabled');
+            });
+        }
+
+        function deselectClip() {
+            if (selectedClip) {
+                selectedClip.classList.remove('selected');
+                selectedClip = null;
+
+                // Update message and disable tools
+                document.getElementById('tools-message').textContent = 'Select a clip to use tools';
+                document.querySelectorAll('.plugin-section').forEach(section => {
+                    section.classList.add('disabled');
+                });
+            }
+        }
+
+        // Add click handler to track content to deselect clips
+        document.querySelectorAll('.track-content').forEach(track => {
+            track.addEventListener('click', function (event) {
+                if (event.target === this) { // Only if clicking the track itself, not a clip
+                    deselectClip();
+                }
+            });
+        });
+
+        // Initially disable all clips
+        document.querySelectorAll('.audio-clip').forEach(clip => {
+            clip.style.pointerEvents = 'none';
+            clip.style.cursor = 'default';
+        });
+
+        function showNextAnalysisClip() {
+            console.log('Showing next clip, remaining:', remainingClips.length);
+            if (remainingClips.length === 0) {
+                console.log('No more clips to show');
+                return;
+            }
+
+            // Remove previous analysis clip if exists
+            if (currentAnalysisClip) {
+                currentAnalysisClip.remove();
+            }
+
+            // Get random clip
+            const randomIndex = Math.floor(Math.random() * remainingClips.length);
+            const clipData = remainingClips[randomIndex];
+            console.log('Selected clip:', clipData);
+
+            // Create analysis clip
+            const clip = document.createElement('div');
+            clip.className = 'analysis-clip';
+            clip.textContent = clipData.id;
+            clip.style.left = clipData.left;
+            clip.style.width = clipData.width;
+            clip.style.background = clipData.background;
+            clip.dataset.layer = clipData.layer;
+            clip.dataset.clip = clipData.id;
+            clip.onclick = handleAnalysisClipClick;
+
+            // Add random Y position (between 5px and 35px from top)
+            const randomY = Math.floor(Math.random() * 30) + 5;
+            clip.style.top = `${randomY}px`;
+
+            // Add to merged track
+            const trackContent = document.querySelector('#waveedit #merged .track-content');
+            console.log('Adding clip to track:', trackContent);
+            if (trackContent) {
+                trackContent.appendChild(clip);
+                currentAnalysisClip = clip;
+            } else {
+                console.error('Track content not found');
+            }
+        }
+
+        function selectPlugin(pluginName) {
+            if (!selectedClip || !isAnalyzed) return;
+
+            const pluginSection = event.target.closest('.plugin-section');
+            const isActive = pluginSection.classList.contains('active');
+
+            // Toggle active state
+            pluginSection.classList.toggle('active');
+
+            // Toggle effect on clip
+            const effectClass = `clip-${pluginName}`;
+            selectedClip.classList.toggle(effectClass);
+
+            // Update effect icons
+            updateClipEffects(selectedClip);
+        }
+
+        function updateClipEffects(clip) {
+            // Remove all existing effect icons
+            clip.querySelectorAll('.clip-effect').forEach(icon => icon.remove());
+
+            // Add icons for each active effect
+            const effects = {
+                'clip-volume': '🔊',
+                'clip-denoise': '🌫',
+                'clip-frequency': '📊',
+                'clip-speed': '⚡',
+                'clip-enhance': '✨',
+                'clip-master': '🎚',
+                'clip-cut': '✂'
+            };
+
+            let index = 0;
+            for (const [className, icon] of Object.entries(effects)) {
+                if (clip.classList.contains(className)) {
+                    const effectIcon = document.createElement('div');
+                    effectIcon.className = 'clip-effect';
+                    effectIcon.textContent = icon;
+                    effectIcon.style.left = `${2 + (index * 12)}px`;
+                    clip.appendChild(effectIcon);
+                    index++;
+                }
+            }
+        }
+
+        function analyzeWaveform(event) {
+            event.stopPropagation();
+            console.log('Analyze button clicked');
+            // Remove analyze button
+            event.target.closest('.analyze-overlay').remove();
+            // Start the game
+            initAnalysisGame();
+        }
+
+        // AUDIO CONTROL FUNCTIONS
+        function toggleTrackMute(trackId) {
+            const track = document.getElementById(trackId);
+            if (!track) return;
+
+            track.classList.toggle('track-muted');
+
+            // Update mute button
+            const muteBtn = track.querySelector('.audio-control[onclick*="toggleTrackMute"]');
+            if (muteBtn) {
+                if (track.classList.contains('track-muted')) {
+                    muteBtn.textContent = '🔇';
+                    muteBtn.classList.add('muted');
+                } else {
+                    muteBtn.textContent = '🔊';
+                    muteBtn.classList.remove('muted');
+                }
+            }
+        }
+
+        function toggleTrackSolo(trackId) {
+            const track = document.getElementById(trackId);
+            if (!track) return;
+
+            track.classList.toggle('track-soloed');
+
+            // Update solo button
+            const soloBtn = track.querySelector('.audio-control[onclick*="toggleTrackSolo"]');
+            if (soloBtn) {
+                if (track.classList.contains('track-soloed')) {
+                    soloBtn.textContent = '🎯';
+                    soloBtn.classList.add('soloed');
+                } else {
+                    soloBtn.textContent = 'S';
+                    soloBtn.classList.remove('soloed');
+                }
+            }
+        }
+
+        function toggleTrackExpansion(trackId) {
+            const track = document.getElementById(trackId);
+            if (!track) return;
+
+            track.classList.toggle('track-stereo');
+
+            // Update expansion button
+            const expandBtn = track.querySelector('.audio-control[onclick*="toggleTrackExpansion"]');
+            if (expandBtn) {
+                if (track.classList.contains('track-stereo')) {
+                    expandBtn.textContent = '▼';
+                } else {
+                    expandBtn.textContent = '►';
+                }
+            }
+        }
+
+        // Prevent default drag behavior on document
+        document.addEventListener('dragover', function (e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('drop', function (e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+
+</html>
