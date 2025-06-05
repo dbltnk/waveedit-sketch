@@ -936,244 +936,219 @@
         <div class="main-content">
             <div class="center-panel">
                 <div class="transport-controls">
-                    <button class="transport-btn">⏸</button>
-                    <button class="transport-btn">▶</button>
-                    <button class="transport-btn">⏹</button>
-                    <button class="transport-btn">⏮</button>
-                    <button class="transport-btn">⏭</button>
+                    <button class="transport-btn" onclick="toggleMainPlayback(event)">▶</button>
+                    <button class="transport-btn" onclick="stopMainPlayback(event)">⏹</button>
+                    <button class="transport-btn" onclick="seekToStart(event)">⏮</button>
+                    <button class="transport-btn" onclick="seekToEnd(event)">⏭</button>
                     <div class="time-display">00:00.000 / 00:47.000</div>
                 </div>
 
-                <div class="timeline-container">
-                    <div class="timeline-ruler">
-                        <span class="time-marker">0.0</span>
-                        <span class="time-marker">3.4</span>
-                        <span class="time-marker">6.7</span>
-                        <span class="time-marker">10.1</span>
-                        <span class="time-marker">13.4</span>
-                        <span class="time-marker">16.8</span>
-                        <span class="time-marker">20.1</span>
-                        <span class="time-marker">23.5</span>
-                        <span class="time-marker">26.8</span>
-                        <span class="time-marker">30.2</span>
-                        <span class="time-marker">33.5</span>
-                        <span class="time-marker">36.9</span>
-                        <span class="time-marker">40.2</span>
-                        <span class="time-marker">43.6</span>
-                        <span class="time-marker">47.0</span>
+                <div class="track-layer" id="merged">
+                    <div class="track-info">
+                        <span style="font-size: 0.8em; color: #95a5a6;">crime_scene.wav</span><br>
+                        <span style="font-weight: bold; color: #ecf0f1;">All Layers</span>
+                    </div>
+                    <div class="track-content"
+                        style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative; height: 60px;"
+                        onclick="selectClip(event)">
+                        <!-- Waveform visualization -->
+                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: 
+                            linear-gradient(90deg,
+                                #34495e 0%, #34495e 1%,
+                                #2c3e50 1%, #2c3e50 2%,
+                                #3498db 2%, #3498db 3%,
+                                #2980b9 3%, #2980b9 4%,
+                                #1abc9c 4%, #1abc9c 5%,
+                                #16a085 5%, #16a085 6%,
+                                #e74c3c 6%, #e74c3c 7%,
+                                #c0392b 7%, #c0392b 8%,
+                                #f1c40f 8%, #f1c40f 9%,
+                                #f39c12 9%, #f39c12 10%,
+                                #e67e22 10%, #e67e22 11%,
+                                #d35400 11%, #d35400 12%,
+                                #9b59b6 12%, #9b59b6 13%,
+                                #8e44ad 13%, #8e44ad 14%,
+                                #34495e 14%, #34495e 15%,
+                                #2c3e50 15%, #2c3e50 16%,
+                                #3498db 16%, #3498db 17%,
+                                #2980b9 17%, #2980b9 18%,
+                                #1abc9c 18%, #1abc9c 19%,
+                                #16a085 19%, #16a085 20%,
+                                #e74c3c 20%, #e74c3c 21%,
+                                #c0392b 21%, #c0392b 22%,
+                                #f1c40f 22%, #f1c40f 23%,
+                                #f39c12 23%, #f39c12 24%,
+                                #e67e22 24%, #e67e22 25%,
+                                #d35400 25%, #d35400 26%,
+                                #9b59b6 26%, #9b59b6 27%,
+                                #8e44ad 27%, #8e44ad 28%,
+                                #34495e 28%, #34495e 29%,
+                                #2c3e50 29%, #2c3e50 30%,
+                                #3498db 30%, #3498db 31%,
+                                #2980b9 31%, #2980b9 32%,
+                                #1abc9c 32%, #1abc9c 33%,
+                                #16a085 33%, #16a085 34%,
+                                #e74c3c 34%, #e74c3c 35%,
+                                #c0392b 35%, #c0392b 36%,
+                                #f1c40f 36%, #f1c40f 37%,
+                                #f39c12 37%, #f39c12 38%,
+                                #e67e22 38%, #e67e22 39%,
+                                #d35400 39%, #d35400 40%,
+                                #9b59b6 40%, #9b59b6 41%,
+                                #8e44ad 41%, #8e44ad 42%,
+                                #34495e 42%, #34495e 43%,
+                                #2c3e50 43%, #2c3e50 44%,
+                                #3498db 44%, #3498db 45%,
+                                #2980b9 45%, #2980b9 46%,
+                                #1abc9c 46%, #1abc9c 47%,
+                                #16a085 47%, #16a085 48%,
+                                #e74c3c 48%, #e74c3c 49%,
+                                #c0392b 49%, #c0392b 50%,
+                                #f1c40f 50%, #f1c40f 51%,
+                                #f39c12 51%, #f39c12 52%,
+                                #e67e22 52%, #e67e22 53%,
+                                #d35400 53%, #d35400 54%,
+                                #9b59b6 54%, #9b59b6 55%,
+                                #8e44ad 55%, #8e44ad 56%,
+                                #34495e 56%, #34495e 57%,
+                                #2c3e50 57%, #2c3e50 58%,
+                                #3498db 58%, #3498db 59%,
+                                #2980b9 59%, #2980b9 60%,
+                                #1abc9c 60%, #1abc9c 61%,
+                                #16a085 61%, #16a085 62%,
+                                #e74c3c 62%, #e74c3c 63%,
+                                #c0392b 63%, #c0392b 64%,
+                                #f1c40f 64%, #f1c40f 65%,
+                                #f39c12 65%, #f39c12 66%,
+                                #e67e22 66%, #e67e22 67%,
+                                #d35400 67%, #d35400 68%,
+                                #9b59b6 68%, #9b59b6 69%,
+                                #8e44ad 69%, #8e44ad 70%,
+                                #34495e 70%, #34495e 71%,
+                                #2c3e50 71%, #2c3e50 72%,
+                                #3498db 72%, #3498db 73%,
+                                #2980b9 73%, #2980b9 74%,
+                                #1abc9c 74%, #1abc9c 75%,
+                                #16a085 75%, #16a085 76%,
+                                #e74c3c 76%, #e74c3c 77%,
+                                #c0392b 77%, #c0392b 78%,
+                                #f1c40f 78%, #f1c40f 79%,
+                                #f39c12 79%, #f39c12 80%,
+                                #e67e22 80%, #e67e22 81%,
+                                #d35400 81%, #d35400 82%,
+                                #9b59b6 82%, #9b59b6 83%,
+                                #8e44ad 83%, #8e44ad 84%,
+                                #34495e 84%, #34495e 85%,
+                                #2c3e50 85%, #2c3e50 86%,
+                                #3498db 86%, #3498db 87%,
+                                #2980b9 87%, #2980b9 88%,
+                                #1abc9c 88%, #1abc9c 89%,
+                                #16a085 89%, #16a085 90%,
+                                #e74c3c 90%, #e74c3c 91%,
+                                #c0392b 91%, #c0392b 92%,
+                                #f1c40f 92%, #f1c40f 93%,
+                                #f39c12 93%, #f39c12 94%,
+                                #e67e22 94%, #e67e22 95%,
+                                #d35400 95%, #d35400 96%,
+                                #9b59b6 96%, #9b59b6 97%,
+                                #8e44ad 97%, #8e44ad 98%,
+                                #34495e 98%, #34495e 99%,
+                                #2c3e50 99%, #2c3e50 100%
+                            );">
+                        </div>
+                        <!-- Playback marker -->
+                        <div id="playback-marker"
+                            style="position: absolute; top: 0; bottom: 0; width: 2px; background: #f39c12; left: 0%; pointer-events: none; z-index: 100;">
+                        </div>
+                        <!-- Analyze button overlay -->
+                        <div class="analyze-overlay">
+                            <button class="analyze-btn" onclick="analyzeWaveform(event)">Analyze</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="track-layer" id="evidence-recording">
+                    <div class="track-info">
+                        <span style="font-size: 0.8em; color: #95a5a6;">Layer 1</span><br>
+                        <span style="font-weight: bold; color: #ecf0f1;">Evidence_Recording</span>
+                    </div>
+                    <div class="track-content"
+                        style="background: linear-gradient(90deg, #555 0%, #555 100%); position: relative;"
+                        onclick="selectClip(event)">
+                        <div class="audio-clip" data-clip="initial_scream"
+                            style="left: 15%; width: 15%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
+                            title="Initial scream">initial_scream</div>
+                        <div class="audio-clip" data-clip="struggle_sounds"
+                            style="left: 45%; width: 20%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
+                            title="Struggle sounds">struggle_sounds</div>
+                        <div class="audio-clip" data-clip="last_words"
+                            style="left: 80%; width: 15%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
+                            title="Last words">last_words</div>
                     </div>
 
-                    <div class="track-layer" id="merged">
-                        <div class="track-info">
-                            <span style="font-size: 0.8em; color: #95a5a6;">crime_scene.wav</span><br>
-                            <span style="font-weight: bold; color: #ecf0f1;">All Layers</span>
-                        </div>
-                        <div class="track-content"
-                            style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative; height: 60px;"
-                            onclick="selectClip(event)">
-                            <!-- Waveform visualization -->
-                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: 
-                                linear-gradient(90deg,
-                                    #34495e 0%, #34495e 1%,
-                                    #2c3e50 1%, #2c3e50 2%,
-                                    #3498db 2%, #3498db 3%,
-                                    #2980b9 3%, #2980b9 4%,
-                                    #1abc9c 4%, #1abc9c 5%,
-                                    #16a085 5%, #16a085 6%,
-                                    #e74c3c 6%, #e74c3c 7%,
-                                    #c0392b 7%, #c0392b 8%,
-                                    #f1c40f 8%, #f1c40f 9%,
-                                    #f39c12 9%, #f39c12 10%,
-                                    #e67e22 10%, #e67e22 11%,
-                                    #d35400 11%, #d35400 12%,
-                                    #9b59b6 12%, #9b59b6 13%,
-                                    #8e44ad 13%, #8e44ad 14%,
-                                    #34495e 14%, #34495e 15%,
-                                    #2c3e50 15%, #2c3e50 16%,
-                                    #3498db 16%, #3498db 17%,
-                                    #2980b9 17%, #2980b9 18%,
-                                    #1abc9c 18%, #1abc9c 19%,
-                                    #16a085 19%, #16a085 20%,
-                                    #e74c3c 20%, #e74c3c 21%,
-                                    #c0392b 21%, #c0392b 22%,
-                                    #f1c40f 22%, #f1c40f 23%,
-                                    #f39c12 23%, #f39c12 24%,
-                                    #e67e22 24%, #e67e22 25%,
-                                    #d35400 25%, #d35400 26%,
-                                    #9b59b6 26%, #9b59b6 27%,
-                                    #8e44ad 27%, #8e44ad 28%,
-                                    #34495e 28%, #34495e 29%,
-                                    #2c3e50 29%, #2c3e50 30%,
-                                    #3498db 30%, #3498db 31%,
-                                    #2980b9 31%, #2980b9 32%,
-                                    #1abc9c 32%, #1abc9c 33%,
-                                    #16a085 33%, #16a085 34%,
-                                    #e74c3c 34%, #e74c3c 35%,
-                                    #c0392b 35%, #c0392b 36%,
-                                    #f1c40f 36%, #f1c40f 37%,
-                                    #f39c12 37%, #f39c12 38%,
-                                    #e67e22 38%, #e67e22 39%,
-                                    #d35400 39%, #d35400 40%,
-                                    #9b59b6 40%, #9b59b6 41%,
-                                    #8e44ad 41%, #8e44ad 42%,
-                                    #34495e 42%, #34495e 43%,
-                                    #2c3e50 43%, #2c3e50 44%,
-                                    #3498db 44%, #3498db 45%,
-                                    #2980b9 45%, #2980b9 46%,
-                                    #1abc9c 46%, #1abc9c 47%,
-                                    #16a085 47%, #16a085 48%,
-                                    #e74c3c 48%, #e74c3c 49%,
-                                    #c0392b 49%, #c0392b 50%,
-                                    #f1c40f 50%, #f1c40f 51%,
-                                    #f39c12 51%, #f39c12 52%,
-                                    #e67e22 52%, #e67e22 53%,
-                                    #d35400 53%, #d35400 54%,
-                                    #9b59b6 54%, #9b59b6 55%,
-                                    #8e44ad 55%, #8e44ad 56%,
-                                    #34495e 56%, #34495e 57%,
-                                    #2c3e50 57%, #2c3e50 58%,
-                                    #3498db 58%, #3498db 59%,
-                                    #2980b9 59%, #2980b9 60%,
-                                    #1abc9c 60%, #1abc9c 61%,
-                                    #16a085 61%, #16a085 62%,
-                                    #e74c3c 62%, #e74c3c 63%,
-                                    #c0392b 63%, #c0392b 64%,
-                                    #f1c40f 64%, #f1c40f 65%,
-                                    #f39c12 65%, #f39c12 66%,
-                                    #e67e22 66%, #e67e22 67%,
-                                    #d35400 67%, #d35400 68%,
-                                    #9b59b6 68%, #9b59b6 69%,
-                                    #8e44ad 69%, #8e44ad 70%,
-                                    #34495e 70%, #34495e 71%,
-                                    #2c3e50 71%, #2c3e50 72%,
-                                    #3498db 72%, #3498db 73%,
-                                    #2980b9 73%, #2980b9 74%,
-                                    #1abc9c 74%, #1abc9c 75%,
-                                    #16a085 75%, #16a085 76%,
-                                    #e74c3c 76%, #e74c3c 77%,
-                                    #c0392b 77%, #c0392b 78%,
-                                    #f1c40f 78%, #f1c40f 79%,
-                                    #f39c12 79%, #f39c12 80%,
-                                    #e67e22 80%, #e67e22 81%,
-                                    #d35400 81%, #d35400 82%,
-                                    #9b59b6 82%, #9b59b6 83%,
-                                    #8e44ad 83%, #8e44ad 84%,
-                                    #34495e 84%, #34495e 85%,
-                                    #2c3e50 85%, #2c3e50 86%,
-                                    #3498db 86%, #3498db 87%,
-                                    #2980b9 87%, #2980b9 88%,
-                                    #1abc9c 88%, #1abc9c 89%,
-                                    #16a085 89%, #16a085 90%,
-                                    #e74c3c 90%, #e74c3c 91%,
-                                    #c0392b 91%, #c0392b 92%,
-                                    #f1c40f 92%, #f1c40f 93%,
-                                    #f39c12 93%, #f39c12 94%,
-                                    #e67e22 94%, #e67e22 95%,
-                                    #d35400 95%, #d35400 96%,
-                                    #9b59b6 96%, #9b59b6 97%,
-                                    #8e44ad 97%, #8e44ad 98%,
-                                    #34495e 98%, #34495e 99%,
-                                    #2c3e50 99%, #2c3e50 100%
-                                );">
-                            </div>
-                            <!-- Zig-zag line overlay -->
-                            <svg
-                                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; width: 100%;">
-                                <polyline
-                                    points="0,30 20,10 40,50 60,20 80,40 100,15 120,35 140,25 160,45 180,20 200,30 220,15 240,35 260,25 280,45 300,20 320,30 340,15 360,35 380,25 400,45 420,20 440,30 460,15 480,35 500,25 520,45 540,20 560,30 580,15 600,35 620,25 640,45 660,20 680,30 700,15 720,35 740,25 760,45 780,20 800,30 820,15 840,35 860,25 880,45 900,20 920,30 940,15 960,35 980,25 1000,45"
-                                    style="fill: none; stroke: #ecf0f1; stroke-width: 2; opacity: 0.7; width: 100%;" />
-                            </svg>
-                            <!-- Analyze button overlay -->
-                            <div class="analyze-overlay">
-                                <button class="analyze-btn" onclick="analyzeWaveform(event)">Analyze</button>
-                            </div>
-                        </div>
+                </div>
 
+                <div class="track-layer" id="ghost-voices">
+                    <div class="track-info">
+                        <span style="font-size: 0.8em; color: #95a5a6;">Layer 2</span><br>
+                        <span style="font-weight: bold; color: #ecf0f1;">Ghost_Voices</span>
+                    </div>
+                    <div class="track-content"
+                        style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative;"
+                        onclick="selectClip(event)">
+                        <div class="audio-clip" data-clip="whisper_1"
+                            style="left: 20%; width: 10%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                            title="Second whisper">whisper_1</div>
+                        <div class="audio-clip" data-clip="whisper_2"
+                            style="left: 35%; width: 10%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                            title="Third whisper">whisper_2</div>
+                        <div class="audio-clip" data-clip="whisper_3"
+                            style="left: 55%; width: 7%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                            title="Fourth whisper">whisper_3</div>
+                        <div class="audio-clip" data-clip="whisper_4"
+                            style="left: 70%; width: 9%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                            title="Fifth whisper">whisper_4</div>
                     </div>
 
-                    <div class="track-layer" id="evidence-recording">
-                        <div class="track-info">
-                            <span style="font-size: 0.8em; color: #95a5a6;">Layer 1</span><br>
-                            <span style="font-weight: bold; color: #ecf0f1;">Evidence_Recording</span>
-                        </div>
-                        <div class="track-content"
-                            style="background: linear-gradient(90deg, #555 0%, #555 100%); position: relative;"
-                            onclick="selectClip(event)">
-                            <div class="audio-clip" data-clip="initial_scream"
-                                style="left: 15%; width: 15%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
-                                title="Initial scream">initial_scream</div>
-                            <div class="audio-clip" data-clip="struggle_sounds"
-                                style="left: 45%; width: 20%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
-                                title="Struggle sounds">struggle_sounds</div>
-                            <div class="audio-clip" data-clip="last_words"
-                                style="left: 80%; width: 15%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
-                                title="Last words">last_words</div>
-                        </div>
+                </div>
 
+                <div class="track-layer" id="investigation">
+                    <div class="track-info">
+                        <span style="font-size: 0.8em; color: #95a5a6;">Layer 3</span><br>
+                        <span style="font-weight: bold; color: #ecf0f1;">Investigation_Notes</span>
+                    </div>
+                    <div class="track-content"
+                        style="background: linear-gradient(90deg, #34495e 0%, #34495e 100%); position: relative;"
+                        onclick="selectClip(event)">
+                        <div class="audio-clip" data-clip="police_report"
+                            style="left: 40%; width: 15%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
+                            title="Police recording">police_report</div>
+                        <div class="audio-clip" data-clip="witness_statement"
+                            style="left: 70%; width: 20%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
+                            title="Witness statement">witness_statement</div>
                     </div>
 
-                    <div class="track-layer" id="ghost-voices">
-                        <div class="track-info">
-                            <span style="font-size: 0.8em; color: #95a5a6;">Layer 2</span><br>
-                            <span style="font-weight: bold; color: #ecf0f1;">Ghost_Voices</span>
-                        </div>
-                        <div class="track-content"
-                            style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative;"
-                            onclick="selectClip(event)">
-                            <div class="audio-clip" data-clip="whisper_1"
-                                style="left: 20%; width: 10%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
-                                title="Second whisper">whisper_1</div>
-                            <div class="audio-clip" data-clip="whisper_2"
-                                style="left: 35%; width: 10%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
-                                title="Third whisper">whisper_2</div>
-                            <div class="audio-clip" data-clip="whisper_3"
-                                style="left: 55%; width: 7%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
-                                title="Fourth whisper">whisper_3</div>
-                            <div class="audio-clip" data-clip="whisper_4"
-                                style="left: 70%; width: 9%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
-                                title="Fifth whisper">whisper_4</div>
-                        </div>
+                </div>
 
+                <div class="track-layer" id="ambient-static-wave">
+                    <div class="track-info">
+                        <span style="font-size: 0.8em; color: #95a5a6;">Layer 4</span><br>
+                        <span style="font-weight: bold; color: #ecf0f1;">Ambient_Static</span>
+                    </div>
+                    <div class="track-content"
+                        style="background: linear-gradient(90deg, #1a1a1a 0%, #1a1a1a 100%); position: relative;"
+                        onclick="selectClip(event)">
+                        <div class="audio-clip" data-clip="room_tone"
+                            style="left: 10%; width: 20%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
+                            title="Room tone">room_tone</div>
+                        <div class="audio-clip" data-clip="static_burst"
+                            style="left: 35%; width: 20%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
+                            title="Static burst">static_burst</div>
+                        <div class="audio-clip" data-clip="tape_hiss"
+                            style="left: 70%; width: 25%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
+                            title="Tape hiss">tape_hiss</div>
                     </div>
 
-                    <div class="track-layer" id="investigation">
-                        <div class="track-info">
-                            <span style="font-size: 0.8em; color: #95a5a6;">Layer 3</span><br>
-                            <span style="font-weight: bold; color: #ecf0f1;">Investigation_Notes</span>
-                        </div>
-                        <div class="track-content"
-                            style="background: linear-gradient(90deg, #34495e 0%, #34495e 100%); position: relative;"
-                            onclick="selectClip(event)">
-                            <div class="audio-clip" data-clip="police_report"
-                                style="left: 40%; width: 15%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
-                                title="Police recording">police_report</div>
-                            <div class="audio-clip" data-clip="witness_statement"
-                                style="left: 70%; width: 20%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
-                                title="Witness statement">witness_statement</div>
-                        </div>
-
-                    </div>
-
-                    <div class="track-layer" id="ambient-static-wave">
-                        <div class="track-info">
-                            <span style="font-size: 0.8em; color: #95a5a6;">Layer 4</span><br>
-                            <span style="font-weight: bold; color: #ecf0f1;">Ambient_Static</span>
-                        </div>
-                        <div class="track-content"
-                            style="background: linear-gradient(90deg, #1a1a1a 0%, #1a1a1a 100%); position: relative;"
-                            onclick="selectClip(event)">
-                            <div class="audio-clip" data-clip="room_tone"
-                                style="left: 10%; width: 20%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
-                                title="Room tone">room_tone</div>
-                            <div class="audio-clip" data-clip="static_burst"
-                                style="left: 35%; width: 20%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
-                                title="Static burst">static_burst</div>
-                            <div class="audio-clip" data-clip="tape_hiss"
-                                style="left: 70%; width: 25%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
-                                title="Tape hiss">tape_hiss</div>
-                        </div>
-
-                    </div>
                 </div>
             </div>
 
@@ -1334,6 +1309,90 @@
 
         // Add data structure to track effects per clip
         const clipEffects = new Map(); // Maps clip ID to Set of active effects
+
+        // Playback state
+        let isPlaying = false;
+        let currentTime = 0;
+        let totalDuration = 47; // Total duration in seconds
+        let playbackInterval;
+        let playbackSpeed = 1; // Normal speed
+
+        // Format time as MM:SS.mmm
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            const milliseconds = Math.floor((seconds % 1) * 1000);
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        }
+
+        // Update time display
+        function updateTimeDisplay() {
+            const timeDisplay = document.querySelector('.time-display');
+            timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(totalDuration)}`;
+        }
+
+        // Update playback marker position
+        function updatePlaybackMarker() {
+            const marker = document.getElementById('playback-marker');
+            const percentage = (currentTime / totalDuration) * 100;
+            marker.style.left = `${percentage}%`;
+        }
+
+        // Toggle playback
+        function toggleMainPlayback(event) {
+            event.stopPropagation();
+            isPlaying = !isPlaying;
+
+            // Update button icon
+            const playBtn = event.target;
+            playBtn.textContent = isPlaying ? '⏸' : '▶';
+
+            if (isPlaying) {
+                // Start playback
+                playbackInterval = setInterval(() => {
+                    currentTime += 0.1 * playbackSpeed;
+                    if (currentTime >= totalDuration) {
+                        stopMainPlayback(event);
+                        return;
+                    }
+                    updateTimeDisplay();
+                    updatePlaybackMarker();
+                }, 100);
+            } else {
+                // Pause playback
+                clearInterval(playbackInterval);
+            }
+        }
+
+        // Stop playback
+        function stopMainPlayback(event) {
+            event.stopPropagation();
+            isPlaying = false;
+            clearInterval(playbackInterval);
+            currentTime = 0;
+            updateTimeDisplay();
+            updatePlaybackMarker();
+
+            // Reset play button icon
+            const playBtn = document.querySelector('.transport-controls .transport-btn:first-child');
+            playBtn.textContent = '▶';
+        }
+
+        // Seek to start
+        function seekToStart(event) {
+            event.stopPropagation();
+            currentTime = 0;
+            updateTimeDisplay();
+            updatePlaybackMarker();
+        }
+
+        // Seek to end
+        function seekToEnd(event) {
+            event.stopPropagation();
+            currentTime = totalDuration;
+            updateTimeDisplay();
+            updatePlaybackMarker();
+        }
 
         // Add new function for auto-analysis
         function autoAnalyzeAll() {
