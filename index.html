@@ -359,36 +359,53 @@
             top: 20px;
             border-radius: 3px;
             cursor: pointer;
-            border: 2px solid #f39c12;
+            border: 2px solid #666;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 10px;
-            color: white;
+            color: #666;
             text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
             user-select: none;
             transition: all 0.2s ease;
             z-index: 20;
-            animation: pulse 2s infinite;
+            background: #444;
+            pointer-events: none;
+            /* Prevent interaction with shadow box */
         }
 
-        @keyframes pulse {
+        .analysis-clip.revealed {
+            animation: reveal 0.5s ease-out;
+        }
+
+        @keyframes reveal {
             0% {
-                box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4);
+                transform: scale(1);
+                opacity: 0.5;
             }
 
-            70% {
-                box-shadow: 0 0 0 10px rgba(243, 156, 18, 0);
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
             }
 
             100% {
-                box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+                transform: scale(1);
+                opacity: 1;
             }
         }
 
-        .analysis-clip:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        .selection-box {
+            position: absolute;
+            border: 2px dashed #1abc9c;
+            background: rgba(26, 188, 156, 0.1);
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        .selection-box.invalid {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
         }
 
         /* Audio clip styling */
@@ -1007,10 +1024,10 @@
                             style="background: linear-gradient(90deg, #555 0%, #555 100%); position: relative;"
                             onclick="selectClip(event)">
                             <div class="audio-clip" data-clip="initial_scream"
-                                style="left: 5%; width: 15%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
+                                style="left: 15%; width: 15%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
                                 title="Initial scream">initial_scream</div>
                             <div class="audio-clip" data-clip="struggle_sounds"
-                                style="left: 25%; width: 20%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
+                                style="left: 45%; width: 20%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
                                 title="Struggle sounds">struggle_sounds</div>
                             <div class="audio-clip" data-clip="last_words"
                                 style="left: 80%; width: 15%; height: 18px; top: 6px; background: #e74c3c; border-radius: 3px; opacity: 0.7;"
@@ -1028,7 +1045,7 @@
                             style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative;"
                             onclick="selectClip(event)">
                             <div class="audio-clip" data-clip="whisper_2"
-                                style="left: 20%; width: 6%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                                style="left: 20%; width: 10%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
                                 title="Second whisper">whisper_1</div>
                             <div class="audio-clip" data-clip="whisper_3"
                                 style="left: 35%; width: 10%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
@@ -1037,7 +1054,7 @@
                                 style="left: 55%; width: 7%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
                                 title="Fourth whisper">whisper_3</div>
                             <div class="audio-clip" data-clip="whisper_5"
-                                style="left: 70%; width: 5%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
+                                style="left: 70%; width: 9%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
                                 title="Fifth whisper">whisper_4</div>
                         </div>
 
@@ -1052,10 +1069,10 @@
                             style="background: linear-gradient(90deg, #34495e 0%, #34495e 100%); position: relative;"
                             onclick="selectClip(event)">
                             <div class="audio-clip" data-clip="police_report"
-                                style="left: 10%; width: 15%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
+                                style="left: 40%; width: 15%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
                                 title="Police recording">police_report</div>
                             <div class="audio-clip" data-clip="witness_statement"
-                                style="left: 30%; width: 20%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
+                                style="left: 70%; width: 20%; height: 18px; top: 6px; background: #27ae60; border-radius: 3px; opacity: 0.7;"
                                 title="Witness statement">witness_statement</div>
                         </div>
 
@@ -1070,13 +1087,13 @@
                             style="background: linear-gradient(90deg, #1a1a1a 0%, #1a1a1a 100%); position: relative;"
                             onclick="selectClip(event)">
                             <div class="audio-clip" data-clip="room_tone"
-                                style="left: 0%; width: 30%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
+                                style="left: 10%; width: 20%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
                                 title="Room tone">room_tone</div>
                             <div class="audio-clip" data-clip="static_burst"
                                 style="left: 35%; width: 20%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
                                 title="Static burst">static_burst</div>
                             <div class="audio-clip" data-clip="tape_hiss"
-                                style="left: 60%; width: 40%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
+                                style="left: 70%; width: 25%; height: 18px; top: 6px; background: #34495e; border-radius: 3px; opacity: 0.7;"
                                 title="Tape hiss">tape_hiss</div>
                         </div>
 
@@ -1094,6 +1111,10 @@
         let currentAnalysisClip = null;
         let discoveredClips = new Set();
         let isAnalyzed = false;
+        let isDrawing = false;
+        let selectionBox = null;
+        let startX = 0;
+        let startY = 0;
 
         // Initialize the analysis minigame
         function initAnalysisGame() {
@@ -1136,103 +1157,137 @@
 
             // Show first random clip
             showNextAnalysisClip();
-        }
 
-        function handleAnalysisClipClick(event) {
-            const clip = event.target;
-            const layerId = clip.dataset.layer;
-            const clipId = clip.dataset.clip;
-
-            // Show the layer
-            const layer = document.getElementById(layerId);
-            if (layer) {
-                layer.style.display = 'flex';
-
-                // Show only this specific clip
-                const targetClip = layer.querySelector(`.audio-clip[data-clip="${clipId}"]`);
-                if (targetClip) {
-                    targetClip.style.display = 'flex';
-                    discoveredClips.add(clipId); // Mark as discovered
-                }
-            }
-
-            // Remove from remaining clips
-            remainingClips = remainingClips.filter(c => c.id !== clipId);
-
-            // Remove analysis clip
-            clip.remove();
-            currentAnalysisClip = null;
-
-            // Show next clip
-            showNextAnalysisClip();
-
-            // If all clips are discovered, enable tools
-            if (remainingClips.length === 0) {
-                enableTools();
+            // Add mouse event listeners for selection box
+            const trackContent = document.querySelector('#waveedit #merged .track-content');
+            if (trackContent) {
+                trackContent.addEventListener('mousedown', startSelection);
+                trackContent.addEventListener('mousemove', updateSelection);
+                trackContent.addEventListener('mouseup', endSelection);
             }
         }
 
-        function enableTools() {
-            isAnalyzed = true;
-            document.getElementById('tools-message').textContent = 'Select a clip in a layer to use tools';
-            document.getElementById('tools-container').style.display = 'block';
+        function startSelection(event) {
+            if (!currentAnalysisClip) return;
 
-            // Make all clips clickable
-            document.querySelectorAll('.audio-clip').forEach(clip => {
-                clip.style.pointerEvents = 'auto';
-                clip.style.cursor = 'pointer';
-            });
+            // Clean up any existing selection boxes first
+            const existingBoxes = event.target.querySelectorAll('.selection-box');
+            existingBoxes.forEach(box => box.remove());
+
+            isDrawing = true;
+            const trackContent = event.target;
+            const rect = trackContent.getBoundingClientRect();
+
+            // Calculate position relative to track content
+            startX = event.clientX - rect.left;
+            startY = event.clientY - rect.top;
+
+            // Create selection box
+            selectionBox = document.createElement('div');
+            selectionBox.className = 'selection-box';
+            trackContent.appendChild(selectionBox);
         }
 
-        function selectClip(event) {
-            if (!event.target.classList.contains('audio-clip')) return;
-            if (!isAnalyzed) return; // Don't allow selection before analysis
+        function updateSelection(event) {
+            if (!isDrawing || !selectionBox) return;
 
-            event.stopPropagation();
+            const trackContent = event.target;
+            const rect = trackContent.getBoundingClientRect();
 
-            // Remove selection from all clips
-            document.querySelectorAll('.audio-clip').forEach(clip => {
-                clip.classList.remove('selected');
-            });
+            // Calculate current position relative to track content
+            const currentX = event.clientX - rect.left;
+            const currentY = event.clientY - rect.top;
 
-            // Select clicked clip
-            event.target.classList.add('selected');
-            selectedClip = event.target;
+            // Calculate width and height, capped at 200px
+            let width = Math.abs(currentX - startX);
+            let height = Math.abs(currentY - startY);
 
-            // Update message and enable tools
-            document.getElementById('tools-message').textContent = 'Tools enabled - click to toggle effects';
-            document.querySelectorAll('.plugin-section').forEach(section => {
-                section.classList.remove('disabled');
-            });
+            // Cap dimensions at 200px
+            width = Math.min(width, 200);
+            height = Math.min(height, 200);
+
+            // Update selection box position and size
+            selectionBox.style.left = Math.min(startX, currentX) + 'px';
+            selectionBox.style.top = Math.min(startY, currentY) + 'px';
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
         }
 
-        function deselectClip() {
-            if (selectedClip) {
-                selectedClip.classList.remove('selected');
-                selectedClip = null;
+        function endSelection(event) {
+            if (!isDrawing || !selectionBox || !currentAnalysisClip) return;
 
-                // Update message and disable tools
-                document.getElementById('tools-message').textContent = 'Select a clip to use tools';
-                document.querySelectorAll('.plugin-section').forEach(section => {
-                    section.classList.add('disabled');
-                });
+            const width = parseInt(selectionBox.style.width);
+            const height = parseInt(selectionBox.style.height);
+
+            // Check if selection contains the clip
+            const clipRect = currentAnalysisClip.getBoundingClientRect();
+            const selectionRect = selectionBox.getBoundingClientRect();
+
+            const isSelectionValid = selectionRect.left <= clipRect.left &&
+                selectionRect.right >= clipRect.right &&
+                selectionRect.top <= clipRect.top &&
+                selectionRect.bottom >= clipRect.bottom;
+
+            if (isSelectionValid) {
+                revealClip(currentAnalysisClip);
             }
+
+            // Clean up
+            if (selectionBox && selectionBox.parentNode) {
+                selectionBox.remove();
+            }
+            selectionBox = null;
+            isDrawing = false;
         }
 
-        // Add click handler to track content to deselect clips
-        document.querySelectorAll('.track-content').forEach(track => {
-            track.addEventListener('click', function (event) {
-                if (event.target === this) { // Only if clicking the track itself, not a clip
-                    deselectClip();
-                }
-            });
+        // Add cleanup on mouse leave
+        document.querySelector('#waveedit #merged .track-content').addEventListener('mouseleave', function () {
+            if (selectionBox && selectionBox.parentNode) {
+                selectionBox.remove();
+            }
+            selectionBox = null;
+            isDrawing = false;
         });
 
-        // Initially disable all clips
-        document.querySelectorAll('.audio-clip').forEach(clip => {
-            clip.style.pointerEvents = 'none';
-            clip.style.cursor = 'default';
-        });
+        function revealClip(clip) {
+            const clipData = remainingClips.find(c => c.id === clip.dataset.clip);
+            if (!clipData) return;
+
+            // Reveal the clip
+            clip.classList.add('revealed');
+            clip.style.background = clipData.background;
+            clip.style.color = 'white';
+            clip.style.borderColor = '#f39c12';
+            clip.textContent = clipData.id;
+
+            // Show the layer and clip after a short delay
+            setTimeout(() => {
+                const layer = document.getElementById(clipData.layer);
+                if (layer) {
+                    layer.style.display = 'flex';
+                    const targetClip = layer.querySelector(`.audio-clip[data-clip="${clipData.id}"]`);
+                    if (targetClip) {
+                        targetClip.style.display = 'flex';
+                        discoveredClips.add(clipData.id);
+                    }
+                }
+
+                // Remove from remaining clips
+                remainingClips = remainingClips.filter(c => c.id !== clipData.id);
+
+                // Remove analysis clip
+                clip.remove();
+                currentAnalysisClip = null;
+
+                // Show next clip
+                showNextAnalysisClip();
+
+                // If all clips are discovered, enable tools
+                if (remainingClips.length === 0) {
+                    enableTools();
+                }
+            }, 500);
+        }
 
         function showNextAnalysisClip() {
             console.log('Showing next clip, remaining:', remainingClips.length);
@@ -1254,13 +1309,11 @@
             // Create analysis clip
             const clip = document.createElement('div');
             clip.className = 'analysis-clip';
-            clip.textContent = clipData.id;
+            clip.textContent = '???';
             clip.style.left = clipData.left;
             clip.style.width = clipData.width;
-            clip.style.background = clipData.background;
             clip.dataset.layer = clipData.layer;
             clip.dataset.clip = clipData.id;
-            clip.onclick = handleAnalysisClipClick;
 
             // Add random Y position (between 5px and 35px from top)
             const randomY = Math.floor(Math.random() * 30) + 5;
@@ -1394,6 +1447,68 @@
 
         document.addEventListener('drop', function (e) {
             e.preventDefault();
+        });
+
+        function enableTools() {
+            isAnalyzed = true;
+            document.getElementById('tools-message').textContent = 'Select a clip in a layer to use tools';
+            document.getElementById('tools-container').style.display = 'block';
+
+            // Make all clips clickable
+            document.querySelectorAll('.audio-clip').forEach(clip => {
+                clip.style.pointerEvents = 'auto';
+                clip.style.cursor = 'pointer';
+            });
+        }
+
+        function selectClip(event) {
+            if (!event.target.classList.contains('audio-clip')) return;
+            if (!isAnalyzed) return; // Don't allow selection before analysis
+
+            event.stopPropagation();
+
+            // Remove selection from all clips
+            document.querySelectorAll('.audio-clip').forEach(clip => {
+                clip.classList.remove('selected');
+            });
+
+            // Select clicked clip
+            event.target.classList.add('selected');
+            selectedClip = event.target;
+
+            // Update message and enable tools
+            document.getElementById('tools-message').textContent = 'Tools enabled - click to toggle effects';
+            document.querySelectorAll('.plugin-section').forEach(section => {
+                section.classList.remove('disabled');
+            });
+        }
+
+        function deselectClip() {
+            if (selectedClip) {
+                selectedClip.classList.remove('selected');
+                selectedClip = null;
+
+                // Update message and disable tools
+                document.getElementById('tools-message').textContent = 'Select a clip to use tools';
+                document.querySelectorAll('.plugin-section').forEach(section => {
+                    section.classList.add('disabled');
+                });
+            }
+        }
+
+        // Add click handler to track content to deselect clips
+        document.querySelectorAll('.track-content').forEach(track => {
+            track.addEventListener('click', function (event) {
+                if (event.target === this) { // Only if clicking the track itself, not a clip
+                    deselectClip();
+                }
+            });
+        });
+
+        // Initially disable all clips
+        document.querySelectorAll('.audio-clip').forEach(clip => {
+            clip.style.pointerEvents = 'none';
+            clip.style.cursor = 'default';
         });
     </script>
 </body>
