@@ -460,6 +460,12 @@
             opacity: 0.8;
         }
 
+        .audio-clip.disabled {
+            opacity: 0.3;
+            filter: grayscale(100%);
+            pointer-events: none;
+        }
+
         /* Plugin applied effects */
         .clip-volume-boost {
             border-top: 2px solid #1abc9c;
@@ -670,6 +676,48 @@
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
+        }
+
+        .selected-clip-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .selected-clip-play-btn,
+        .selected-clip-stop-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            background: #9b59b6;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .selected-clip-play-btn:hover,
+        .selected-clip-stop-btn:hover {
+            background: #8e44ad;
+            transform: scale(1.1);
+        }
+
+        .selected-clip-stop-btn {
+            background: #e74c3c;
+        }
+
+        .selected-clip-stop-btn:hover {
+            background: #c0392b;
+        }
+
+        .selected-clip-time {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #888;
         }
 
         .selected-clip-waveform {
@@ -1135,12 +1183,17 @@
                 <div id="selected-clip-display" class="selected-clip-display" style="display: none;">
                     <div class="selected-clip-title">Selected Clip:</div>
                     <div class="selected-clip-name"></div>
+                    <div class="selected-clip-controls">
+                        <button class="selected-clip-play-btn" onclick="toggleClipPlayback(event)">▶</button>
+                        <button class="selected-clip-stop-btn" onclick="stopClipPlayback(event)">⏹</button>
+                        <span class="selected-clip-time">00:00.000</span>
+                    </div>
                     <div class="selected-clip-waveform"></div>
                 </div>
                 <div id="tools-container" class="tools-container" style="display: none;">
-                    <div class="plugin-section disabled" onclick="selectPlugin('enable')">
-                        <div class="plugin-title">⏻ Enable/Disable</div>
-                        <div style="font-size: 11px; color: #888;">Toggle clip playback</div>
+                    <div class="plugin-section disabled" onclick="selectPlugin('mute')">
+                        <div class="plugin-title">🔇 Mute</div>
+                        <div style="font-size: 11px; color: #888;">Toggle clip muting</div>
                         <div class="checkbox"></div>
                     </div>
 
@@ -1202,8 +1255,8 @@
                         <div class="plugin-title">⚡ Speed</div>
                         <div class="slider-container">
                             <div class="slider-labels">
-                                <span>Slower</span>
                                 <span>Faster</span>
+                                <span>Slower</span>
                             </div>
                             <div class="slider-track">
                                 <div class="slider-fill"></div>
@@ -1274,6 +1327,10 @@
         let selectionBox = null;
         let startX = 0;
         let startY = 0;
+        let clipPlaybackInterval = null;
+        let clipStartTime = 0;
+        let clipDuration = 0;
+        let isClipPlaying = false;
 
         // Add data structure to track effects per clip
         const clipEffects = new Map(); // Maps clip ID to Set of active effects
@@ -1536,11 +1593,22 @@
 
             const clipEffectSet = clipEffects.get(clipId);
 
-            // Toggle effect in our data structure
-            if (isActive) {
-                clipEffectSet.delete(pluginName);
+            // Handle mute specifically
+            if (pluginName === 'mute') {
+                if (isActive) {
+                    selectedClip.classList.remove('disabled');
+                    clipEffectSet.delete(pluginName);
+                } else {
+                    selectedClip.classList.add('disabled');
+                    clipEffectSet.add(pluginName);
+                }
             } else {
-                clipEffectSet.add(pluginName);
+                // Toggle effect in our data structure
+                if (isActive) {
+                    clipEffectSet.delete(pluginName);
+                } else {
+                    clipEffectSet.add(pluginName);
+                }
             }
 
             // Toggle active state
@@ -1563,7 +1631,7 @@
 
             // Add icons for each active effect
             const effects = {
-                'enable': '⏻',
+                'mute': '🔇',
                 'noise': '🌫',
                 'voice': '🎤',
                 'reverse': '↔',
@@ -1726,6 +1794,13 @@
                 selectedClip.classList.remove('selected');
                 selectedClip = null;
 
+                // Stop any playing clip
+                if (clipPlaybackInterval) {
+                    clearInterval(clipPlaybackInterval);
+                    clipPlaybackInterval = null;
+                }
+                isClipPlaying = false;
+
                 // Hide selected clip display and show tools message
                 document.getElementById('selected-clip-display').style.display = 'none';
                 const toolsMessage = document.getElementById('tools-message');
@@ -1782,10 +1857,29 @@
 
                     fill.style.width = `${percent}%`;
                     thumb.style.left = `${percent}%`;
+
+                    // Handle speed slider specifically
+                    if (track.closest('.plugin-section').querySelector('.plugin-title').textContent.includes('Speed')) {
+                        const clip = document.querySelector('.audio-clip.selected');
+                        if (clip) {
+                            // Calculate new width based on slider value
+                            // 50% = normal speed, 0% = half speed, 100% = double speed
+                            const originalWidth = parseFloat(clip.dataset.originalWidth || clip.style.width);
+                            const speedFactor = 1 + (percent - 50) / 50; // 0.5 to 1.5
+                            clip.style.width = `${originalWidth * speedFactor}%`;
+                        }
+                    }
                 }
 
                 thumb.addEventListener('mousedown', () => {
                     isDragging = true;
+                    // Store original width when starting to drag speed slider
+                    if (track.closest('.plugin-section').querySelector('.plugin-title').textContent.includes('Speed')) {
+                        const clip = document.querySelector('.audio-clip.selected');
+                        if (clip && !clip.dataset.originalWidth) {
+                            clip.dataset.originalWidth = clip.style.width;
+                        }
+                    }
                 });
 
                 document.addEventListener('mousemove', (e) => {
@@ -1806,6 +1900,62 @@
 
         // Call initSliders after the page loads
         window.addEventListener('load', initSliders);
+
+        function stopClipPlayback(event) {
+            event.stopPropagation();
+            const playBtn = event.target.parentElement.querySelector('.selected-clip-play-btn');
+            const timeDisplay = event.target.parentElement.querySelector('.selected-clip-time');
+
+            // Stop playback
+            if (clipPlaybackInterval) {
+                clearInterval(clipPlaybackInterval);
+                clipPlaybackInterval = null;
+            }
+
+            // Reset UI
+            playBtn.textContent = '▶';
+            timeDisplay.textContent = '00:00.000';
+            isClipPlaying = false;
+        }
+
+        function toggleClipPlayback(event) {
+            event.stopPropagation();
+            const playBtn = event.target;
+            const timeDisplay = playBtn.parentElement.querySelector('.selected-clip-time');
+
+            if (isClipPlaying) {
+                // Stop playback
+                clearInterval(clipPlaybackInterval);
+                playBtn.textContent = '▶';
+                isClipPlaying = false;
+            } else {
+                // Start playback
+                clipStartTime = Date.now();
+                clipDuration = 5000; // 5 seconds for demo
+                playBtn.textContent = '⏸';
+                isClipPlaying = true;
+
+                // Update time display every 50ms
+                clipPlaybackInterval = setInterval(() => {
+                    const elapsed = Date.now() - clipStartTime;
+                    if (elapsed >= clipDuration) {
+                        // Stop at end of clip
+                        clearInterval(clipPlaybackInterval);
+                        playBtn.textContent = '▶';
+                        timeDisplay.textContent = '00:00.000';
+                        isClipPlaying = false;
+                        return;
+                    }
+
+                    // Format time as MM:SS.mmm
+                    const seconds = Math.floor(elapsed / 1000);
+                    const milliseconds = elapsed % 1000;
+                    const minutes = Math.floor(seconds / 60);
+                    const remainingSeconds = seconds % 60;
+                    timeDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
+                }, 50);
+            }
+        }
     </script>
 </body>
 
