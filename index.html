@@ -131,6 +131,7 @@
             background: #333;
             cursor: pointer;
             transition: all 0.2s ease;
+            position: relative;
         }
 
         .plugin-section:hover:not(.disabled) {
@@ -151,6 +152,23 @@
 
         .plugin-section.active .plugin-title {
             color: #9b59b6;
+        }
+
+        .plugin-section.active .checkbox {
+            background: #9b59b6;
+            border-color: #9b59b6;
+        }
+
+        .plugin-section.active .checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .plugin-section.disabled .checkbox {
+            opacity: 0.3;
+            pointer-events: none;
         }
 
         .plugin-title {
@@ -584,42 +602,24 @@
             transition: opacity 0.3s ease;
         }
 
-        .plugin-section {
-            margin-bottom: 15px;
-            border: 1px solid #555;
-            border-radius: 5px;
+        /* Right Panel (Tools for WaveEdit) */
+        .right-panel {
+            width: 200px;
+            background: #2a2a2a;
+            border-left: 1px solid #444;
             padding: 10px;
-            background: #333;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
 
-        .plugin-section:hover:not(.disabled) {
-            background: #404040;
-            border-color: #9b59b6;
-        }
-
-        .plugin-section.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .plugin-section.active {
-            border-color: #9b59b6;
-            background: #443355;
-        }
-
-        .plugin-section.active .plugin-title {
-            color: #9b59b6;
-        }
-
-        .plugin-title {
+        .tools-header {
+            font-size: 16px;
             font-weight: bold;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            color: #ecf0f1;
+            padding: 10px 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            text-align: center;
         }
 
         /* Clip effect icons */
@@ -651,17 +651,25 @@
             border-radius: 5px;
             padding: 10px;
             margin-bottom: 15px;
+            display: none;
         }
 
         .selected-clip-title {
             font-size: 12px;
             color: #888;
             margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .selected-clip-name {
             font-weight: bold;
             margin-bottom: 8px;
+            color: #ecf0f1;
+            font-size: 14px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
         }
 
         .selected-clip-waveform {
@@ -670,6 +678,7 @@
             border-radius: 3px;
             position: relative;
             overflow: hidden;
+            border: 1px solid #444;
         }
 
         .selected-clip-waveform::after {
@@ -782,6 +791,67 @@
                     currentColor 99%, currentColor 100%);
             opacity: 0.7;
         }
+
+        /* Add slider styles */
+        .slider-container {
+            margin: 8px 0;
+            position: relative;
+            height: 20px;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .slider-track {
+            position: relative;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            margin: 8px 0;
+        }
+
+        .slider-fill {
+            position: absolute;
+            height: 100%;
+            background: #9b59b6;
+            border-radius: 2px;
+            width: 50%;
+            /* Start at center */
+            transition: width 0.1s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border: 2px solid #9b59b6;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .slider-thumb:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .plugin-section.disabled .slider-track,
+        .plugin-section.disabled .slider-thumb {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .plugin-section.disabled .slider-labels {
+            opacity: 0.3;
+        }
     </style>
 </head>
 
@@ -808,7 +878,7 @@
         <div class="menu-bar">
             <span class="menu-item">Load</span>
             <span class="menu-item">Save</span>
-            <span class="menu-item">Analyze</span>
+            <span class="menu-item" onclick="autoAnalyzeAll()">Analyze</span>
             <span class="menu-item">Details</span>
             <span class="menu-item">Plugins</span>
             <span class="menu-item">Help</span>
@@ -816,48 +886,6 @@
         </div>
 
         <div class="main-content">
-            <div class="left-panel">
-                <div id="tools-message" class="tools-message">Completely analyze the track to enable tools</div>
-                <div id="selected-clip-display" class="selected-clip-display" style="display: none;">
-                    <div class="selected-clip-title">Selected Clip:</div>
-                    <div class="selected-clip-name"></div>
-                    <div class="selected-clip-waveform"></div>
-                </div>
-                <div id="tools-container" class="tools-container" style="display: none;">
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('volume')">
-                        <div class="plugin-title">🔊 Volume</div>
-                        <div style="margin: 5px 0;">──●──── +</div>
-                        <div style="font-size: 11px; color: #888;">Adjust volume levels</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('denoise')">
-                        <div class="plugin-title">🌫 De-noise</div>
-                        <div style="font-size: 11px; color: #888;">Remove background noise</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('speed')">
-                        <div class="plugin-title">⚡ Speed</div>
-                        <div style="font-size: 11px; color: #888;">Adjust playback speed</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('frequency')">
-                        <div class="plugin-title">📊 Frequency</div>
-                        <div style="font-size: 11px; color: #888;">Modify frequency spectrum</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('enhance')">
-                        <div class="plugin-title">✨ Enhance</div>
-                        <div style="font-size: 11px; color: #888;">Boost quality and clarity</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('master')">
-                        <div class="plugin-title">🎚 Master</div>
-                        <div style="font-size: 11px; color: #888;">Final mix adjustments</div>
-                    </div>
-                </div>
-            </div>
-
             <div class="center-panel">
                 <div class="transport-controls">
                     <button class="transport-btn">⏸</button>
@@ -1044,16 +1072,16 @@
                         <div class="track-content"
                             style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative;"
                             onclick="selectClip(event)">
-                            <div class="audio-clip" data-clip="whisper_2"
+                            <div class="audio-clip" data-clip="whisper_1"
                                 style="left: 20%; width: 10%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
                                 title="Second whisper">whisper_1</div>
-                            <div class="audio-clip" data-clip="whisper_3"
+                            <div class="audio-clip" data-clip="whisper_2"
                                 style="left: 35%; width: 10%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
                                 title="Third whisper">whisper_2</div>
-                            <div class="audio-clip" data-clip="whisper_4"
+                            <div class="audio-clip" data-clip="whisper_3"
                                 style="left: 55%; width: 7%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
                                 title="Fourth whisper">whisper_3</div>
-                            <div class="audio-clip" data-clip="whisper_5"
+                            <div class="audio-clip" data-clip="whisper_4"
                                 style="left: 70%; width: 9%; height: 18px; top: 6px; background: #8e44ad; border-radius: 3px; opacity: 0.7;"
                                 title="Fifth whisper">whisper_4</div>
                         </div>
@@ -1100,6 +1128,137 @@
                     </div>
                 </div>
             </div>
+
+            <div class="right-panel">
+                <div class="tools-header">Tools</div>
+                <div id="tools-message" class="tools-message">Completely analyze the track to enable tools.</div>
+                <div id="selected-clip-display" class="selected-clip-display" style="display: none;">
+                    <div class="selected-clip-title">Selected Clip:</div>
+                    <div class="selected-clip-name"></div>
+                    <div class="selected-clip-waveform"></div>
+                </div>
+                <div id="tools-container" class="tools-container" style="display: none;">
+                    <div class="plugin-section disabled" onclick="selectPlugin('enable')">
+                        <div class="plugin-title">⏻ Enable/Disable</div>
+                        <div style="font-size: 11px; color: #888;">Toggle clip playback</div>
+                        <div class="checkbox"></div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('noise')">
+                        <div class="plugin-title">🌫 Noise Reduction</div>
+                        <div style="font-size: 11px; color: #888;">Remove noise/reverb/echo</div>
+                        <div class="checkbox"></div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('voice')">
+                        <div class="plugin-title">🎤 Voice Boost</div>
+                        <div style="font-size: 11px; color: #888;">Enhance voice clarity</div>
+                        <div class="checkbox"></div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('reverse')">
+                        <div class="plugin-title">↔ Reverse</div>
+                        <div style="font-size: 11px; color: #888;">Reverse audio playback</div>
+                        <div class="checkbox"></div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('stereo')">
+                        <div class="plugin-title">🎧 Stereo/Mono</div>
+                        <div style="font-size: 11px; color: #888;">Toggle stereo/mono mode</div>
+                        <div class="checkbox"></div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('volume')">
+                        <div class="plugin-title">🔊 Volume</div>
+                        <div class="slider-container">
+                            <div class="slider-labels">
+                                <span>Mute</span>
+                                <span>Max</span>
+                            </div>
+                            <div class="slider-track">
+                                <div class="slider-fill"></div>
+                                <div class="slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: #888;">Adjust volume levels</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('pitch')">
+                        <div class="plugin-title">🎵 Pitch</div>
+                        <div class="slider-container">
+                            <div class="slider-labels">
+                                <span>Lower</span>
+                                <span>Higher</span>
+                            </div>
+                            <div class="slider-track">
+                                <div class="slider-fill"></div>
+                                <div class="slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: #888;">Modify pitch</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('speed')">
+                        <div class="plugin-title">⚡ Speed</div>
+                        <div class="slider-container">
+                            <div class="slider-labels">
+                                <span>Slower</span>
+                                <span>Faster</span>
+                            </div>
+                            <div class="slider-track">
+                                <div class="slider-fill"></div>
+                                <div class="slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: #888;">Adjust playback speed</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('highpass')">
+                        <div class="plugin-title">📈 High Pass</div>
+                        <div class="slider-container">
+                            <div class="slider-labels">
+                                <span>Low</span>
+                                <span>High</span>
+                            </div>
+                            <div class="slider-track">
+                                <div class="slider-fill"></div>
+                                <div class="slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: #888;">High frequency cut-off</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('lowpass')">
+                        <div class="plugin-title">📉 Low Pass</div>
+                        <div class="slider-container">
+                            <div class="slider-labels">
+                                <span>Low</span>
+                                <span>High</span>
+                            </div>
+                            <div class="slider-track">
+                                <div class="slider-fill"></div>
+                                <div class="slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: #888;">Low frequency cut-off</div>
+                    </div>
+
+                    <div class="plugin-section disabled" onclick="selectPlugin('bitrate')">
+                        <div class="plugin-title">💾 Bit Rate</div>
+                        <div class="slider-container">
+                            <div class="slider-labels">
+                                <span>Low</span>
+                                <span>High</span>
+                            </div>
+                            <div class="slider-track">
+                                <div class="slider-fill"></div>
+                                <div class="slider-thumb"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: #888;">Adjust audio quality</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1115,6 +1274,39 @@
         let selectionBox = null;
         let startX = 0;
         let startY = 0;
+
+        // Add data structure to track effects per clip
+        const clipEffects = new Map(); // Maps clip ID to Set of active effects
+
+        // Add new function for auto-analysis
+        function autoAnalyzeAll() {
+            console.log('Auto-analyzing all clips');
+            // Remove analyze button if it exists
+            const analyzeOverlay = document.querySelector('.analyze-overlay');
+            if (analyzeOverlay) {
+                analyzeOverlay.remove();
+            }
+
+            // Collect all clips from layers 1-4
+            const layers = ['evidence-recording', 'ghost-voices', 'investigation', 'ambient-static-wave'];
+
+            // Show all layers
+            layers.forEach(layerId => {
+                const layer = document.getElementById(layerId);
+                if (layer) {
+                    layer.style.display = 'flex';
+                    // Show all clips in the layer
+                    const clips = layer.querySelectorAll('.audio-clip');
+                    clips.forEach(clip => {
+                        clip.style.display = 'flex';
+                        discoveredClips.add(clip.dataset.clip);
+                    });
+                }
+            });
+
+            // Enable tools
+            enableTools();
+        }
 
         // Initialize the analysis minigame
         function initAnalysisGame() {
@@ -1335,6 +1527,21 @@
 
             const pluginSection = event.target.closest('.plugin-section');
             const isActive = pluginSection.classList.contains('active');
+            const clipId = selectedClip.dataset.clip;
+
+            // Initialize effects set for this clip if it doesn't exist
+            if (!clipEffects.has(clipId)) {
+                clipEffects.set(clipId, new Set());
+            }
+
+            const clipEffectSet = clipEffects.get(clipId);
+
+            // Toggle effect in our data structure
+            if (isActive) {
+                clipEffectSet.delete(pluginName);
+            } else {
+                clipEffectSet.add(pluginName);
+            }
 
             // Toggle active state
             pluginSection.classList.toggle('active');
@@ -1351,20 +1558,27 @@
             // Remove all existing effect icons
             clip.querySelectorAll('.clip-effect').forEach(icon => icon.remove());
 
+            const clipId = clip.dataset.clip;
+            const activeEffects = clipEffects.get(clipId) || new Set();
+
             // Add icons for each active effect
             const effects = {
-                'clip-volume': '🔊',
-                'clip-denoise': '🌫',
-                'clip-frequency': '📊',
-                'clip-speed': '⚡',
-                'clip-enhance': '✨',
-                'clip-master': '🎚',
-                'clip-cut': '✂'
+                'enable': '⏻',
+                'noise': '🌫',
+                'voice': '🎤',
+                'reverse': '↔',
+                'stereo': '🎧',
+                'volume': '🔊',
+                'pitch': '🎵',
+                'speed': '⚡',
+                'highpass': '📈',
+                'lowpass': '📉',
+                'bitrate': '💾'
             };
 
             let index = 0;
-            for (const [className, icon] of Object.entries(effects)) {
-                if (clip.classList.contains(className)) {
+            for (const [effectName, icon] of Object.entries(effects)) {
+                if (activeEffects.has(effectName)) {
                     const effectIcon = document.createElement('div');
                     effectIcon.className = 'clip-effect';
                     effectIcon.textContent = icon;
@@ -1451,7 +1665,7 @@
 
         function enableTools() {
             isAnalyzed = true;
-            document.getElementById('tools-message').textContent = 'Select a clip in a layer to use tools';
+            document.getElementById('tools-message').textContent = 'Select a clip in a layer to use tools.';
             document.getElementById('tools-container').style.display = 'block';
 
             // Make all clips clickable
@@ -1476,10 +1690,34 @@
             event.target.classList.add('selected');
             selectedClip = event.target;
 
-            // Update message and enable tools
-            document.getElementById('tools-message').textContent = 'Tools enabled - click to toggle effects';
+            // Update selected clip display
+            const selectedClipDisplay = document.getElementById('selected-clip-display');
+            const selectedClipName = selectedClipDisplay.querySelector('.selected-clip-name');
+            const selectedClipWaveform = selectedClipDisplay.querySelector('.selected-clip-waveform');
+
+            // Set clip name and style
+            selectedClipName.textContent = selectedClip.dataset.clip;
+            selectedClipWaveform.style.background = selectedClip.style.background;
+
+            // Show the display and hide the tools message
+            selectedClipDisplay.style.display = 'block';
+            document.getElementById('tools-message').style.display = 'none';
+
+            // Enable tools and update their active state based on clip effects
+            const clipId = selectedClip.dataset.clip;
+            const activeEffects = clipEffects.get(clipId) || new Set();
+
             document.querySelectorAll('.plugin-section').forEach(section => {
                 section.classList.remove('disabled');
+                // Get the plugin name from the title, removing emoji and spaces
+                const pluginName = section.querySelector('.plugin-title').textContent
+                    .replace(/[^\w\s]/g, '') // Remove emojis
+                    .trim()
+                    .toLowerCase()
+                    .replace(/\s+/g, ''); // Remove spaces
+
+                // Toggle active state based on whether this effect is in the clip's active effects
+                section.classList.toggle('active', activeEffects.has(pluginName));
             });
         }
 
@@ -1488,10 +1726,16 @@
                 selectedClip.classList.remove('selected');
                 selectedClip = null;
 
-                // Update message and disable tools
-                document.getElementById('tools-message').textContent = 'Select a clip to use tools';
+                // Hide selected clip display and show tools message
+                document.getElementById('selected-clip-display').style.display = 'none';
+                const toolsMessage = document.getElementById('tools-message');
+                toolsMessage.style.display = 'block';
+                toolsMessage.textContent = 'Select a clip to use tools';
+
+                // Disable tools and reset their appearance
                 document.querySelectorAll('.plugin-section').forEach(section => {
                     section.classList.add('disabled');
+                    section.classList.remove('active'); // Remove active state to reset color
                 });
             }
         }
@@ -1505,11 +1749,63 @@
             });
         });
 
+        // Add click handler to document to deselect when clicking outside
+        document.addEventListener('click', function (event) {
+            // Don't deselect if clicking on tools panel or its buttons
+            if (event.target.closest('.right-panel')) {
+                return;
+            }
+
+            // Check if click is outside of any track content
+            if (!event.target.closest('.track-content')) {
+                deselectClip();
+            }
+        });
+
         // Initially disable all clips
         document.querySelectorAll('.audio-clip').forEach(clip => {
             clip.style.pointerEvents = 'none';
             clip.style.cursor = 'default';
         });
+
+        // Add slider functionality
+        function initSliders() {
+            document.querySelectorAll('.slider-track').forEach(track => {
+                const thumb = track.querySelector('.slider-thumb');
+                const fill = track.querySelector('.slider-fill');
+                let isDragging = false;
+
+                function updateSlider(e) {
+                    const rect = track.getBoundingClientRect();
+                    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                    const percent = (x / rect.width) * 100;
+
+                    fill.style.width = `${percent}%`;
+                    thumb.style.left = `${percent}%`;
+                }
+
+                thumb.addEventListener('mousedown', () => {
+                    isDragging = true;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        updateSlider(e);
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                track.addEventListener('click', (e) => {
+                    updateSlider(e);
+                });
+            });
+        }
+
+        // Call initSliders after the page loads
+        window.addEventListener('load', initSliders);
     </script>
 </body>
 
