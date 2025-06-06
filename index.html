@@ -163,6 +163,16 @@
             background: var(--bg-hover);
         }
 
+        .menu-item.inactive {
+            color: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .menu-item.inactive:hover {
+            background: transparent;
+        }
+
         /* Load dropdown styles */
         .load-menu {
             position: relative;
@@ -1226,26 +1236,31 @@
         <div class="menu-bar">
             <span class="menu-item load-menu" onclick="toggleLoadMenu(event)">Load ▼
                 <div class="load-dropdown" id="load-dropdown">
-                    <div class="load-option" onclick="loadAudioFile('find_the_murderer.wav', event)">
-                        find_the_murderer.wav</div>
-                    <div class="load-option" onclick="loadAudioFile('morse_code.wav', event)">morse_code.wav</div>
-                    <div class="load-option" onclick="loadAudioFile('noise_profiling.wav', event)">noise_profiling.wav
+                    <div class="load-option" onclick="loadAudioFile('1_simple_getaway_analysis.wav', event)">
+                        1_simple_getaway_analysis.wav</div>
+                    <div class="load-option" onclick="loadAudioFile('2_simple_vocal_harmony.wav', event)">
+                        2_simple_vocal_harmony.wav</div>
+                    <div class="load-option" onclick="loadAudioFile('3_medium_morse_code.wav', event)">
+                        3_medium_morse_code.wav
                     </div>
-                    <div class="load-option" onclick="loadAudioFile('orchestra_hickups.wav', event)">
-                        orchestra_hickups.wav</div>
-                    <div class="load-option" onclick="loadAudioFile('vocal_harmony.wav', event)">vocal_harmony.wav</div>
-                    <div class="load-option" onclick="loadAudioFile('getaway_analysis.wav', event)">getaway_analysis.wav
+                    <div class="load-option" onclick="loadAudioFile('4_medium_seasonal_birds.wav', event)">
+                        4_medium_seasonal_birds.wav</div>
+                    <div class="load-option" onclick="loadAudioFile('5_medium_find_the_murderer.wav', event)">
+                        5_medium_find_the_murderer.wav</div>
+                    <div class="load-option" onclick="loadAudioFile('6_complex_noise_profiling.wav', event)">
+                        6_complex_noise_profiling.wav
                     </div>
-                    <div class="load-option" onclick="loadAudioFile('seasonal_birds.wav', event)">seasonal_birds.wav
+                    <div class="load-option" onclick="loadAudioFile('7_complex_orchestra_hickups.wav', event)">
+                        7_complex_orchestra_hickups.wav
                     </div>
                 </div>
             </span>
-            <span class="menu-item">Save</span>
+            <span class="menu-item inactive">Save</span>
             <span class="menu-item" onclick="autoAnalyzeAll()">Analyze</span>
-            <span class="menu-item">Details</span>
-            <span class="menu-item">Plugins</span>
-            <span class="menu-item">Help</span>
-            <span class="menu-item">License</span>
+            <span class="menu-item inactive">Details</span>
+            <span class="menu-item inactive">Plugins</span>
+            <span class="menu-item inactive">Help</span>
+            <span class="menu-item inactive">License</span>
         </div>
 
         <div class="main-content">
@@ -1260,7 +1275,7 @@
 
                 <div class="track-layer" id="merged">
                     <div class="track-info">
-                        <span style="font-size: 0.8em; color: #95a5a6;">crime_scene.wav</span><br>
+                        <span style="font-size: 0.8em; color: #95a5a6;">1_simple_getaway_analysis.wav</span><br>
                         <span style="font-weight: bold; color: #ecf0f1;">All Layers</span>
                     </div>
                     <div class="track-content"
@@ -1683,7 +1698,7 @@
 
             // Cap dimensions
             width = Math.min(width, 9999);
-            height = Math.min(height, 50);
+            height = Math.min(height, 150);
 
             // Update selection box position and size
             selectionBox.style.left = Math.min(startX, currentX) + 'px';
@@ -2167,8 +2182,8 @@
             // Initialize sliders
             initSliders();
 
-            // Load default file configuration
-            const defaultConfig = AUDIO_CONFIGS['find_the_murderer.wav'];
+            // Load default file configuration (simplest file)
+            const defaultConfig = AUDIO_CONFIGS['1_simple_getaway_analysis.wav'];
             if (defaultConfig) {
                 loadAudioConfiguration(defaultConfig);
             }

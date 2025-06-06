@@ -56,14 +56,162 @@
  */
 const AUDIO_CONFIGS = {
     /**
-     * EXAMPLE CONFIGURATION: find_the_murderer.wav
+     * SIMPLEST CONFIGURATION: 1_simple_getaway_analysis.wav
      * 
-     * This is the default/reference configuration showing proper structure.
+     * Easy difficulty - Simple noise removal to reveal evidence
+     * Minimal complexity with just 2 layers and 2 clips
+     */
+    '1_simple_getaway_analysis.wav': {
+        name: '1_simple_getaway_analysis.wav',
+        totalDuration: 10, // Very short and focused
+        gradientClass: 'forensic-waveform-gradient',
+        layers: {
+            'digital-corruption': {
+                name: 'Digital_Corruption',
+                displayName: 'Layer 1',
+                color: '#e74c3c',
+                baseHeight: 40,
+                clips: [
+                    { id: 'recording_static', left: '5%', width: '90%', title: 'Digital corruption masking evidence' }
+                ]
+            },
+            'engine-signature': {
+                name: 'Engine_Signature',
+                displayName: 'Layer 2',
+                color: '#3498db',
+                baseHeight: 80,
+                clips: [
+                    { id: 'vehicle_engine', left: '10%', width: '80%', title: 'Hidden engine sound signature' }
+                ]
+            }
+        }
+    },
+
+    /**
+     * SIMPLE CONFIGURATION: 2_simple_vocal_harmony.wav
+     * 
+     * Medium difficulty - Volume leveling task with single layer
+     * Simple structure focusing on precision volume matching
+     */
+    '2_simple_vocal_harmony.wav': {
+        name: '2_simple_vocal_harmony.wav',
+        totalDuration: 120, // 2 minutes
+        gradientClass: 'vocal-waveform-gradient',
+        layers: {
+            'vocal-track': {
+                name: 'Vocal_Track',
+                displayName: 'Layer 1',
+                color: '#e67e22',
+                baseHeight: 50,
+                clips: [
+                    { id: 'verse_one', left: '5%', width: '20%', title: 'First verse - needs boost' },
+                    { id: 'chorus_one', left: '28%', width: '22%', title: 'First chorus - too loud' },
+                    { id: 'verse_two', left: '53%', width: '18%', title: 'Second verse - good level' },
+                    { id: 'chorus_two', left: '73%', width: '22%', title: 'Second chorus - needs boost' },
+                    { id: 'outro_whisper', left: '96%', width: '3%', title: 'Whispered outro - needs major boost' }
+                ]
+            }
+        }
+    },
+
+    /**
+     * MEDIUM-SIMPLE CONFIGURATION: 3_medium_morse_code.wav
+     * 
+     * Example of a 2-layer configuration with radio/communication theme.
+     * Shows how to create themed content with appropriate naming and colors.
+     */
+    '3_medium_morse_code.wav': {
+        name: '3_medium_morse_code.wav',
+        totalDuration: 32, // Shorter duration than default
+        gradientClass: 'morse-waveform-gradient', // Custom gradient for morse code theme
+        layers: {
+            'morse-signals': {
+                name: 'Morse_Signals',
+                displayName: 'Layer 1',
+                color: '#3498db',
+                baseHeight: 50,
+                clips: [
+                    { id: 'dot_dot_dot', left: '5%', width: '8%', title: 'S - ... (SOS start)' },
+                    { id: 'dash_dash_dash', left: '18%', width: '12%', title: 'O - --- (SOS middle)' },
+                    { id: 'dot_dot_dot_2', left: '35%', width: '8%', title: 'S - ... (SOS end)' },
+                    { id: 'help_signal', left: '50%', width: '25%', title: 'HELP - .... . .-.. .--..' },
+                    { id: 'coordinates', left: '80%', width: '15%', title: 'Grid coordinates' }
+                ]
+            },
+            'radio-static': {
+                name: 'Radio_Static',
+                displayName: 'Layer 2',
+                color: '#95a5a6',
+                baseHeight: 120,
+                clips: [
+                    { id: 'carrier_wave', left: '5%', width: '25%', title: 'Carrier wave background' },
+                    { id: 'interference_1', left: '40%', width: '15%', title: 'Signal interference' },
+                    { id: 'interference_2', left: '70%', width: '20%', title: 'Atmospheric noise' }
+                ]
+            }
+        }
+    },
+
+    /**
+     * MEDIUM CONFIGURATION: 4_medium_seasonal_birds.wav
+     * 
+     * Medium difficulty - Isolate specific bird call among forest sounds
+     * Overlapping layers requiring careful frequency separation
+     */
+    '4_medium_seasonal_birds.wav': {
+        name: '4_medium_seasonal_birds.wav',
+        totalDuration: 20, // Short but intense
+        gradientClass: 'nature-waveform-gradient',
+        layers: {
+            'target-bird-call': {
+                name: 'Target_Bird_Call',
+                displayName: 'Layer 1',
+                color: '#27ae60',
+                baseHeight: 30,
+                clips: [
+                    { id: 'robin_spring_song', left: '25%', width: '50%', title: 'Robin territorial call - spring indicator' }
+                ]
+            },
+            'forest-ambience': {
+                name: 'Forest_Ambience',
+                displayName: 'Layer 2',
+                color: '#2c3e50',
+                baseHeight: 70,
+                clips: [
+                    { id: 'wind_through_leaves', left: '10%', width: '40%', title: 'Wind masking bird call' },
+                    { id: 'distant_stream', left: '60%', width: '35%', title: 'Stream noise interference' }
+                ]
+            },
+            'viola-breathing': {
+                name: 'Viola_Breathing',
+                displayName: 'Layer 3',
+                color: '#8e44ad',
+                baseHeight: 110,
+                clips: [
+                    { id: 'recording_breath', left: '15%', width: '70%', title: 'Viola recording herself - why?' }
+                ]
+            },
+            'unknown-presence': {
+                name: 'Unknown_Presence',
+                displayName: 'Layer 4',
+                color: '#e74c3c',
+                baseHeight: 150,
+                clips: [
+                    { id: 'footsteps_nearby', left: '45%', width: '25%', title: 'Someone else is there...' }
+                ]
+            }
+        }
+    },
+
+    /**
+     * MEDIUM CONFIGURATION: 5_medium_find_the_murderer.wav
+     * 
+     * This is the reference configuration showing proper structure.
      * Use this as a template when creating new audio file configurations.
      */
-    'find_the_murderer.wav': {
+    '5_medium_find_the_murderer.wav': {
         // File display name (shown in merged track info)
-        name: 'find_the_murderer.wav',
+        name: '5_medium_find_the_murderer.wav',
 
         // Total audio duration in seconds (affects playback controls and timeline)
         totalDuration: 47,
@@ -135,52 +283,14 @@ const AUDIO_CONFIGS = {
     },
 
     /**
-     * MORSE CODE CONFIGURATION: morse_code.wav
-     * 
-     * Example of a 2-layer configuration with radio/communication theme.
-     * Shows how to create themed content with appropriate naming and colors.
-     */
-    'morse_code.wav': {
-        name: 'morse_code.wav',
-        totalDuration: 32, // Shorter duration than default
-        gradientClass: 'morse-waveform-gradient', // Custom gradient for morse code theme
-        layers: {
-            'morse-signals': {
-                name: 'Morse_Signals',
-                displayName: 'Layer 1',
-                color: '#3498db',
-                baseHeight: 50,
-                clips: [
-                    { id: 'dot_dot_dot', left: '5%', width: '8%', title: 'S - ... (SOS start)' },
-                    { id: 'dash_dash_dash', left: '18%', width: '12%', title: 'O - --- (SOS middle)' },
-                    { id: 'dot_dot_dot_2', left: '35%', width: '8%', title: 'S - ... (SOS end)' },
-                    { id: 'help_signal', left: '50%', width: '25%', title: 'HELP - .... . .-.. .--..' },
-                    { id: 'coordinates', left: '80%', width: '15%', title: 'Grid coordinates' }
-                ]
-            },
-            'radio-static': {
-                name: 'Radio_Static',
-                displayName: 'Layer 2',
-                color: '#95a5a6',
-                baseHeight: 120,
-                clips: [
-                    { id: 'carrier_wave', left: '5%', width: '25%', title: 'Carrier wave background' },
-                    { id: 'interference_1', left: '40%', width: '15%', title: 'Signal interference' },
-                    { id: 'interference_2', left: '70%', width: '20%', title: 'Atmospheric noise' }
-                ]
-            }
-        }
-    },
-
-    /**
-     * COMPLEX CONFIGURATION: noise_profiling.wav
+     * COMPLEX CONFIGURATION: 6_complex_noise_profiling.wav
      * 
      * Example of a 7-layer configuration showing maximum complexity.
      * Demonstrates proper baseHeight spacing and technical audio clip naming.
      * Use this as reference for multi-layer configurations.
      */
-    'noise_profiling.wav': {
-        name: 'noise_profiling.wav',
+    '6_complex_noise_profiling.wav': {
+        name: '6_complex_noise_profiling.wav',
         totalDuration: 28, // Shortest duration example
         gradientClass: 'noise-waveform-gradient', // Multi-color gradient theme
         layers: {
@@ -265,13 +375,13 @@ const AUDIO_CONFIGS = {
     },
 
     /**
-     * ORCHESTRA HICKUPS: orchestra_hickups.wav
+     * MOST COMPLEX CONFIGURATION: 7_complex_orchestra_hickups.wav
      * 
      * Easy difficulty - Tutorial-like busywork removing coughs and mistakes
      * 4 layers representing different orchestra sections with overlapping hickups
      */
-    'orchestra_hickups.wav': {
-        name: 'orchestra_hickups.wav',
+    '7_complex_orchestra_hickups.wav': {
+        name: '7_complex_orchestra_hickups.wav',
         totalDuration: 300, // 5 minutes - long track for practice
         gradientClass: 'orchestra-waveform-gradient',
         layers: {
@@ -350,116 +460,6 @@ const AUDIO_CONFIGS = {
                     { id: 'percussion_cough', left: '85%', width: '2%', title: 'Percussionist cough' },
                     { id: 'mallet_drop', left: '90%', width: '1%', title: 'Mallet drop' },
                     { id: 'snare_buzz', left: '95%', width: '2%', title: 'Snare buzz' }
-                ]
-            }
-        }
-    },
-
-    /**
-     * VOCAL HARMONY: vocal_harmony.wav
-     * 
-     * Medium difficulty - Volume leveling task with single layer
-     * Simple structure focusing on precision volume matching
-     */
-    'vocal_harmony.wav': {
-        name: 'vocal_harmony.wav',
-        totalDuration: 120, // 2 minutes
-        gradientClass: 'vocal-waveform-gradient',
-        layers: {
-            'vocal-track': {
-                name: 'Vocal_Track',
-                displayName: 'Layer 1',
-                color: '#e67e22',
-                baseHeight: 50,
-                clips: [
-                    { id: 'verse_one', left: '5%', width: '20%', title: 'First verse - needs boost' },
-                    { id: 'chorus_one', left: '28%', width: '22%', title: 'First chorus - too loud' },
-                    { id: 'verse_two', left: '53%', width: '18%', title: 'Second verse - good level' },
-                    { id: 'chorus_two', left: '73%', width: '22%', title: 'Second chorus - needs boost' },
-                    { id: 'outro_whisper', left: '96%', width: '3%', title: 'Whispered outro - needs major boost' }
-                ]
-            }
-        }
-    },
-
-    /**
-     * GETAWAY ANALYSIS: getaway_analysis.wav
-     * 
-     * Easy difficulty - Simple noise removal to reveal evidence
-     * Minimal complexity with just 2 layers and 2 clips
-     */
-    'getaway_analysis.wav': {
-        name: 'getaway_analysis.wav',
-        totalDuration: 10, // Very short and focused
-        gradientClass: 'forensic-waveform-gradient',
-        layers: {
-            'digital-corruption': {
-                name: 'Digital_Corruption',
-                displayName: 'Layer 1',
-                color: '#e74c3c',
-                baseHeight: 40,
-                clips: [
-                    { id: 'recording_static', left: '5%', width: '90%', title: 'Digital corruption masking evidence' }
-                ]
-            },
-            'engine-signature': {
-                name: 'Engine_Signature',
-                displayName: 'Layer 2',
-                color: '#3498db',
-                baseHeight: 80,
-                clips: [
-                    { id: 'vehicle_engine', left: '10%', width: '80%', title: 'Hidden engine sound signature' }
-                ]
-            }
-        }
-    },
-
-    /**
-     * SEASONAL BIRDS: seasonal_birds.wav
-     * 
-     * Medium difficulty - Isolate specific bird call among forest sounds
-     * Overlapping layers requiring careful frequency separation
-     */
-    'seasonal_birds.wav': {
-        name: 'seasonal_birds.wav',
-        totalDuration: 20, // Short but intense
-        gradientClass: 'nature-waveform-gradient',
-        layers: {
-            'target-bird-call': {
-                name: 'Target_Bird_Call',
-                displayName: 'Layer 1',
-                color: '#27ae60',
-                baseHeight: 30,
-                clips: [
-                    { id: 'robin_spring_song', left: '25%', width: '50%', title: 'Robin territorial call - spring indicator' }
-                ]
-            },
-            'forest-ambience': {
-                name: 'Forest_Ambience',
-                displayName: 'Layer 2',
-                color: '#2c3e50',
-                baseHeight: 70,
-                clips: [
-                    { id: 'wind_through_leaves', left: '10%', width: '40%', title: 'Wind masking bird call' },
-                    { id: 'distant_stream', left: '60%', width: '35%', title: 'Stream noise interference' }
-                ]
-            },
-            'viola-breathing': {
-                name: 'Viola_Breathing',
-                displayName: 'Layer 3',
-                color: '#8e44ad',
-                baseHeight: 110,
-                clips: [
-                    { id: 'recording_breath', left: '15%', width: '70%', title: 'Viola recording herself - why?' }
-                ]
-            },
-            'unknown-presence': {
-                name: 'Unknown_Presence',
-                displayName: 'Layer 4',
-                color: '#e74c3c',
-                baseHeight: 150,
-                clips: [
-                    { id: 'footsteps_nearby', left: '45%', width: '25%', title: 'Someone else is there...' }
                 ]
             }
         }
