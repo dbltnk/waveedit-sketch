@@ -60,11 +60,13 @@ const AUDIO_CONFIGS = {
      * 
      * Easy difficulty - Simple noise removal to reveal evidence
      * Minimal complexity with just 2 layers and 2 clips
+     * TOOLS: Only basic noise removal needed
      */
     '1_simple_getaway_analysis.wav': {
         name: '1_simple_getaway_analysis.wav',
         totalDuration: 10, // Very short and focused
         gradientClass: 'forensic-waveform-gradient',
+        availableTools: ['mute'], // Only mute tool available for simplest level
         layers: {
             'digital-corruption': {
                 name: 'Digital_Corruption',
@@ -92,11 +94,13 @@ const AUDIO_CONFIGS = {
      * 
      * Medium difficulty - Volume leveling task with single layer
      * Simple structure focusing on precision volume matching
+     * TOOLS: Volume balancing focus
      */
     '2_simple_vocal_harmony.wav': {
         name: '2_simple_vocal_harmony.wav',
         totalDuration: 120, // 2 minutes
         gradientClass: 'vocal-waveform-gradient',
+        availableTools: ['volume', 'noise'], // Volume control and noise reduction for vocal work
         layers: {
             'vocal-track': {
                 name: 'Vocal_Track',
@@ -119,11 +123,13 @@ const AUDIO_CONFIGS = {
      * 
      * Example of a 2-layer configuration with radio/communication theme.
      * Shows how to create themed content with appropriate naming and colors.
+     * TOOLS: Signal clarity and pitch adjustment for decoding morse
      */
     '3_medium_morse_code.wav': {
         name: '3_medium_morse_code.wav',
         totalDuration: 32, // Shorter duration than default
         gradientClass: 'morse-waveform-gradient', // Custom gradient for morse code theme
+        availableTools: ['noise', 'volume', 'voice', 'pitch'], // Signal clarity tools for morse decoding
         layers: {
             'morse-signals': {
                 name: 'Morse_Signals',
@@ -157,11 +163,13 @@ const AUDIO_CONFIGS = {
      * 
      * Medium difficulty - Isolate specific bird call among forest sounds
      * Overlapping layers requiring careful frequency separation
+     * TOOLS: Frequency filtering to isolate bird calls from ambient noise
      */
     '4_medium_seasonal_birds.wav': {
         name: '4_medium_seasonal_birds.wav',
         totalDuration: 20, // Short but intense
         gradientClass: 'nature-waveform-gradient',
+        availableTools: ['noise', 'volume', 'voice', 'pitch', 'highpass', 'lowpass'], // Frequency filtering tools
         layers: {
             'target-bird-call': {
                 name: 'Target_Bird_Call',
@@ -208,6 +216,7 @@ const AUDIO_CONFIGS = {
      * 
      * This is the reference configuration showing proper structure.
      * Use this as a template when creating new audio file configurations.
+     * TOOLS: Advanced processing including time manipulation for evidence analysis
      */
     '5_medium_find_the_murderer.wav': {
         // File display name (shown in merged track info)
@@ -218,6 +227,9 @@ const AUDIO_CONFIGS = {
 
         // CSS class name for merged view background gradient (must exist in gradients.css)
         gradientClass: 'main-waveform-gradient',
+
+        // Available tools for this level - adds time manipulation
+        availableTools: ['noise', 'volume', 'voice', 'pitch', 'highpass', 'lowpass', 'reverse', 'speed'],
 
         // Layer definitions - each layer represents a track with audio clips
         layers: {
@@ -288,11 +300,13 @@ const AUDIO_CONFIGS = {
      * Example of a 7-layer configuration showing maximum complexity.
      * Demonstrates proper baseHeight spacing and technical audio clip naming.
      * Use this as reference for multi-layer configurations.
+     * TOOLS: Technical precision tools for professional audio analysis
      */
     '6_complex_noise_profiling.wav': {
         name: '6_complex_noise_profiling.wav',
         totalDuration: 28, // Shortest duration example
         gradientClass: 'noise-waveform-gradient', // Multi-color gradient theme
+        availableTools: ['noise', 'volume', 'voice', 'pitch', 'highpass', 'lowpass', 'reverse', 'speed', 'bitrate', 'stereo'], // Technical precision tools
         layers: {
             'vocal-track': {
                 name: 'Vocal_Track',
@@ -379,11 +393,13 @@ const AUDIO_CONFIGS = {
      * 
      * Easy difficulty - Tutorial-like busywork removing coughs and mistakes
      * 4 layers representing different orchestra sections with overlapping hickups
+     * TOOLS: Complete toolkit for masterful audio editing
      */
     '7_complex_orchestra_hickups.wav': {
         name: '7_complex_orchestra_hickups.wav',
         totalDuration: 300, // 5 minutes - long track for practice
         gradientClass: 'orchestra-waveform-gradient',
+        availableTools: ['noise', 'volume', 'voice', 'pitch', 'highpass', 'lowpass', 'reverse', 'speed', 'bitrate', 'stereo', 'mute'], // All tools available
         layers: {
             'violin-section': {
                 name: 'Violin_Section',
