@@ -387,3 +387,75 @@
             #34495e 90%, #34495e 95%,
             #2c3e50 95%, #2c3e50 100%);
 }
+
+/* Orchestra Hickups Waveform Visualization */
+.orchestra-waveform-gradient {
+    background: linear-gradient(90deg,
+            #e74c3c 0%, #e74c3c 25%,
+            #f39c12 25%, #f39c12 50%,
+            #27ae60 50%, #27ae60 75%,
+            #9b59b6 75%, #9b59b6 100%);
+}
+
+/* Vocal Harmony Waveform Visualization */
+.vocal-waveform-gradient {
+    background: linear-gradient(90deg,
+            #e67e22 0%, #e67e22 18%,
+            #2c3e50 18%, #2c3e50 28%,
+            #e67e22 28%, #e67e22 48%,
+            #2c3e50 48%, #2c3e50 53%,
+            #e67e22 53%, #e67e22 68%,
+            #2c3e50 68%, #2c3e50 73%,
+            #e67e22 73%, #e67e22 93%,
+            #2c3e50 93%, #2c3e50 95%,
+            #e67e22 95%, #e67e22 100%);
+}
+
+/* Forensic Analysis Waveform Visualization */
+.forensic-waveform-gradient {
+    background: linear-gradient(90deg,
+            #e74c3c 0%, #e74c3c 95%,
+            #3498db 95%, #3498db 100%);
+}
+
+/* Nature/Seasonal Birds Waveform Visualization */
+.nature-waveform-gradient {
+    background: linear-gradient(90deg,
+            #2c3e50 0%, #2c3e50 25%,
+            #27ae60 25%, #27ae60 75%,
+            #8e44ad 75%, #8e44ad 85%,
+            #e74c3c 85%, #e74c3c 100%);
+}
+
+/* Transmission/Radio Waveform Visualization */
+.transmission-waveform-gradient {
+    background: linear-gradient(90deg,
+            #95a5a6 0%, #95a5a6 90%,
+            #3498db 90%, #3498db 95%,
+            #e67e22 95%, #e67e22 100%);
+}
+
+/* Horror/Murder Evidence Waveform Visualization */
+.horror-waveform-gradient {
+    background: linear-gradient(90deg,
+            #8b0000 0%, #8b0000 5%,
+            #e74c3c 5%, #e74c3c 10%,
+            #8e44ad 10%, #8e44ad 15%,
+            #27ae60 15%, #27ae60 20%,
+            #1abc9c 20%, #1abc9c 25%,
+            #f39c12 25%, #f39c12 30%,
+            #e67e22 30%, #e67e22 35%,
+            #34495e 35%, #34495e 40%,
+            #9b59b6 40%, #9b59b6 45%,
+            #2c3e50 45%, #2c3e50 50%,
+            #16a085 50%, #16a085 55%,
+            #c0392b 55%, #c0392b 60%,
+            #8e44ad 60%, #8e44ad 65%,
+            #e74c3c 65%, #e74c3c 70%,
+            #27ae60 70%, #27ae60 75%,
+            #f39c12 75%, #f39c12 80%,
+            #e67e22 80%, #e67e22 85%,
+            #34495e 85%, #34495e 90%,
+            #9b59b6 90%, #9b59b6 95%,
+            #8b0000 95%, #8b0000 100%);
+}

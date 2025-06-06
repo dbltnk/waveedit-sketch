@@ -19,7 +19,6 @@
  * 6. Add layer-specific color CSS rules in index.html
  * 
  * IMPORTANT CONSTRAINTS:
- * - Clip widths must NOT exceed 25% (270px) to be selectable with the drag box when "analyzing"
  * - Layer IDs must be unique across the entire application
  * - Clip IDs must be unique within each layer
  * - Layer IDs should use kebab-case (hyphen-separated)
@@ -263,6 +262,494 @@ const AUDIO_CONFIGS = {
                 ]
             }
         }
+    },
+
+    /**
+     * ORCHESTRA HICKUPS: orchestra_hickups.wav
+     * 
+     * Easy difficulty - Tutorial-like busywork removing coughs and mistakes
+     * 4 layers representing different orchestra sections with overlapping hickups
+     */
+    'orchestra_hickups.wav': {
+        name: 'orchestra_hickups.wav',
+        totalDuration: 300, // 5 minutes - long track for practice
+        gradientClass: 'orchestra-waveform-gradient',
+        layers: {
+            'violin-section': {
+                name: 'Violin_Section',
+                displayName: 'Layer 1',
+                color: '#e74c3c',
+                baseHeight: 25,
+                clips: [
+                    { id: 'violin_opening_movement', left: '1%', width: '18%', title: 'Opening violin movement' },
+                    { id: 'violin_cough_1', left: '19%', width: '2%', title: 'Violinist cough' },
+                    { id: 'violin_lyrical_section', left: '22%', width: '15%', title: 'Lyrical violin section' },
+                    { id: 'violin_page_turn', left: '37%', width: '1%', title: 'Page turn noise' },
+                    { id: 'violin_development_passage', left: '39%', width: '22%', title: 'Development passage with arpeggios and tremolo' },
+                    { id: 'violin_bow_scratch', left: '61%', width: '2%', title: 'Bow scratch' },
+                    { id: 'violin_dramatic_crescendo', left: '64%', width: '16%', title: 'Dramatic crescendo build' },
+                    { id: 'violin_chair_creak', left: '80%', width: '1%', title: 'Chair creak' },
+                    { id: 'violin_finale_coda', left: '82%', width: '17%', title: 'Finale and coda' },
+                    { id: 'violin_sneeze', left: '84%', width: '2%', title: 'Sneeze' },
+                    { id: 'violin_string_snap', left: '92%', width: '1%', title: 'String snap' },
+                    { id: 'violin_tuning', left: '95%', width: '2%', title: 'Quick tuning' }
+                ]
+            },
+            'brass-section': {
+                name: 'Brass_Section',
+                displayName: 'Layer 2',
+                color: '#f39c12',
+                baseHeight: 60,
+                clips: [
+                    { id: 'brass_fanfare_opening', left: '2%', width: '20%', title: 'Grand brass fanfare opening' },
+                    { id: 'trumpet_spit', left: '22%', width: '1%', title: 'Trumpet spit valve' },
+                    { id: 'brass_harmonic_development', left: '24%', width: '18%', title: 'Brass harmonic development section' },
+                    { id: 'trombone_bump', left: '42%', width: '2%', title: 'Trombone stand bump' },
+                    { id: 'brass_chorale_movement', left: '45%', width: '25%', title: 'Majestic brass chorale movement' },
+                    { id: 'horn_cough', left: '70%', width: '2%', title: 'French horn cough' },
+                    { id: 'brass_climactic_finale', left: '73%', width: '24%', title: 'Climactic brass finale with all sections' },
+                    { id: 'brass_valve_click', left: '85%', width: '1%', title: 'Valve click' },
+                    { id: 'tuba_wheeze', left: '90%', width: '2%', title: 'Tuba player wheeze' },
+                    { id: 'trombone_slide_squeak', left: '95%', width: '1%', title: 'Slide squeak' }
+                ]
+            },
+            'woodwind-section': {
+                name: 'Woodwind_Section',
+                displayName: 'Layer 3',
+                color: '#27ae60',
+                baseHeight: 95,
+                clips: [
+                    { id: 'woodwind_pastoral_opening', left: '1%', width: '16%', title: 'Pastoral woodwind opening with flute and oboe' },
+                    { id: 'clarinet_squeak', left: '17%', width: '1%', title: 'Clarinet squeak' },
+                    { id: 'woodwind_development', left: '19%', width: '21%', title: 'Woodwind development with clarinet scales and bassoon' },
+                    { id: 'oboe_reed_pop', left: '40%', width: '1%', title: 'Oboe reed pop' },
+                    { id: 'woodwind_ensemble_movement', left: '42%', width: '26%', title: 'Full woodwind ensemble movement' },
+                    { id: 'flute_key_click', left: '68%', width: '1%', title: 'Flute key click' },
+                    { id: 'piccolo_screech', left: '70%', width: '1%', title: 'Piccolo screech' },
+                    { id: 'woodwind_harmonic_finale', left: '72%', width: '25%', title: 'Woodwind harmonic finale with all sections' },
+                    { id: 'clarinet_cough', left: '80%', width: '2%', title: 'Clarinetist cough' },
+                    { id: 'flute_breath_pop', left: '90%', width: '1%', title: 'Breath pop' },
+                    { id: 'sax_honk', left: '93%', width: '2%', title: 'Saxophone honk' },
+                    { id: 'woodwind_rustle', left: '96%', width: '1%', title: 'Music stand rustle' }
+                ]
+            },
+            'percussion-section': {
+                name: 'Percussion_Section',
+                displayName: 'Layer 4',
+                color: '#9b59b6',
+                baseHeight: 130,
+                clips: [
+                    { id: 'percussion_rhythmic_foundation', left: '3%', width: '28%', title: 'Rhythmic foundation - timpani, snare, and ensemble' },
+                    { id: 'cymbal_touch', left: '31%', width: '1%', title: 'Accidental cymbal touch' },
+                    { id: 'percussion_melodic_section', left: '33%', width: '22%', title: 'Melodic percussion - xylophone and mallet instruments' },
+                    { id: 'stick_drop', left: '55%', width: '1%', title: 'Drumstick drop' },
+                    { id: 'timpani_foot_tap', left: '57%', width: '1%', title: 'Foot pedal tap' },
+                    { id: 'percussion_dramatic_build', left: '59%', width: '28%', title: 'Dramatic build with all percussion to finale' },
+                    { id: 'triangle_ding', left: '73%', width: '1%', title: 'Early triangle' },
+                    { id: 'drum_rim_hit', left: '80%', width: '1%', title: 'Rim shot' },
+                    { id: 'percussion_cough', left: '85%', width: '2%', title: 'Percussionist cough' },
+                    { id: 'mallet_drop', left: '90%', width: '1%', title: 'Mallet drop' },
+                    { id: 'snare_buzz', left: '95%', width: '2%', title: 'Snare buzz' }
+                ]
+            }
+        }
+    },
+
+    /**
+     * VOCAL HARMONY: vocal_harmony.wav
+     * 
+     * Medium difficulty - Volume leveling task with single layer
+     * Simple structure focusing on precision volume matching
+     */
+    'vocal_harmony.wav': {
+        name: 'vocal_harmony.wav',
+        totalDuration: 120, // 2 minutes
+        gradientClass: 'vocal-waveform-gradient',
+        layers: {
+            'vocal-track': {
+                name: 'Vocal_Track',
+                displayName: 'Layer 1',
+                color: '#e67e22',
+                baseHeight: 50,
+                clips: [
+                    { id: 'verse_one', left: '5%', width: '20%', title: 'First verse - needs boost' },
+                    { id: 'chorus_one', left: '28%', width: '22%', title: 'First chorus - too loud' },
+                    { id: 'verse_two', left: '53%', width: '18%', title: 'Second verse - good level' },
+                    { id: 'chorus_two', left: '73%', width: '22%', title: 'Second chorus - needs boost' },
+                    { id: 'outro_whisper', left: '96%', width: '3%', title: 'Whispered outro - needs major boost' }
+                ]
+            }
+        }
+    },
+
+    /**
+     * GETAWAY ANALYSIS: getaway_analysis.wav
+     * 
+     * Easy difficulty - Simple noise removal to reveal evidence
+     * Minimal complexity with just 2 layers and 2 clips
+     */
+    'getaway_analysis.wav': {
+        name: 'getaway_analysis.wav',
+        totalDuration: 10, // Very short and focused
+        gradientClass: 'forensic-waveform-gradient',
+        layers: {
+            'digital-corruption': {
+                name: 'Digital_Corruption',
+                displayName: 'Layer 1',
+                color: '#e74c3c',
+                baseHeight: 40,
+                clips: [
+                    { id: 'recording_static', left: '5%', width: '90%', title: 'Digital corruption masking evidence' }
+                ]
+            },
+            'engine-signature': {
+                name: 'Engine_Signature',
+                displayName: 'Layer 2',
+                color: '#3498db',
+                baseHeight: 80,
+                clips: [
+                    { id: 'vehicle_engine', left: '10%', width: '80%', title: 'Hidden engine sound signature' }
+                ]
+            }
+        }
+    },
+
+    /**
+     * SEASONAL BIRDS: seasonal_birds.wav
+     * 
+     * Medium difficulty - Isolate specific bird call among forest sounds
+     * Overlapping layers requiring careful frequency separation
+     */
+    'seasonal_birds.wav': {
+        name: 'seasonal_birds.wav',
+        totalDuration: 20, // Short but intense
+        gradientClass: 'nature-waveform-gradient',
+        layers: {
+            'target-bird-call': {
+                name: 'Target_Bird_Call',
+                displayName: 'Layer 1',
+                color: '#27ae60',
+                baseHeight: 30,
+                clips: [
+                    { id: 'robin_spring_song', left: '25%', width: '50%', title: 'Robin territorial call - spring indicator' }
+                ]
+            },
+            'forest-ambience': {
+                name: 'Forest_Ambience',
+                displayName: 'Layer 2',
+                color: '#2c3e50',
+                baseHeight: 70,
+                clips: [
+                    { id: 'wind_through_leaves', left: '10%', width: '40%', title: 'Wind masking bird call' },
+                    { id: 'distant_stream', left: '60%', width: '35%', title: 'Stream noise interference' }
+                ]
+            },
+            'viola-breathing': {
+                name: 'Viola_Breathing',
+                displayName: 'Layer 3',
+                color: '#8e44ad',
+                baseHeight: 110,
+                clips: [
+                    { id: 'recording_breath', left: '15%', width: '70%', title: 'Viola recording herself - why?' }
+                ]
+            },
+            'unknown-presence': {
+                name: 'Unknown_Presence',
+                displayName: 'Layer 4',
+                color: '#e74c3c',
+                baseHeight: 150,
+                clips: [
+                    { id: 'footsteps_nearby', left: '45%', width: '25%', title: 'Someone else is there...' }
+                ]
+            }
+        }
+    },
+
+    /**
+     * MORSE TRANSMISSION: morse_transmission.wav
+     * 
+     * Medium-Hard difficulty - Careful noise reduction to reveal morse code
+     * Requires precise balance between noise removal and signal preservation
+     */
+    'morse_transmission.wav': {
+        name: 'morse_transmission.wav',
+        totalDuration: 32, // Standard length
+        gradientClass: 'transmission-waveform-gradient',
+        layers: {
+            'static-noise': {
+                name: 'Static_Noise',
+                displayName: 'Layer 1',
+                color: '#95a5a6',
+                baseHeight: 45,
+                clips: [
+                    { id: 'radio_interference', left: '5%', width: '90%', title: 'Heavy static masking transmission' }
+                ]
+            },
+            'morse-dots': {
+                name: 'Morse_Dots',
+                displayName: 'Layer 2',
+                color: '#3498db',
+                baseHeight: 85,
+                clips: [
+                    { id: 'dot_sequence_1', left: '20%', width: '15%', title: 'Morse dots: S.O.S' },
+                    { id: 'dot_sequence_2', left: '65%', width: '12%', title: 'Morse dots: coordinates' }
+                ]
+            },
+            'morse-dashes': {
+                name: 'Morse_Dashes',
+                displayName: 'Layer 3',
+                color: '#e67e22',
+                baseHeight: 125,
+                clips: [
+                    { id: 'dash_sequence_1', left: '38%', width: '18%', title: 'Morse dashes: emergency signal' },
+                    { id: 'dash_sequence_2', left: '80%', width: '15%', title: 'Morse dashes: location data' }
+                ]
+            }
+        }
+    },
+
+    /**
+     * MURDER EVIDENCE: murder_evidence.wav
+     * 
+     * MAXIMUM COMPLEXITY - 12 layers, 85+ clips
+     * Extreme difficulty haystack scenario with overwhelming number of distractors
+     * Player must find 3 specific clips among 80+ creepy distractors
+     */
+    'murder_evidence.wav': {
+        name: 'murder_evidence.wav',
+        totalDuration: 900, // 15 minutes - very long investigation
+        gradientClass: 'horror-waveform-gradient',
+        layers: {
+            'victim-voices': {
+                name: 'Victim_Voices',
+                displayName: 'Layer 1',
+                color: '#e74c3c',
+                baseHeight: 20,
+                clips: [
+                    { id: 'scream_1', left: '3%', width: '2%', title: 'Terrified scream' },
+                    { id: 'plea_for_help', left: '8%', width: '3%', title: 'Please help me' },
+                    { id: 'gasping_breath', left: '15%', width: '2%', title: 'Final gasps' },
+                    { id: 'green_hat_clue', left: '22%', width: '4%', title: 'The gardner wore a green hat' }, // KEY CLUE 1
+                    { id: 'crying_voice', left: '30%', width: '3%', title: 'Sobbing victim' },
+                    { id: 'muffled_words', left: '37%', width: '3%', title: 'Muffled speech' },
+                    { id: 'death_rattle', left: '44%', width: '2%', title: 'Death rattle' },
+                    { id: 'whispered_name', left: '51%', width: '3%', title: 'Whispered name' },
+                    { id: 'choking_sound', left: '58%', width: '2%', title: 'Choking sounds' },
+                    { id: 'last_word_mama', left: '65%', width: '2%', title: 'Last word: mama' },
+                    { id: 'gurgling_voice', left: '72%', width: '3%', title: 'Gurgling voice' },
+                    { id: 'final_scream', left: '79%', width: '3%', title: 'Final terrified scream' },
+                    { id: 'weakening_voice', left: '86%', width: '3%', title: 'Voice growing weak' },
+                    { id: 'silence_after', left: '93%', width: '2%', title: 'Eerie silence' }
+                ]
+            },
+            'ghostly-whispers': {
+                name: 'Ghostly_Whispers',
+                displayName: 'Layer 2',
+                color: '#8e44ad',
+                baseHeight: 45,
+                clips: [
+                    { id: 'spectral_voice_1', left: '5%', width: '3%', title: 'Ghostly whisper' },
+                    { id: 'vengeful_spirit', left: '12%', width: '4%', title: 'Vengeful spirit' },
+                    { id: 'gasoline_smell_clue', left: '19%', width: '4%', title: 'The green hat smelt like gasoline' }, // KEY CLUE 2
+                    { id: 'haunting_moan', left: '27%', width: '3%', title: 'Haunting moan' },
+                    { id: 'spirit_warning', left: '34%', width: '4%', title: 'Spirit warning' },
+                    { id: 'otherworldly_voice', left: '42%', width: '3%', title: 'Otherworldly voice' },
+                    { id: 'phantom_laugh', left: '49%', width: '2%', title: 'Phantom laughter' },
+                    { id: 'ghostly_sob', left: '56%', width: '3%', title: 'Ghostly sobbing' },
+                    { id: 'spectral_scream', left: '63%', width: '3%', title: 'Spectral scream' },
+                    { id: 'restless_spirit', left: '70%', width: '4%', title: 'Restless spirit' },
+                    { id: 'phantom_voice', left: '78%', width: '3%', title: 'Phantom voice' },
+                    { id: 'unearthly_whisper', left: '85%', width: '3%', title: 'Unearthly whisper' },
+                    { id: 'spirit_departure', left: '92%', width: '3%', title: 'Spirit departure' }
+                ]
+            },
+            'environmental-sounds': {
+                name: 'Environmental_Sounds',
+                displayName: 'Layer 3',
+                color: '#27ae60',
+                baseHeight: 70,
+                clips: [
+                    { id: 'creaking_door', left: '4%', width: '2%', title: 'Creaking door' },
+                    { id: 'wind_howling', left: '10%', width: '4%', title: 'Wind howling' },
+                    { id: 'footsteps_running', left: '18%', width: '3%', title: 'Running footsteps' },
+                    { id: 'glass_breaking', left: '25%', width: '2%', title: 'Glass breaking' },
+                    { id: 'burned_to_death_clue', left: '32%', width: '4%', title: 'The victim was burned to death' }, // KEY CLUE 3
+                    { id: 'floorboard_creak', left: '40%', width: '2%', title: 'Floorboard creak' },
+                    { id: 'door_slam', left: '47%', width: '2%', title: 'Door slamming' },
+                    { id: 'window_rattle', left: '54%', width: '3%', title: 'Window rattling' },
+                    { id: 'chains_dragging', left: '61%', width: '4%', title: 'Chains dragging' },
+                    { id: 'water_dripping', left: '69%', width: '3%', title: 'Water dripping' },
+                    { id: 'fire_crackling', left: '76%', width: '3%', title: 'Fire crackling' },
+                    { id: 'thunder_distant', left: '83%', width: '4%', title: 'Distant thunder' },
+                    { id: 'leaves_rustling', left: '91%', width: '3%', title: 'Leaves rustling' }
+                ]
+            },
+            'electrical-interference': {
+                name: 'Electrical_Interference',
+                displayName: 'Layer 4',
+                color: '#1abc9c',
+                baseHeight: 95,
+                clips: [
+                    { id: 'static_burst_1', left: '6%', width: '3%', title: 'Static burst' },
+                    { id: 'radio_crackle', left: '13%', width: '4%', title: 'Radio crackle' },
+                    { id: 'electronic_hum', left: '21%', width: '5%', title: 'Electronic hum' },
+                    { id: 'frequency_sweep', left: '30%', width: '3%', title: 'Frequency sweep' },
+                    { id: 'digital_glitch', left: '37%', width: '2%', title: 'Digital glitch' },
+                    { id: 'power_surge', left: '44%', width: '3%', title: 'Power surge' },
+                    { id: 'electromagnetic_pulse', left: '51%', width: '4%', title: 'Electromagnetic pulse' },
+                    { id: 'circuit_feedback', left: '59%', width: '3%', title: 'Circuit feedback' },
+                    { id: 'voltage_spike', left: '66%', width: '2%', title: 'Voltage spike' },
+                    { id: 'static_burst_2', left: '73%', width: '3%', title: 'Another static burst' },
+                    { id: 'interference_wave', left: '80%', width: '4%', title: 'Interference wave' },
+                    { id: 'electronic_screech', left: '88%', width: '3%', title: 'Electronic screech' }
+                ]
+            },
+            'breathing-presence': {
+                name: 'Breathing_Presence',
+                displayName: 'Layer 5',
+                color: '#f39c12',
+                baseHeight: 120,
+                clips: [
+                    { id: 'heavy_breathing_1', left: '7%', width: '5%', title: 'Heavy breathing' },
+                    { id: 'viola_recording', left: '16%', width: '6%', title: 'Viola recording presence' },
+                    { id: 'panicked_gasps', left: '26%', width: '4%', title: 'Panicked gasping' },
+                    { id: 'slow_exhale', left: '35%', width: '5%', title: 'Slow, deliberate exhale' },
+                    { id: 'frightened_breathing', left: '44%', width: '4%', title: 'Frightened breathing' },
+                    { id: 'labored_breath', left: '53%', width: '5%', title: 'Labored breathing' },
+                    { id: 'whispered_breath', left: '62%', width: '4%', title: 'Whispered breath' },
+                    { id: 'dying_gasp', left: '71%', width: '3%', title: 'Dying gasp' },
+                    { id: 'shallow_breathing', left: '79%', width: '4%', title: 'Shallow breathing' },
+                    { id: 'final_breath', left: '87%', width: '3%', title: 'Final breath' },
+                    { id: 'silence_breath', left: '95%', width: '2%', title: 'Breathless silence' }
+                ]
+            },
+            'temporal-echoes': {
+                name: 'Temporal_Echoes',
+                displayName: 'Layer 6',
+                color: '#e67e22',
+                baseHeight: 145,
+                clips: [
+                    { id: 'time_distortion_1', left: '11%', width: '6%', title: 'Time distortion effect' },
+                    { id: 'echo_from_past', left: '23%', width: '7%', title: 'Echo from the past' },
+                    { id: 'temporal_loop', left: '35%', width: '5%', title: 'Temporal loop' },
+                    { id: 'reality_shift', left: '46%', width: '6%', title: 'Reality shift' },
+                    { id: 'time_slip_voice', left: '57%', width: '5%', title: 'Voice from another time' },
+                    { id: 'chronos_whisper', left: '68%', width: '6%', title: 'Chronos whisper' },
+                    { id: 'past_bleeding', left: '79%', width: '5%', title: 'Past bleeding through' },
+                    { id: 'temporal_fragment', left: '89%', width: '4%', title: 'Temporal fragment' }
+                ]
+            },
+            'mechanical-disturbance': {
+                name: 'Mechanical_Disturbance',
+                displayName: 'Layer 7',
+                color: '#34495e',
+                baseHeight: 170,
+                clips: [
+                    { id: 'grinding_gears', left: '5%', width: '3%', title: 'Grinding gears' },
+                    { id: 'metal_scraping', left: '12%', width: '4%', title: 'Metal scraping' },
+                    { id: 'machinery_hum', left: '20%', width: '5%', title: 'Machinery hum' },
+                    { id: 'hydraulic_hiss', left: '29%', width: '3%', title: 'Hydraulic hiss' },
+                    { id: 'motor_grinding', left: '36%', width: '4%', title: 'Motor grinding' },
+                    { id: 'belt_slipping', left: '44%', width: '3%', title: 'Belt slipping' },
+                    { id: 'pump_cycling', left: '51%', width: '4%', title: 'Pump cycling' },
+                    { id: 'compressor_kick', left: '59%', width: '3%', title: 'Compressor kick' },
+                    { id: 'fan_blade_wobble', left: '66%', width: '4%', title: 'Fan blade wobble' },
+                    { id: 'valve_release', left: '74%', width: '3%', title: 'Valve release' },
+                    { id: 'bearing_squeal', left: '81%', width: '4%', title: 'Bearing squeal' },
+                    { id: 'mechanical_death', left: '89%', width: '3%', title: 'Mechanical death rattle' }
+                ]
+            },
+            'psychic-emanations': {
+                name: 'Psychic_Emanations',
+                displayName: 'Layer 8',
+                color: '#9b59b6',
+                baseHeight: 195,
+                clips: [
+                    { id: 'psychic_scream', left: '8%', width: '4%', title: 'Psychic scream' },
+                    { id: 'mental_anguish', left: '17%', width: '5%', title: 'Mental anguish' },
+                    { id: 'telepathic_cry', left: '27%', width: '4%', title: 'Telepathic cry' },
+                    { id: 'emotional_residue', left: '36%', width: '6%', title: 'Emotional residue' },
+                    { id: 'soul_fragment', left: '47%', width: '4%', title: 'Soul fragment' },
+                    { id: 'astral_whisper', left: '56%', width: '5%', title: 'Astral whisper' },
+                    { id: 'psychic_imprint', left: '66%', width: '4%', title: 'Psychic imprint' },
+                    { id: 'consciousness_echo', left: '75%', width: '5%', title: 'Consciousness echo' },
+                    { id: 'mind_fragment', left: '84%', width: '4%', title: 'Mind fragment' },
+                    { id: 'final_thought', left: '92%', width: '3%', title: 'Final thought' }
+                ]
+            },
+            'viola-manifestation': {
+                name: 'Viola_Manifestation',
+                displayName: 'Layer 9',
+                color: '#2c3e50',
+                baseHeight: 220,
+                clips: [
+                    { id: 'viola_humming', left: '9%', width: '5%', title: 'Viola humming eerily' },
+                    { id: 'piano_keys_ghost', left: '19%', width: '4%', title: 'Phantom piano keys' },
+                    { id: 'viola_whisper_1', left: '28%', width: '5%', title: 'Viola whispering incantation' },
+                    { id: 'spectral_melody', left: '38%', width: '6%', title: 'Spectral melody' },
+                    { id: 'viola_laugh_dark', left: '49%', width: '4%', title: 'Viola dark laughter' },
+                    { id: 'otherworld_song', left: '58%', width: '5%', title: 'Otherworldly song' },
+                    { id: 'viola_whisper_2', left: '68%', width: '4%', title: 'Viola calling the dead' },
+                    { id: 'haunted_harmony', left: '77%', width: '5%', title: 'Haunted harmony' },
+                    { id: 'viola_summoning', left: '86%', width: '6%', title: 'Viola summoning spirits' }
+                ]
+            },
+            'dimensional-tears': {
+                name: 'Dimensional_Tears',
+                displayName: 'Layer 10',
+                color: '#16a085',
+                baseHeight: 245,
+                clips: [
+                    { id: 'reality_rip_1', left: '6%', width: '4%', title: 'Reality tearing open' },
+                    { id: 'void_whispers', left: '15%', width: '5%', title: 'Whispers from the void' },
+                    { id: 'dimensional_scream', left: '25%', width: '4%', title: 'Dimensional scream' },
+                    { id: 'space_fold', left: '34%', width: '5%', title: 'Space folding' },
+                    { id: 'reality_rip_2', left: '43%', width: '4%', title: 'Another reality tear' },
+                    { id: 'void_breathing', left: '52%', width: '6%', title: 'Void breathing' },
+                    { id: 'dimensional_shift', left: '63%', width: '4%', title: 'Dimensional shift' },
+                    { id: 'cosmos_weeping', left: '72%', width: '5%', title: 'Cosmos weeping' },
+                    { id: 'reality_collapse', left: '81%', width: '6%', title: 'Reality collapse' },
+                    { id: 'void_silence', left: '91%', width: '4%', title: 'Void silence' }
+                ]
+            },
+            'corrupted-data': {
+                name: 'Corrupted_Data',
+                displayName: 'Layer 11',
+                color: '#c0392b',
+                baseHeight: 270,
+                clips: [
+                    { id: 'data_corruption_1', left: '4%', width: '3%', title: 'Data corruption' },
+                    { id: 'file_decay', left: '11%', width: '4%', title: 'File decay' },
+                    { id: 'binary_screams', left: '19%', width: '3%', title: 'Binary screams' },
+                    { id: 'digital_decomp', left: '26%', width: '4%', title: 'Digital decomposition' },
+                    { id: 'data_corruption_2', left: '34%', width: '3%', title: 'More data corruption' },
+                    { id: 'system_death', left: '41%', width: '4%', title: 'System death' },
+                    { id: 'corrupted_memory', left: '49%', width: '5%', title: 'Corrupted memory' },
+                    { id: 'digital_ghost', left: '58%', width: '4%', title: 'Digital ghost' },
+                    { id: 'file_fragmentation', left: '66%', width: '4%', title: 'File fragmentation' },
+                    { id: 'data_corruption_3', left: '74%', width: '3%', title: 'Final data corruption' },
+                    { id: 'system_flatline', left: '81%', width: '4%', title: 'System flatline' },
+                    { id: 'digital_silence', left: '89%', width: '3%', title: 'Digital silence' }
+                ]
+            },
+            'the-imprinted': {
+                name: 'The_Imprinted',
+                displayName: 'Layer 12',
+                color: '#8b0000',
+                baseHeight: 295,
+                clips: [
+                    { id: 'imprinted_voice_1', left: '10%', width: '6%', title: 'First Imprinted voice' },
+                    { id: 'soul_trapped', left: '21%', width: '5%', title: 'Trapped soul crying' },
+                    { id: 'imprinted_collective', left: '31%', width: '7%', title: 'Imprinted collective wail' },
+                    { id: 'digital_purgatory', left: '43%', width: '6%', title: 'Digital purgatory' },
+                    { id: 'imprinted_voice_2', left: '54%', width: '5%', title: 'Second Imprinted voice' },
+                    { id: 'eternal_suffering', left: '64%', width: '6%', title: 'Eternal suffering' },
+                    { id: 'imprinted_chorus', left: '75%', width: '7%', title: 'Chorus of the Imprinted' },
+                    { id: 'digital_hell', left: '87%', width: '5%', title: 'Digital hell' },
+                    { id: 'final_imprint', left: '96%', width: '3%', title: 'Final imprint' }
+                ]
+            }
+        }
     }
 };
 
@@ -294,7 +781,6 @@ const AUDIO_CONFIGS = {
  * □ Added configuration object to AUDIO_CONFIGS
  * □ Created gradient class in gradients.css
  * □ Added CSS color rules in index.html (individual + merged view)
- * □ Verified all clip widths are ≤25%
  * □ Tested layer creation and analysis game
  * □ Checked for layer ID conflicts
  * □ Ensured proper baseHeight spacing
