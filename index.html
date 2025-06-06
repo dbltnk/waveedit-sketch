@@ -7,6 +7,48 @@
     <title>FMOD Music Editor</title>
     <link rel="stylesheet" href="gradients.css">
     <style>
+        :root {
+            /* Color Variables */
+            --primary-purple: #9b59b6;
+            --primary-purple-dark: #8e44ad;
+            --primary-red: #e74c3c;
+            --primary-red-dark: #c0392b;
+            --primary-orange: #f39c12;
+            --primary-green: #27ae60;
+            --primary-blue: #3498db;
+            --primary-teal: #1abc9c;
+            --primary-gray: #95a5a6;
+            --primary-dark-blue: #34495e;
+            --primary-dark-blue-alt: #2c3e50;
+
+            /* Background Colors */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2a2a2a;
+            --bg-tertiary: #333;
+            --bg-darker: #1e1e1e;
+            --bg-transport: #252525;
+            --bg-plugin-active: #443355;
+            --bg-menu: #2c2c2c;
+            --bg-hover: #404040;
+            --bg-hover-light: #505050;
+            --border-color: #444;
+            --border-color-light: #555;
+            --border-color-medium: #666;
+
+            /* Text Colors */
+            --text-primary: #ffffff;
+            --text-secondary: #ecf0f1;
+            --text-muted: #888;
+            --text-light: #aaa;
+            --text-very-light: #95a5a6;
+
+            /* Effects */
+            --shadow-subtle: 0 3px 8px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 10px rgba(243, 156, 18, 0.3);
+            --transition-fast: all 0.2s ease;
+            --transition-hover: all 0.1s ease;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,9 +57,25 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a1a;
-            color: #ffffff;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             overflow: hidden;
+        }
+
+        /* Common Button Base */
+        .btn-base {
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+        }
+
+        .btn-round {
+            border-radius: 50%;
+        }
+
+        .btn-rounded {
+            border-radius: 5px;
         }
 
         /* Main App Layout */
@@ -40,12 +98,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 15px;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
-        }
-
-        .waveedit .title-bar {
-            background: linear-gradient(90deg, #8e44ad, #9b59b6);
+            background: linear-gradient(90deg, var(--primary-purple-dark), var(--primary-purple));
         }
 
         .title-text {
@@ -61,26 +116,27 @@
         }
 
         .window-btn {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
             border: none;
             cursor: pointer;
+            transition: var(--transition-fast);
+            font-weight: bold;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
             font-size: 12px;
             color: white;
-            font-weight: bold;
         }
 
         .minimize {
-            background: #f39c12;
+            background: var(--primary-orange);
         }
 
         .maximize {
-            background: #27ae60;
+            background: var(--primary-green);
         }
 
         .close {
-            background: #e74c3c;
+            background: var(--primary-red);
         }
 
         /* Menu Bar */
@@ -89,8 +145,8 @@
             display: flex;
             align-items: center;
             padding: 0 15px;
-            background: #2c2c2c;
-            border-bottom: 1px solid #444;
+            background: var(--bg-menu);
+            border-bottom: 1px solid var(--border-color);
             gap: 20px;
             flex-shrink: 0;
         }
@@ -99,11 +155,11 @@
             cursor: pointer;
             padding: 5px 10px;
             border-radius: 3px;
-            transition: background 0.2s;
+            transition: var(--transition-fast);
         }
 
         .menu-item:hover {
-            background: #404040;
+            background: var(--bg-hover);
         }
 
         /* Main Content */
@@ -114,70 +170,30 @@
             position: relative;
         }
 
-        /* Left Panel (Tools for WaveEdit) */
-        .left-panel {
-            width: 200px;
-            background: #2a2a2a;
-            border-right: 1px solid #444;
+        /* Panel Base */
+        .panel-base {
+            background: var(--bg-secondary);
             padding: 10px;
             overflow-y: auto;
             flex-shrink: 0;
         }
 
-        .plugin-section {
-            margin-bottom: 15px;
-            border: 1px solid #555;
-            border-radius: 5px;
+        .left-panel {
+            background: var(--bg-secondary);
             padding: 10px;
-            background: #333;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
+            overflow-y: auto;
+            flex-shrink: 0;
+            width: 200px;
+            border-right: 1px solid var(--border-color);
         }
 
-        .plugin-section:hover:not(.disabled) {
-            background: #404040;
-            border-color: #9b59b6;
-        }
-
-        .plugin-section.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .plugin-section.active {
-            border-color: #9b59b6;
-            background: #443355;
-        }
-
-        .plugin-section.active .plugin-title {
-            color: #9b59b6;
-        }
-
-        .plugin-section.active .checkbox {
-            background: #9b59b6;
-            border-color: #9b59b6;
-        }
-
-        .plugin-section.active .checkbox::after {
-            content: '✓';
-            color: white;
-            font-size: 12px;
-            line-height: 1;
-        }
-
-        .plugin-section.disabled .checkbox {
-            opacity: 0.3;
-            pointer-events: none;
-        }
-
-        .plugin-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        .right-panel {
+            background: var(--bg-secondary);
+            padding: 10px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            width: 200px;
+            border-left: 1px solid var(--border-color);
         }
 
         /* Center Panel */
@@ -185,7 +201,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #1e1e1e;
+            background: var(--bg-darker);
             overflow: hidden;
             position: relative;
         }
@@ -193,8 +209,8 @@
         /* Transport Controls */
         .transport-controls {
             height: 60px;
-            background: #252525;
-            border-bottom: 1px solid #444;
+            background: var(--bg-transport);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             padding: 0 20px;
@@ -203,24 +219,26 @@
         }
 
         .transport-btn {
+            border: none;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            font-weight: bold;
+            border-radius: 5px;
             width: 40px;
             height: 40px;
-            border: none;
-            border-radius: 5px;
-            background: #404040;
+            background: var(--bg-hover);
             color: white;
-            cursor: pointer;
             font-size: 16px;
         }
 
         .transport-btn:hover {
-            background: #505050;
+            background: var(--bg-hover-light);
         }
 
         .time-display {
             margin-left: auto;
             font-family: 'Courier New', monospace;
-            background: #1a1a1a;
+            background: var(--bg-primary);
             padding: 8px 15px;
             border-radius: 5px;
         }
@@ -235,7 +253,7 @@
 
         .timeline-ruler {
             height: 30px;
-            background: #2a2a2a;
+            background: var(--bg-secondary);
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -246,14 +264,14 @@
         .time-marker {
             margin-right: 40px;
             font-size: 12px;
-            color: #aaa;
+            color: var(--text-light);
         }
 
         /* Merged View */
         .merged-view {
             height: 240px;
             /* Increased from 80px to 240px */
-            background: #333;
+            background: var(--bg-tertiary);
             margin-bottom: 20px;
             border-radius: 5px;
             position: relative;
@@ -266,7 +284,7 @@
             top: 5px;
             left: 10px;
             font-size: 12px;
-            color: #aaa;
+            color: var(--text-light);
             z-index: 20;
         }
 
@@ -280,7 +298,7 @@
         #merged .track-content {
             height: 240px !important;
             /* Match merged view height */
-            background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%);
+            background: linear-gradient(90deg, var(--primary-dark-blue-alt) 0%, var(--primary-dark-blue-alt) 100%);
             position: relative;
         }
 
@@ -294,12 +312,10 @@
             opacity: 0.8;
         }
 
-
-
         /* Track Layers */
         .track-layer {
             height: 60px;
-            background: #2a2a2a;
+            background: var(--bg-secondary);
             margin-bottom: 10px;
             border-radius: 5px;
             display: flex;
@@ -329,7 +345,7 @@
             height: 30px;
             margin-left: 20px;
             position: relative;
-            background: #1a1a1a;
+            background: var(--bg-primary);
             border-radius: 3px;
         }
 
@@ -349,19 +365,19 @@
 
         .analyze-btn {
             padding: 8px 16px;
-            background: #9b59b6;
+            background: var(--primary-purple);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            transition: all 0.2s ease;
+            transition: var(--transition-fast);
         }
 
         .analyze-btn:hover {
-            background: #8e44ad;
+            background: var(--primary-purple-dark);
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-subtle);
         }
 
         /* Analysis minigame styles */
@@ -543,8 +559,6 @@
         #merged .audio-clip[data-layer="ambient-static-wave"] {
             color: #34495e;
         }
-
-
 
         .audio-clip:hover {
             transform: translateY(-1px);
@@ -728,54 +742,6 @@
             transition: opacity 0.3s ease;
         }
 
-        /* Right Panel (Tools for WaveEdit) */
-        .right-panel {
-            width: 200px;
-            background: #2a2a2a;
-            border-left: 1px solid #444;
-            padding: 10px;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-
-        .tools-header {
-            font-size: 16px;
-            font-weight: bold;
-            color: #ecf0f1;
-            padding: 10px 0;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #444;
-            text-align: center;
-        }
-
-        /* Clip effect icons */
-        .clip-effect {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            font-size: 8px;
-            z-index: 10;
-            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
-            line-height: 1;
-        }
-
-        .clip-effect+.clip-effect {
-            left: 14px;
-        }
-
-        .clip-effect+.clip-effect+.clip-effect {
-            left: 26px;
-        }
-
-        .clip-effect+.clip-effect+.clip-effect+.clip-effect {
-            left: 38px;
-        }
-
-        /* Hide effect icons in merged view */
-        #merged .clip-effect {
-            display: none;
-        }
-
         /* Selected Clip Display */
         .selected-clip-display {
             background: #2a2a2a;
@@ -855,8 +821,6 @@
             border: 1px solid #444;
         }
 
-
-
         /* Add slider styles */
         .slider-container {
             margin: 8px 0;
@@ -916,6 +880,78 @@
 
         .plugin-section.disabled .slider-labels {
             opacity: 0.3;
+        }
+
+        /* Plugin sections */
+        .plugin-section {
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color-light);
+            border-radius: 5px;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            position: relative;
+        }
+
+        .plugin-section:hover:not(.disabled) {
+            background: var(--bg-hover);
+            border-color: var(--primary-purple);
+        }
+
+        .plugin-section.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .plugin-section.active {
+            border-color: var(--primary-purple);
+            background: var(--bg-plugin-active);
+        }
+
+        .plugin-section.active .plugin-title {
+            color: var(--primary-purple);
+        }
+
+        .plugin-section.active .checkbox {
+            background: var(--primary-purple);
+            border-color: var(--primary-purple);
+        }
+
+        .plugin-section.active .checkbox::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .plugin-section.disabled .checkbox {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .plugin-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 3px;
+            background: transparent;
         }
 
         /* Ensure other track layers maintain their original height */
@@ -1084,131 +1120,65 @@
                     <div class="selected-clip-waveform"></div>
                 </div>
                 <div id="tools-container" class="tools-container" style="display: none;">
-                    <div class="plugin-section disabled" onclick="selectPlugin('mute')">
-                        <div class="plugin-title">🔇 Mute</div>
-                        <div style="font-size: 11px; color: #888;">Toggle clip muting</div>
-                        <div class="checkbox"></div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('noise')">
-                        <div class="plugin-title">🌫 Noise Reduction</div>
-                        <div style="font-size: 11px; color: #888;">Remove noise/reverb/echo</div>
-                        <div class="checkbox"></div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('voice')">
-                        <div class="plugin-title">🎤 Voice Boost</div>
-                        <div style="font-size: 11px; color: #888;">Enhance voice clarity</div>
-                        <div class="checkbox"></div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('reverse')">
-                        <div class="plugin-title">↔ Reverse</div>
-                        <div style="font-size: 11px; color: #888;">Reverse audio playback</div>
-                        <div class="checkbox"></div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('stereo')">
-                        <div class="plugin-title">🎧 Stereo/Mono</div>
-                        <div style="font-size: 11px; color: #888;">Toggle stereo/mono mode</div>
-                        <div class="checkbox"></div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('volume')">
-                        <div class="plugin-title">🔊 Volume</div>
-                        <div class="slider-container">
-                            <div class="slider-labels">
-                                <span>Mute</span>
-                                <span>Max</span>
-                            </div>
-                            <div class="slider-track">
-                                <div class="slider-fill"></div>
-                                <div class="slider-thumb"></div>
-                            </div>
-                        </div>
-                        <div style="font-size: 11px; color: #888;">Adjust volume levels</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('pitch')">
-                        <div class="plugin-title">🎵 Pitch</div>
-                        <div class="slider-container">
-                            <div class="slider-labels">
-                                <span>Lower</span>
-                                <span>Higher</span>
-                            </div>
-                            <div class="slider-track">
-                                <div class="slider-fill"></div>
-                                <div class="slider-thumb"></div>
-                            </div>
-                        </div>
-                        <div style="font-size: 11px; color: #888;">Modify pitch</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('speed')">
-                        <div class="plugin-title">⚡ Speed</div>
-                        <div class="slider-container">
-                            <div class="slider-labels">
-                                <span>Faster</span>
-                                <span>Slower</span>
-                            </div>
-                            <div class="slider-track">
-                                <div class="slider-fill"></div>
-                                <div class="slider-thumb"></div>
-                            </div>
-                        </div>
-                        <div style="font-size: 11px; color: #888;">Adjust playback speed</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('highpass')">
-                        <div class="plugin-title">📈 High Pass</div>
-                        <div class="slider-container">
-                            <div class="slider-labels">
-                                <span>Low</span>
-                                <span>High</span>
-                            </div>
-                            <div class="slider-track">
-                                <div class="slider-fill"></div>
-                                <div class="slider-thumb"></div>
-                            </div>
-                        </div>
-                        <div style="font-size: 11px; color: #888;">High frequency cut-off</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('lowpass')">
-                        <div class="plugin-title">📉 Low Pass</div>
-                        <div class="slider-container">
-                            <div class="slider-labels">
-                                <span>Low</span>
-                                <span>High</span>
-                            </div>
-                            <div class="slider-track">
-                                <div class="slider-fill"></div>
-                                <div class="slider-thumb"></div>
-                            </div>
-                        </div>
-                        <div style="font-size: 11px; color: #888;">Low frequency cut-off</div>
-                    </div>
-
-                    <div class="plugin-section disabled" onclick="selectPlugin('bitrate')">
-                        <div class="plugin-title">💾 Bit Rate</div>
-                        <div class="slider-container">
-                            <div class="slider-labels">
-                                <span>Low</span>
-                                <span>High</span>
-                            </div>
-                            <div class="slider-track">
-                                <div class="slider-fill"></div>
-                                <div class="slider-thumb"></div>
-                            </div>
-                        </div>
-                        <div style="font-size: 11px; color: #888;">Adjust audio quality</div>
-                    </div>
+                    <!-- Plugins will be generated dynamically -->
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Data-driven layer configuration
+        const LAYER_CONFIG = {
+            'evidence-recording': {
+                name: 'Evidence_Recording',
+                displayName: 'Layer 1',
+                color: '#e74c3c',
+                baseHeight: 30,
+                background: 'linear-gradient(90deg, #555 0%, #555 100%)',
+                clips: [
+                    { id: 'initial_scream', left: '15%', width: '15%', title: 'Initial scream' },
+                    { id: 'struggle_sounds', left: '45%', width: '20%', title: 'Struggle sounds' },
+                    { id: 'last_words', left: '80%', width: '15%', title: 'Last words' }
+                ]
+            },
+            'ghost-voices': {
+                name: 'Ghost_Voices',
+                displayName: 'Layer 2',
+                color: '#8e44ad',
+                baseHeight: 90,
+                background: 'linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%)',
+                clips: [
+                    { id: 'whisper_1', left: '20%', width: '10%', title: 'Second whisper' },
+                    { id: 'whisper_2', left: '35%', width: '10%', title: 'Third whisper' },
+                    { id: 'whisper_3', left: '55%', width: '7%', title: 'Fourth whisper' },
+                    { id: 'whisper_4', left: '70%', width: '9%', title: 'Fifth whisper' }
+                ]
+            },
+            'investigation': {
+                name: 'Investigation_Notes',
+                displayName: 'Layer 3',
+                color: '#27ae60',
+                baseHeight: 150,
+                background: 'linear-gradient(90deg, #34495e 0%, #34495e 100%)',
+                clips: [
+                    { id: 'police_report', left: '40%', width: '15%', title: 'Police recording' },
+                    { id: 'witness_statement', left: '70%', width: '20%', title: 'Witness statement' }
+                ]
+            },
+            'ambient-static-wave': {
+                name: 'Ambient_Static',
+                displayName: 'Layer 4',
+                color: '#34495e',
+                baseHeight: 210,
+                background: 'linear-gradient(90deg, #1a1a1a 0%, #1a1a1a 100%)',
+                clips: [
+                    { id: 'room_tone', left: '10%', width: '20%', title: 'Room tone' },
+                    { id: 'static_burst', left: '35%', width: '20%', title: 'Static burst' },
+                    { id: 'tape_hiss', left: '70%', width: '25%', title: 'Tape hiss' }
+                ]
+            }
+        };
+
         let selectedPlugin = null;
         let selectedClip = null;
         let draggedClip = null;
@@ -1225,8 +1195,59 @@
         let clipDuration = 0;
         let isClipPlaying = false;
 
+        // Plugin configuration
+        const PLUGIN_CONFIG = [
+            { id: 'mute', icon: '🔇', name: 'Mute', type: 'toggle', description: 'Toggle clip muting' },
+            { id: 'noise', icon: '🌫', name: 'Noise Reduction', type: 'toggle', description: 'Remove noise/reverb/echo' },
+            { id: 'voice', icon: '🎤', name: 'Voice Boost', type: 'toggle', description: 'Enhance voice clarity' },
+            { id: 'reverse', icon: '↔', name: 'Reverse', type: 'toggle', description: 'Reverse audio playback' },
+            { id: 'stereo', icon: '🎧', name: 'Stereo/Mono', type: 'toggle', description: 'Toggle stereo/mono mode' },
+            { id: 'volume', icon: '🔊', name: 'Volume', type: 'slider', description: 'Adjust volume levels', range: ['Mute', 'Max'] },
+            { id: 'pitch', icon: '🎵', name: 'Pitch', type: 'slider', description: 'Modify pitch', range: ['Lower', 'Higher'] },
+            { id: 'speed', icon: '⚡', name: 'Speed', type: 'slider', description: 'Adjust playback speed', range: ['Faster', 'Slower'] },
+            { id: 'highpass', icon: '📈', name: 'High Pass', type: 'slider', description: 'High frequency cut-off', range: ['Low', 'High'] },
+            { id: 'lowpass', icon: '📉', name: 'Low Pass', type: 'slider', description: 'Low frequency cut-off', range: ['Low', 'High'] },
+            { id: 'bitrate', icon: '💾', name: 'Bit Rate', type: 'slider', description: 'Adjust audio quality', range: ['Low', 'High'] }
+        ];
+
         // Add data structure to track effects per clip
         const clipEffects = new Map(); // Maps clip ID to Set of active effects
+
+        // Plugin factory functions
+        function createTogglePlugin(plugin) {
+            return `
+                <div class="plugin-section disabled" onclick="selectPlugin('${plugin.id}')">
+                    <div class="plugin-title">${plugin.icon} ${plugin.name}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${plugin.description}</div>
+                    <div class="checkbox"></div>
+                </div>
+            `;
+        }
+
+        function createSliderPlugin(plugin) {
+            return `
+                <div class="plugin-section disabled" onclick="selectPlugin('${plugin.id}')">
+                    <div class="plugin-title">${plugin.icon} ${plugin.name}</div>
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>${plugin.range[0]}</span>
+                            <span>${plugin.range[1]}</span>
+                        </div>
+                        <div class="slider-track">
+                            <div class="slider-fill"></div>
+                            <div class="slider-thumb"></div>
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${plugin.description}</div>
+                </div>
+            `;
+        }
+
+        function generatePluginsHTML() {
+            return PLUGIN_CONFIG.map(plugin =>
+                plugin.type === 'slider' ? createSliderPlugin(plugin) : createTogglePlugin(plugin)
+            ).join('');
+        }
 
         // Playback state
         let isPlaying = false;
@@ -1321,18 +1342,11 @@
                 analyzeOverlay.remove();
             }
 
-            // Collect all clips from layers 1-4
-            const layers = ['evidence-recording', 'ghost-voices', 'investigation', 'ambient-static-wave'];
-            const layerBaseHeights = {
-                'evidence-recording': 30,
-                'ghost-voices': 90,
-                'investigation': 150,
-                'ambient-static-wave': 210
-            };
-
-            // Show all layers and add clips to merged view
-            layers.forEach(layerId => {
+            // Show all layers and add clips to merged view using config
+            Object.keys(LAYER_CONFIG).forEach(layerId => {
                 const layer = document.getElementById(layerId);
+                const config = LAYER_CONFIG[layerId];
+
                 if (layer) {
                     layer.style.display = 'flex';
                     // Show all clips in the layer
@@ -1353,7 +1367,7 @@
                         const clipHash = clip.dataset.clip.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                         const verticalVariation = (clipHash % 30) - 15; // -15 to +15 pixels variation
 
-                        mergedClip.style.top = `${layerBaseHeights[layerId] + verticalVariation}px`;
+                        mergedClip.style.top = `${config.baseHeight + verticalVariation}px`;
                         mergedClip.textContent = clip.dataset.clip;
 
                         const mergedTrack = document.querySelector('#merged .track-content');
@@ -1946,8 +1960,20 @@
             });
         }
 
-        // Call initSliders after the page loads
-        window.addEventListener('load', initSliders);
+        // Initialize application
+        function initializeApp() {
+            // Generate plugins dynamically
+            const toolsContainer = document.getElementById('tools-container');
+            if (toolsContainer) {
+                toolsContainer.innerHTML = generatePluginsHTML();
+            }
+
+            // Initialize sliders
+            initSliders();
+        }
+
+        // Call initialization after the page loads
+        window.addEventListener('load', initializeApp);
 
         function stopClipPlayback(event) {
             event.stopPropagation();
