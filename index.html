@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FMOD Music Editor</title>
     <link rel="stylesheet" href="gradients.css">
+    <script src="audio-configs.js"></script>
     <style>
         :root {
             /* Color Variables */
@@ -159,6 +160,43 @@
         }
 
         .menu-item:hover {
+            background: var(--bg-hover);
+        }
+
+        /* Load dropdown styles */
+        .load-menu {
+            position: relative;
+        }
+
+        .load-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 200px;
+            background: var(--bg-menu);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-shadow: var(--shadow-subtle);
+            z-index: 1000;
+            display: none;
+        }
+
+        .load-dropdown.show {
+            display: block;
+        }
+
+        .load-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .load-option:last-child {
+            border-bottom: none;
+        }
+
+        .load-option:hover {
             background: var(--bg-hover);
         }
 
@@ -345,7 +383,6 @@
             height: 30px;
             margin-left: 20px;
             position: relative;
-            background: var(--bg-primary);
             border-radius: 3px;
         }
 
@@ -544,6 +581,7 @@
         }
 
         /* Layer-specific colors for merged view */
+        /* find_the_murderer.wav layers */
         #merged .audio-clip[data-layer="evidence-recording"] {
             color: #e74c3c;
         }
@@ -557,6 +595,44 @@
         }
 
         #merged .audio-clip[data-layer="ambient-static-wave"] {
+            color: #34495e;
+        }
+
+        /* morse_code.wav layers */
+        #merged .audio-clip[data-layer="morse-signals"] {
+            color: #3498db;
+        }
+
+        #merged .audio-clip[data-layer="radio-static"] {
+            color: #95a5a6;
+        }
+
+        /* noise_profiling.wav layers */
+        #merged .audio-clip[data-layer="vocal-track"] {
+            color: #e74c3c;
+        }
+
+        #merged .audio-clip[data-layer="background-noise"] {
+            color: #f39c12;
+        }
+
+        #merged .audio-clip[data-layer="electrical-interference"] {
+            color: #1abc9c;
+        }
+
+        #merged .audio-clip[data-layer="mechanical-sounds"] {
+            color: #e67e22;
+        }
+
+        #merged .audio-clip[data-layer="digital-artifacts"] {
+            color: #9b59b6;
+        }
+
+        #merged .audio-clip[data-layer="frequency-sweeps"] {
+            color: #27ae60;
+        }
+
+        #merged .audio-clip[data-layer="calibration-tones"] {
             color: #34495e;
         }
 
@@ -584,6 +660,7 @@
         }
 
         /* Layer-specific colors */
+        /* find_the_murderer.wav layers */
         #evidence-recording .audio-clip {
             color: #e74c3c;
         }
@@ -597,6 +674,44 @@
         }
 
         #ambient-static-wave .audio-clip {
+            color: #34495e;
+        }
+
+        /* morse_code.wav layers */
+        #morse-signals .audio-clip {
+            color: #3498db;
+        }
+
+        #radio-static .audio-clip {
+            color: #95a5a6;
+        }
+
+        /* noise_profiling.wav layers */
+        #vocal-track .audio-clip {
+            color: #e74c3c;
+        }
+
+        #background-noise .audio-clip {
+            color: #f39c12;
+        }
+
+        #electrical-interference .audio-clip {
+            color: #1abc9c;
+        }
+
+        #mechanical-sounds .audio-clip {
+            color: #e67e22;
+        }
+
+        #digital-artifacts .audio-clip {
+            color: #9b59b6;
+        }
+
+        #frequency-sweeps .audio-clip {
+            color: #27ae60;
+        }
+
+        #calibration-tones .audio-clip {
             color: #34495e;
         }
 
@@ -986,7 +1101,15 @@
         </div>
 
         <div class="menu-bar">
-            <span class="menu-item">Load</span>
+            <span class="menu-item load-menu" onclick="toggleLoadMenu(event)">Load ▼
+                <div class="load-dropdown" id="load-dropdown">
+                    <div class="load-option" onclick="loadAudioFile('find_the_murderer.wav', event)">
+                        find_the_murderer.wav</div>
+                    <div class="load-option" onclick="loadAudioFile('morse_code.wav', event)">morse_code.wav</div>
+                    <div class="load-option" onclick="loadAudioFile('noise_profiling.wav', event)">noise_profiling.wav
+                    </div>
+                </div>
+            </span>
             <span class="menu-item">Save</span>
             <span class="menu-item" onclick="autoAnalyzeAll()">Analyze</span>
             <span class="menu-item">Details</span>
@@ -1127,57 +1250,8 @@
     </div>
 
     <script>
-        // Data-driven layer configuration
-        const LAYER_CONFIG = {
-            'evidence-recording': {
-                name: 'Evidence_Recording',
-                displayName: 'Layer 1',
-                color: '#e74c3c',
-                baseHeight: 30,
-                background: 'linear-gradient(90deg, #555 0%, #555 100%)',
-                clips: [
-                    { id: 'initial_scream', left: '15%', width: '15%', title: 'Initial scream' },
-                    { id: 'struggle_sounds', left: '45%', width: '20%', title: 'Struggle sounds' },
-                    { id: 'last_words', left: '80%', width: '15%', title: 'Last words' }
-                ]
-            },
-            'ghost-voices': {
-                name: 'Ghost_Voices',
-                displayName: 'Layer 2',
-                color: '#8e44ad',
-                baseHeight: 90,
-                background: 'linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%)',
-                clips: [
-                    { id: 'whisper_1', left: '20%', width: '10%', title: 'Second whisper' },
-                    { id: 'whisper_2', left: '35%', width: '10%', title: 'Third whisper' },
-                    { id: 'whisper_3', left: '55%', width: '7%', title: 'Fourth whisper' },
-                    { id: 'whisper_4', left: '70%', width: '9%', title: 'Fifth whisper' }
-                ]
-            },
-            'investigation': {
-                name: 'Investigation_Notes',
-                displayName: 'Layer 3',
-                color: '#27ae60',
-                baseHeight: 150,
-                background: 'linear-gradient(90deg, #34495e 0%, #34495e 100%)',
-                clips: [
-                    { id: 'police_report', left: '40%', width: '15%', title: 'Police recording' },
-                    { id: 'witness_statement', left: '70%', width: '20%', title: 'Witness statement' }
-                ]
-            },
-            'ambient-static-wave': {
-                name: 'Ambient_Static',
-                displayName: 'Layer 4',
-                color: '#34495e',
-                baseHeight: 210,
-                background: 'linear-gradient(90deg, #1a1a1a 0%, #1a1a1a 100%)',
-                clips: [
-                    { id: 'room_tone', left: '10%', width: '20%', title: 'Room tone' },
-                    { id: 'static_burst', left: '35%', width: '20%', title: 'Static burst' },
-                    { id: 'tape_hiss', left: '70%', width: '25%', title: 'Tape hiss' }
-                ]
-            }
-        };
+        // Global variable to store current layer configuration
+        window.currentLayerConfig = null;
 
         let selectedPlugin = null;
         let selectedClip = null;
@@ -1336,16 +1410,21 @@
         // Add new function for auto-analysis
         function autoAnalyzeAll() {
             console.log('Auto-analyzing all clips');
+
+            if (!window.currentLayerConfig) {
+                console.error('No layer configuration loaded');
+                return;
+            }
+
             // Remove analyze button if it exists
             const analyzeOverlay = document.querySelector('.analyze-overlay');
             if (analyzeOverlay) {
                 analyzeOverlay.remove();
             }
 
-            // Show all layers and add clips to merged view using config
-            Object.keys(LAYER_CONFIG).forEach(layerId => {
+            // Show all layers and add clips to merged view using current config
+            Object.entries(window.currentLayerConfig).forEach(([layerId, layerConfig]) => {
                 const layer = document.getElementById(layerId);
-                const config = LAYER_CONFIG[layerId];
 
                 if (layer) {
                     layer.style.display = 'flex';
@@ -1367,7 +1446,7 @@
                         const clipHash = clip.dataset.clip.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                         const verticalVariation = (clipHash % 30) - 15; // -15 to +15 pixels variation
 
-                        mergedClip.style.top = `${config.baseHeight + verticalVariation}px`;
+                        mergedClip.style.top = `${layerConfig.baseHeight + verticalVariation}px`;
                         mergedClip.textContent = clip.dataset.clip;
 
                         const mergedTrack = document.querySelector('#merged .track-content');
@@ -1385,11 +1464,15 @@
         // Initialize the analysis minigame
         function initAnalysisGame() {
             console.log('Initializing game');
-            // Collect all clips from layers 1-4
-            remainingClips = [];
-            const layers = ['evidence-recording', 'ghost-voices', 'investigation', 'ambient-static-wave'];
 
-            layers.forEach(layerId => {
+            if (!window.currentLayerConfig) {
+                console.error('No layer configuration loaded');
+                return;
+            }
+
+            // Collect all clips from current configuration
+            remainingClips = [];
+            Object.entries(window.currentLayerConfig).forEach(([layerId, layerConfig]) => {
                 const layer = document.getElementById(layerId);
                 console.log('Checking layer:', layerId, layer);
                 if (!layer) {
@@ -1406,7 +1489,7 @@
                         layer: layerId,
                         left: clip.style.left,
                         width: clip.style.width,
-                        background: clip.style.background
+                        baseHeight: layerConfig.baseHeight
                     });
                 });
             });
@@ -1414,7 +1497,7 @@
             console.log('Total clips collected:', remainingClips.length);
 
             // Hide all layers except merged
-            layers.forEach(layerId => {
+            Object.keys(window.currentLayerConfig).forEach(layerId => {
                 const layer = document.getElementById(layerId);
                 if (layer) {
                     layer.style.display = 'none';
@@ -1521,7 +1604,6 @@
 
             // Reveal the clip
             clip.classList.add('revealed');
-            clip.style.background = clipData.background;
             clip.style.color = 'white';
             clip.style.borderColor = '#f39c12';
             clip.textContent = clipData.id;
@@ -1535,19 +1617,11 @@
             mergedClip.style.width = clipData.width;
             mergedClip.textContent = clipData.id;
 
-            // Calculate vertical position based on layer and clip ID
-            const layerBaseHeights = {
-                'evidence-recording': 30,
-                'ghost-voices': 90,
-                'investigation': 150,
-                'ambient-static-wave': 210
-            };
-
             // Create a hash of the clip ID to get a consistent but varied position
             const clipHash = clipData.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
             const verticalVariation = (clipHash % 30) - 15; // -15 to +15 pixels variation
 
-            mergedClip.style.top = `${layerBaseHeights[clipData.layer] + verticalVariation}px`;
+            mergedClip.style.top = `${clipData.baseHeight + verticalVariation}px`;
 
             // Add the clip to the merged view
             const mergedTrack = document.querySelector('#merged .track-content');
@@ -1610,19 +1684,11 @@
             clip.dataset.layer = clipData.layer;
             clip.dataset.clip = clipData.id;
 
-            // Calculate vertical position based on layer and clip ID
-            const layerBaseHeights = {
-                'evidence-recording': 30,
-                'ghost-voices': 90,
-                'investigation': 150,
-                'ambient-static-wave': 210
-            };
-
             // Create a hash of the clip ID to get a consistent but varied position
             const clipHash = clipData.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
             const verticalVariation = (clipHash % 30) - 15; // -15 to +15 pixels variation
 
-            clip.style.top = `${layerBaseHeights[clipData.layer] + verticalVariation}px`;
+            clip.style.top = `${clipData.baseHeight + verticalVariation}px`;
 
             // Add to merged track
             const trackContent = document.querySelector('#waveedit #merged .track-content');
@@ -1970,10 +2036,192 @@
 
             // Initialize sliders
             initSliders();
+
+            // Load default file configuration
+            const defaultConfig = AUDIO_CONFIGS['find_the_murderer.wav'];
+            if (defaultConfig) {
+                loadAudioConfiguration(defaultConfig);
+            }
         }
 
         // Call initialization after the page loads
         window.addEventListener('load', initializeApp);
+
+        // Load menu functionality
+        function toggleLoadMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('load-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('load-dropdown');
+            const loadMenu = event.target.closest('.load-menu');
+
+            if (!loadMenu && dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Load audio file and reset state
+        function loadAudioFile(filename, event) {
+            event.stopPropagation();
+
+            // Close dropdown
+            document.getElementById('load-dropdown').classList.remove('show');
+
+            // Get configuration for this file
+            const config = AUDIO_CONFIGS[filename];
+            if (!config) {
+                console.error(`No configuration found for ${filename}`);
+                return;
+            }
+
+            // Reset all application state
+            resetApplicationState();
+
+            // Update the application with new configuration
+            loadAudioConfiguration(config);
+
+            console.log(`Loaded audio file: ${filename}`);
+        }
+
+        // Reset entire application state
+        function resetApplicationState() {
+            // Reset analysis state
+            isAnalyzed = false;
+            discoveredClips.clear();
+            remainingClips = [];
+            selectedClip = null;
+            selectedPlugin = null;
+            currentAnalysisClip = null;
+
+            // Clear all clip effects
+            clipEffects.clear();
+
+            // Stop any playback
+            if (isPlaying) {
+                stopMainPlayback({ stopPropagation: () => { } });
+            }
+            if (clipPlaybackInterval) {
+                clearInterval(clipPlaybackInterval);
+                clipPlaybackInterval = null;
+            }
+            isClipPlaying = false;
+
+            // Reset time
+            currentTime = 0;
+            updateTimeDisplay();
+            updatePlaybackMarker();
+
+            // Hide and remove all dynamic track layers (keep only merged)
+            const trackLayers = document.querySelectorAll('.track-layer:not(#merged)');
+            trackLayers.forEach(layer => {
+                layer.remove();
+            });
+
+            // Clear merged view of revealed clips
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (mergedTrack) {
+                // Remove all revealed clips but preserve the waveform gradient
+                mergedTrack.querySelectorAll('.audio-clip').forEach(clip => clip.remove());
+
+                // Restore analyze overlay if it doesn't exist
+                if (!mergedTrack.querySelector('.analyze-overlay')) {
+                    const analyzeOverlay = document.createElement('div');
+                    analyzeOverlay.className = 'analyze-overlay';
+                    analyzeOverlay.innerHTML = '<button class="analyze-btn" onclick="analyzeWaveform(event)">Analyze</button>';
+                    mergedTrack.appendChild(analyzeOverlay);
+                }
+            }
+
+            // Reset tools panel
+            document.getElementById('tools-message').textContent = 'Completely analyze the track to enable tools.';
+            document.getElementById('tools-message').style.display = 'block';
+            document.getElementById('tools-container').style.display = 'none';
+            document.getElementById('selected-clip-display').style.display = 'none';
+
+            // Disable all plugins and reset their state
+            document.querySelectorAll('.plugin-section').forEach(section => {
+                section.classList.remove('active');
+                section.classList.add('disabled');
+
+                // Reset sliders to center position
+                const sliderFill = section.querySelector('.slider-fill');
+                const sliderThumb = section.querySelector('.slider-thumb');
+                if (sliderFill && sliderThumb) {
+                    sliderFill.style.width = '50%';
+                    sliderThumb.style.left = '50%';
+                }
+            });
+
+            console.log('Application state reset');
+        }
+
+        // Load audio configuration and create track structure
+        function loadAudioConfiguration(config) {
+            // Update total duration
+            totalDuration = config.totalDuration;
+            updateTimeDisplay();
+
+            // Update filename in merged track
+            const mergedTrackInfo = document.querySelector('#merged .track-info span:first-child');
+            if (mergedTrackInfo) {
+                mergedTrackInfo.textContent = config.name;
+            }
+
+            // Update merged track gradient
+            const mergedWaveform = document.querySelector('#merged .main-waveform-gradient');
+            if (mergedWaveform) {
+                mergedWaveform.className = `main-waveform-gradient ${config.gradientClass}`;
+            }
+
+            // Create track layers dynamically
+            const centerPanel = document.querySelector('.center-panel');
+            const mergedLayer = document.getElementById('merged');
+
+            Object.entries(config.layers).forEach(([layerId, layerConfig]) => {
+                createTrackLayer(layerId, layerConfig, centerPanel, mergedLayer);
+            });
+
+            // Update global layer config for analysis game
+            window.currentLayerConfig = config.layers;
+
+            console.log(`Loaded configuration for ${config.name} with ${Object.keys(config.layers).length} layers`);
+        }
+
+        // Create a track layer element
+        function createTrackLayer(layerId, layerConfig, parentElement, insertAfter) {
+            const trackLayer = document.createElement('div');
+            trackLayer.className = 'track-layer';
+            trackLayer.id = layerId;
+
+            trackLayer.innerHTML = `
+                <div class="track-info">
+                    <span style="font-size: 0.8em; color: #95a5a6;">${layerConfig.displayName}</span><br>
+                    <span style="font-weight: bold; color: #ecf0f1;">${layerConfig.name}</span>
+                </div>
+                <div class="track-content" 
+                     style="position: relative;"
+                     onclick="selectClip(event)">
+                    ${layerConfig.clips.map(clip =>
+                `<div class="audio-clip" 
+                              data-clip="${clip.id}"
+                              style="left: ${clip.left}; width: ${clip.width}; height: 18px; top: 6px;" 
+                              title="${clip.title}">
+                            ${clip.id}
+                        </div>`
+            ).join('')}
+                </div>
+            `;
+
+            // Insert after the merged layer
+            insertAfter.parentNode.insertBefore(trackLayer, insertAfter.nextSibling);
+
+            // Initially hide the layer
+            trackLayer.style.display = 'none';
+        }
 
         function stopClipPlayback(event) {
             event.stopPropagation();

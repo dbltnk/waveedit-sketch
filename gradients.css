@@ -350,3 +350,40 @@
             #34495e 98%, #34495e 99%,
             #2c3e50 99%, #2c3e50 100%);
 }
+
+/* Morse Code Waveform Visualization */
+.morse-waveform-gradient {
+    background: linear-gradient(90deg,
+            #3498db 0%, #3498db 5%,
+            #2c3e50 5%, #2c3e50 10%,
+            #3498db 10%, #3498db 15%,
+            #2c3e50 15%, #2c3e50 20%,
+            #3498db 20%, #3498db 30%,
+            #2c3e50 30%, #2c3e50 35%,
+            #3498db 35%, #3498db 40%,
+            #2c3e50 40%, #2c3e50 45%,
+            #3498db 45%, #3498db 50%,
+            #95a5a6 50%, #95a5a6 55%,
+            #3498db 55%, #3498db 75%,
+            #2c3e50 75%, #2c3e50 80%,
+            #3498db 80%, #3498db 95%,
+            #2c3e50 95%, #2c3e50 100%);
+}
+
+/* Noise Profiling Waveform Visualization */
+.noise-waveform-gradient {
+    background: linear-gradient(90deg,
+            #e74c3c 0%, #e74c3c 10%,
+            #8e44ad 10%, #8e44ad 30%,
+            #f39c12 30%, #f39c12 35%,
+            #e74c3c 35%, #e74c3c 40%,
+            #1abc9c 40%, #1abc9c 45%,
+            #8e44ad 45%, #8e44ad 65%,
+            #e67e22 65%, #e67e22 70%,
+            #f39c12 70%, #f39c12 75%,
+            #9b59b6 75%, #9b59b6 80%,
+            #1abc9c 80%, #1abc9c 85%,
+            #27ae60 85%, #27ae60 90%,
+            #34495e 90%, #34495e 95%,
+            #2c3e50 95%, #2c3e50 100%);
+}
