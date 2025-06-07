@@ -1177,6 +1177,18 @@
             border: 1px solid #444;
         }
 
+        .selected-clip-playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #f39c12;
+            left: 0%;
+            pointer-events: none;
+            z-index: 10;
+            transition: left 0.1s ease;
+        }
+
         /* Add slider styles */
         .slider-container {
             margin: 8px 0;
@@ -1318,6 +1330,103 @@
         .track-layer:not(#merged) .track-content {
             height: 30px !important;
         }
+
+        /* Stem Isolation Loading Animation */
+        .stem-isolation-overlay {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .isolation-progress-container {
+            background: var(--bg-secondary);
+            border: 2px solid var(--primary-purple);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            min-width: 400px;
+            backdrop-filter: blur(10px);
+        }
+
+        .isolation-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-purple);
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+        }
+
+        .isolation-status {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            min-height: 20px;
+            font-style: italic;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-purple), var(--primary-purple-dark));
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(155, 89, 182, 0.3);
+        }
+
+        .layer-status {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        /* MISC layer styles */
+        .misc-layer {
+            border-left: 3px solid #95a5a6;
+        }
+
+        .misc-layer .track-info span:first-child {
+            color: #95a5a6;
+        }
+
+        /* Hidden small clips in MISC layers */
+        .misc-layer .audio-clip.hidden-small {
+            background: #444;
+            color: #666;
+            border: 2px solid #666;
+            pointer-events: none;
+        }
+
+        .misc-layer .audio-clip.hidden-small::after {
+            content: '???';
+        }
+
+        /* MISC layer colors */
+        .misc-layer .audio-clip {
+            color: #95a5a6;
+        }
+
+        .misc-layer {
+            background: linear-gradient(90deg, rgba(149, 165, 166, 0.15), rgba(149, 165, 166, 0.08));
+        }
+
+        /* Merged view colors for MISC clips */
+        #merged .audio-clip[data-layer^="misc-"] {
+            color: #95a5a6;
+        }
     </style>
 </head>
 
@@ -1364,7 +1473,7 @@
                 </div>
             </span>
             <span class="menu-item inactive">Save</span>
-            <span class="menu-item" onclick="autoAnalyzeAll()">Analyze</span>
+            <span class="menu-item inactive">Analyze</span>
             <span class="menu-item inactive">Details</span>
             <span class="menu-item inactive">Plugins</span>
             <span class="menu-item inactive">Help</span>
@@ -1399,9 +1508,9 @@
                         <div id="playback-marker"
                             style="position: absolute; top: 0; bottom: 0; width: 2px; background: #f39c12; left: 0%; pointer-events: none; z-index: 100;">
                         </div>
-                        <!-- Analyze button overlay -->
+                        <!-- Stem Isolation button overlay -->
                         <div class="analyze-overlay">
-                            <button class="analyze-btn" onclick="analyzeWaveform(event)">Analyze</button>
+                            <button class="analyze-btn" onclick="stemIsolation(event)">Stem Isolation</button>
                         </div>
                     </div>
                 </div>
@@ -1487,7 +1596,8 @@
 
             <div class="right-panel">
                 <div class="tools-header">Tools</div>
-                <div id="tools-message" class="tools-message">Completely analyze the track to unlock available tools.
+                <div id="tools-message" class="tools-message">Run Stem Isolation to separate audio layers and unlock
+                    tools.
                 </div>
                 <div id="selected-clip-display" class="selected-clip-display" style="display: none;">
                     <div class="selected-clip-title">Selected Clip:</div>
@@ -1497,7 +1607,9 @@
                         <button class="selected-clip-stop-btn" onclick="stopClipPlayback(event)">⏹</button>
                         <span class="selected-clip-time">00:00.000</span>
                     </div>
-                    <div class="selected-clip-waveform"></div>
+                    <div class="selected-clip-waveform">
+                        <div class="selected-clip-playhead"></div>
+                    </div>
                 </div>
                 <div id="tools-container" class="tools-container" style="display: none;">
                     <!-- Plugins will be generated dynamically -->
@@ -1554,6 +1666,44 @@
             '6_complex_noise_profiling.wav': 'Apply technical precision to separate signal types',
             '7_complex_orchestra_hickups.wav': 'Remove all performance mistakes and disruptions'
         };
+
+        // Get clip color by layer ID
+        function getClipColorByLayer(layerId) {
+            const layerColors = {
+                // find_the_murderer.wav layers
+                'evidence-recording': '#e74c3c',
+                'ghost-voices': '#8e44ad',
+                'investigation': '#27ae60',
+                'ambient-static-wave': '#34495e',
+                // morse_code.wav layers
+                'morse-signals': '#3498db',
+                'radio-static': '#95a5a6',
+                // noise_profiling.wav layers
+                'vocal-track': '#e74c3c',
+                'background-noise': '#f39c12',
+                'electrical-interference': '#1abc9c',
+                'mechanical-sounds': '#e67e22',
+                'digital-artifacts': '#9b59b6',
+                'frequency-sweeps': '#27ae60',
+                'calibration-tones': '#34495e',
+                // orchestra_hickups.wav layers
+                'violin-section': '#e74c3c',
+                'brass-section': '#f39c12',
+                'woodwind-section': '#27ae60',
+                'percussion-section': '#9b59b6',
+                // vocal_harmony.wav layers
+                'vocal-harmony': '#e67e22',
+                // getaway_analysis.wav layers
+                'digital-corruption': '#e74c3c',
+                'engine-signature': '#3498db',
+                // seasonal_birds.wav layers
+                'target-bird-call': '#27ae60',
+                'forest-ambience': '#2c3e50',
+                'viola-breathing': '#8e44ad',
+                'unknown-presence': '#e74c3c'
+            };
+            return layerColors[layerId] || '#95a5a6'; // Default gray if not found
+        }
 
         // Plugin factory functions
         function createTogglePlugin(plugin) {
@@ -1680,56 +1830,84 @@
             updatePlaybackMarker();
         }
 
-        // Add new function for auto-analysis
-        function autoAnalyzeAll() {
+        // Stem Isolation function - the new main analysis method
+        async function stemIsolation(event) {
+            event.stopPropagation();
+
             if (!window.currentLayerConfig) {
                 console.error('No layer configuration loaded');
                 return;
             }
 
-            // Remove analyze button if it exists
-            const analyzeOverlay = document.querySelector('.analyze-overlay');
+            // Remove the button overlay
+            const analyzeOverlay = event.target.closest('.analyze-overlay');
             if (analyzeOverlay) {
                 analyzeOverlay.remove();
             }
 
-            // Show all layers and add clips to merged view using current config
-            Object.entries(window.currentLayerConfig).forEach(([layerId, layerConfig]) => {
+            // Create loading overlay (only covers merged track)
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'stem-isolation-overlay';
+            loadingOverlay.innerHTML = `
+                <div class="isolation-progress-container">
+                    <div class="isolation-title">🎵 STEM ISOLATION</div>
+                    <div class="isolation-status">Initializing AI audio separation...</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                    <div class="layer-status">Preparing multi-band frequency analysis...</div>
+                </div>
+            `;
+
+            // Add to merged track only so layers can be seen appearing below
+            const mergedTrack = document.getElementById('merged');
+            mergedTrack.appendChild(loadingOverlay);
+
+            // Hide all existing layers to prevent duplication
+            Object.keys(window.currentLayerConfig).forEach(layerId => {
                 const layer = document.getElementById(layerId);
-
                 if (layer) {
-                    layer.style.display = 'flex';
-                    // Show all clips in the layer
-                    const clips = layer.querySelectorAll('.audio-clip');
-                    clips.forEach(clip => {
-                        clip.style.display = 'flex';
-                        discoveredClips.add(clip.dataset.clip);
-
-                        // Add clip to merged view
-                        const mergedClip = document.createElement('div');
-                        mergedClip.className = 'audio-clip revealed';
-                        mergedClip.dataset.clip = clip.dataset.clip;
-                        mergedClip.dataset.layer = layerId;
-                        mergedClip.style.left = clip.style.left;
-                        mergedClip.style.width = clip.style.width;
-
-                        // Create a hash of the clip ID to get a consistent but varied position
-                        const clipHash = clip.dataset.clip.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                        const verticalVariation = (clipHash % 30) - 15; // -15 to +15 pixels variation
-
-                        mergedClip.style.top = `${layerConfig.baseHeight + verticalVariation}px`;
-                        mergedClip.textContent = clip.dataset.clip;
-
-                        const mergedTrack = document.querySelector('#merged .track-content');
-                        if (mergedTrack) {
-                            mergedTrack.appendChild(mergedClip);
-                        }
-                    });
+                    layer.style.display = 'none';
                 }
             });
 
-            // Enable tools
-            enableTools();
+            // Clear merged track of existing clips
+            const existingClips = mergedTrack.querySelectorAll('.audio-clip');
+            existingClips.forEach(clip => clip.remove());
+
+            // Separate large and small clips
+            const largeClips = [];
+            const smallClips = [];
+
+            Object.entries(window.currentLayerConfig).forEach(([layerId, layerConfig]) => {
+                layerConfig.clips.forEach(clip => {
+                    const clipData = { ...clip, layerId, layerConfig };
+                    if (clip.type === 'large') {
+                        largeClips.push(clipData);
+                    } else if (clip.type === 'small') {
+                        smallClips.push(clipData);
+                    } else {
+                        // This should never happen if all clips have type defined
+                        console.warn('Clip without type property:', clip);
+                    }
+                });
+            });
+
+            // Create MISC layers for small clips
+            const miscLayers = createMiscLayers(smallClips);
+
+            // Start the loading animation
+            await performStemIsolation(largeClips, smallClips, miscLayers, loadingOverlay);
+        }
+
+        // Auto-analysis function (for menu)
+        function autoAnalyzeAll() {
+            // Use the same stem isolation process
+            const fakeEvent = {
+                stopPropagation: () => { },
+                target: { closest: () => document.querySelector('.analyze-overlay') }
+            };
+            stemIsolation(fakeEvent);
         }
 
         // Initialize the analysis minigame
@@ -2046,12 +2224,498 @@
             }
         }
 
+        // Create MISC layers for small clips
+        function createMiscLayers(smallClips) {
+            const miscLayers = [];
+            let currentMiscClips = [];
+            let currentWidth = 0;
+            let miscLayerIndex = 1;
+
+            smallClips.forEach(clip => {
+                const clipWidth = parseFloat(clip.width.replace('%', ''));
+
+                // Check if adding this clip would exceed 95% width (leaving 5% margin)
+                if (currentWidth + clipWidth > 95 && currentMiscClips.length > 0) {
+                    // Create new MISC layer with current clips
+                    miscLayers.push({
+                        id: `misc-${miscLayerIndex}`,
+                        name: `MISC_${miscLayerIndex}`,
+                        displayName: `MISC ${miscLayerIndex}`,
+                        clips: [...currentMiscClips],
+                        baseHeight: 50 + (miscLayerIndex - 1) * 60 // Space them out vertically
+                    });
+
+                    miscLayerIndex++;
+                    currentMiscClips = [];
+                    currentWidth = 0;
+                }
+
+                // Add clip to current MISC layer with updated position
+                currentMiscClips.push({
+                    ...clip,
+                    left: `${currentWidth + 2}%`, // 2% left margin
+                    originalLeft: clip.left
+                });
+                currentWidth += clipWidth + 3; // Add 3% spacing between clips
+            });
+
+            // Add remaining clips to final MISC layer
+            if (currentMiscClips.length > 0) {
+                miscLayers.push({
+                    id: `misc-${miscLayerIndex}`,
+                    name: `MISC_${miscLayerIndex}`,
+                    displayName: `MISC ${miscLayerIndex}`,
+                    clips: currentMiscClips,
+                    baseHeight: 50 + (miscLayerIndex - 1) * 60
+                });
+            }
+
+            return miscLayers;
+        }
+
+        // Perform the stem isolation with loading animation
+        async function performStemIsolation(largeClips, smallClips, miscLayers, loadingOverlay) {
+            const progressBar = loadingOverlay.querySelector('.progress-bar-fill');
+            const statusText = loadingOverlay.querySelector('.isolation-status');
+            const layerStatus = loadingOverlay.querySelector('.layer-status');
+
+            const messages = [
+                'Analyzing frequency spectrum...',
+                'Detecting harmonic patterns...',
+                'Separating instrumental stems...',
+                'Isolating vocal components...',
+                'Processing digital artifacts...',
+                'Finalizing layer separation...'
+            ];
+
+            // Get regular layers and sort them by displayName to ensure consistent order
+            const regularLayers = [...new Set(largeClips.map(clip => clip.layerId))]
+                .sort((a, b) => {
+                    const layerA = window.currentLayerConfig[a];
+                    const layerB = window.currentLayerConfig[b];
+                    return layerA.displayName.localeCompare(layerB.displayName);
+                });
+
+            const totalSteps = regularLayers.length + miscLayers.length;
+            let currentStep = 0;
+
+            // Pre-create all layers in the correct order (but keep them hidden)
+            const allLayersInOrder = [...regularLayers, ...miscLayers.map(m => m.id)];
+            const createdLayers = [];
+
+            // Create all regular layers first
+            for (const layerId of regularLayers) {
+                const trackLayer = createRegularLayerHidden(layerId, largeClips.filter(clip => clip.layerId === layerId));
+                createdLayers.push(trackLayer);
+            }
+
+            // Create all MISC layers
+            for (const miscLayer of miscLayers) {
+                const trackLayer = createMiscLayerHidden(miscLayer);
+                createdLayers.push(trackLayer);
+            }
+
+            // Now reveal layers one by one
+            for (let i = 0; i < allLayersInOrder.length; i++) {
+                const layerId = allLayersInOrder[i];
+                const isRegular = regularLayers.includes(layerId);
+
+                if (isRegular) {
+                    statusText.textContent = messages[Math.min(currentStep, messages.length - 1)];
+                    layerStatus.textContent = `Processing ${layerId.replace('-', ' ')}...`;
+                } else {
+                    statusText.textContent = 'Cataloging performance artifacts...';
+                    layerStatus.textContent = `Creating ${miscLayers.find(m => m.id === layerId).displayName}...`;
+                }
+
+                // Step 1: Reveal the empty layer first
+                createdLayers[i].style.display = 'flex';
+
+                // Brief pause to show the empty layer
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // Get actual clips from the DOM layer and sort them left to right
+                let sortedClips = [];
+                if (isRegular) {
+                    // Get clips from the actual layer DOM element
+                    const layerElement = createdLayers[i];
+                    const clipElements = layerElement.querySelectorAll('.audio-clip');
+
+                    sortedClips = Array.from(clipElements).map(clipEl => {
+                        // Find the corresponding config data
+                        const configClip = largeClips.find(c => c.id === clipEl.dataset.clip);
+                        return {
+                            id: clipEl.dataset.clip,
+                            left: clipEl.style.left,
+                            width: clipEl.style.width,
+                            element: clipEl,
+                            config: configClip
+                        };
+                    }).sort((a, b) => {
+                        const leftA = parseFloat(a.left.replace('%', ''));
+                        const leftB = parseFloat(b.left.replace('%', ''));
+                        return leftA - leftB;
+                    });
+                } else {
+                    // For MISC layers, use the provided clips
+                    const miscLayer = miscLayers.find(m => m.id === layerId);
+                    sortedClips = [...miscLayer.clips].sort((a, b) => {
+                        const leftA = parseFloat(a.left.replace('%', ''));
+                        const leftB = parseFloat(b.left.replace('%', ''));
+                        return leftA - leftB;
+                    });
+                }
+
+                // Step 2: Fill the layer with clips left-to-right while animating progress
+                const clipsDelay = isRegular ? 2100 : 1300; // Reduced to account for the 300ms pause
+                const startProgress = (currentStep / totalSteps) * 100;
+                const endProgress = ((currentStep + 1) / totalSteps) * 100;
+
+                // Start progress bar animation
+                const progressPromise = animateProgressBar(progressBar, startProgress, endProgress, clipsDelay);
+
+                // Reveal clips one by one from left to right (both in layer and merged view)
+                const clipsPromise = revealClipsSequentially(layerId, sortedClips, clipsDelay, isRegular);
+
+                // Wait for both to complete
+                await Promise.all([progressPromise, clipsPromise]);
+
+                currentStep++;
+            }
+
+            // Final completion
+            statusText.textContent = 'Stem isolation complete!';
+            layerStatus.textContent = 'All audio layers separated successfully.';
+            progressBar.style.width = '100%';
+
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Doubled final delay
+
+            // Remove loading overlay
+            loadingOverlay.remove();
+
+            // Enable tools
+            enableTools();
+
+            // Update remaining clips for manual discovery
+            remainingClips = smallClips.map(clip => ({
+                id: clip.id,
+                layer: `misc-${Math.ceil(smallClips.indexOf(clip) / 10) + 1}`, // Rough assignment
+                left: clip.originalLeft || clip.left,
+                width: clip.width,
+                baseHeight: 50 // Will be updated by discovery system
+            }));
+
+            // Set up manual discovery for small clips
+            setupSmallClipDiscovery();
+        }
+
+        // Create a regular layer with large clips (old function for backwards compatibility)
+        function createRegularLayer(layerId, layerClips) {
+            const trackLayer = createRegularLayerHidden(layerId, layerClips);
+            trackLayer.style.display = 'flex';
+            addClipsToMergedView(layerId, layerClips);
+        }
+
+        // Create a regular layer but keep it hidden initially
+        function createRegularLayerHidden(layerId, layerClips) {
+            const layerConfig = window.currentLayerConfig[layerId];
+            const centerPanel = document.querySelector('.center-panel');
+
+            // Find the last layer to insert after (to maintain order)
+            const existingLayers = centerPanel.querySelectorAll('.track-layer:not(#merged)');
+            let insertAfter = document.getElementById('merged');
+
+            // If there are existing layers, insert after the last one
+            if (existingLayers.length > 0) {
+                insertAfter = existingLayers[existingLayers.length - 1];
+            }
+
+            // Create a filtered layer config that only contains the large clips
+            const filteredLayerConfig = {
+                ...layerConfig,
+                clips: layerClips // Only the large clips
+            };
+
+            // Create the layer with only large clips
+            const trackLayer = createTrackLayer(layerId, filteredLayerConfig, centerPanel, insertAfter);
+
+            // Hide all clips initially - they'll be revealed sequentially
+            layerClips.forEach(clip => {
+                const clipElement = trackLayer.querySelector(`[data-clip="${clip.id}"]`);
+                if (clipElement) {
+                    clipElement.style.display = 'none';
+                    discoveredClips.add(clip.id); // Mark as discovered for tools
+                }
+            });
+
+            return trackLayer;
+        }
+
+        // Add clips to merged view
+        function addClipsToMergedView(layerId, layerClips) {
+            const layerConfig = window.currentLayerConfig[layerId];
+
+            layerClips.forEach(clip => {
+                // Add to merged view
+                const mergedClip = document.createElement('div');
+                mergedClip.className = 'audio-clip revealed';
+                mergedClip.dataset.clip = clip.id;
+                mergedClip.dataset.layer = layerId;
+                mergedClip.style.left = clip.left;
+                mergedClip.style.width = clip.width;
+
+                // Position in merged view
+                const clipHash = clip.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const verticalVariation = (clipHash % 30) - 15;
+                mergedClip.style.top = `${layerConfig.baseHeight + verticalVariation}px`;
+                mergedClip.textContent = clip.id;
+
+                const mergedTrack = document.querySelector('#merged .track-content');
+                if (mergedTrack) {
+                    mergedTrack.appendChild(mergedClip);
+                }
+            });
+        }
+
+        // Create a MISC layer with small clips (old function for backwards compatibility)
+        function createMiscLayer(miscLayer) {
+            const trackLayer = createMiscLayerHidden(miscLayer);
+            trackLayer.style.display = 'flex';
+        }
+
+        // Create a MISC layer but keep it hidden initially
+        function createMiscLayerHidden(miscLayer) {
+            const centerPanel = document.querySelector('.center-panel');
+
+            // Find the last layer to insert after (to maintain order)
+            const existingLayers = centerPanel.querySelectorAll('.track-layer:not(#merged)');
+            let insertAfter = document.getElementById('merged');
+
+            // If there are existing layers, insert after the last one
+            if (existingLayers.length > 0) {
+                insertAfter = existingLayers[existingLayers.length - 1];
+            }
+
+            const trackLayer = document.createElement('div');
+            trackLayer.className = 'track-layer misc-layer';
+            trackLayer.id = miscLayer.id;
+
+            trackLayer.innerHTML = `
+                <div class="track-info">
+                    <span style="font-size: 0.8em; color: #95a5a6;">${miscLayer.displayName}</span><br>
+                    <span style="font-weight: bold; color: #ecf0f1;">${miscLayer.name}</span>
+                </div>
+                <div class="track-content" 
+                     style="position: relative;"
+                     onclick="selectClip(event)">
+                    ${miscLayer.clips.map(clip =>
+                `<div class="audio-clip hidden-small" 
+                              data-clip="${clip.id}"
+                              data-layer="${miscLayer.id}"
+                              style="left: ${clip.left}; width: ${clip.width}; height: 18px; top: 6px; display: none;" 
+                              title="${clip.title}">
+                            ???
+                        </div>`
+            ).join('')}
+                </div>
+            `;
+
+            // Insert after the last existing layer to maintain order
+            insertAfter.parentNode.insertBefore(trackLayer, insertAfter.nextSibling);
+            trackLayer.style.display = 'none'; // Start hidden
+
+            return trackLayer;
+        }
+
+        // Animate progress bar smoothly from start to end percentage over duration
+        function animateProgressBar(progressBar, startPercent, endPercent, duration) {
+            return new Promise(resolve => {
+                const startTime = Date.now();
+                const startWidth = startPercent;
+                const endWidth = endPercent;
+                const totalChange = endWidth - startWidth;
+
+                function updateProgress() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1); // 0 to 1
+
+                    // Easing function for smooth animation (ease-out)
+                    const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+                    const currentWidth = startWidth + (totalChange * easedProgress);
+                    progressBar.style.width = `${currentWidth}%`;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(updateProgress);
+                    } else {
+                        // Ensure we end at exactly the target
+                        progressBar.style.width = `${endWidth}%`;
+                        resolve();
+                    }
+                }
+
+                requestAnimationFrame(updateProgress);
+            });
+        }
+
+        // Reveal clips in a layer sequentially from left to right
+        function revealClipsSequentially(layerId, sortedClips, totalDuration, isRegular) {
+            return new Promise(async (resolve) => {
+                if (sortedClips.length === 0) {
+                    resolve();
+                    return;
+                }
+
+                // Calculate delay between each clip
+                const delayBetweenClips = totalDuration / sortedClips.length;
+
+                for (let i = 0; i < sortedClips.length; i++) {
+                    const clip = sortedClips[i];
+
+                    if (isRegular) {
+                        // Reveal clip in regular layer using the element reference
+                        if (clip.element) {
+                            clip.element.style.display = 'flex';
+
+                            // Simultaneously add clip to merged view using config data
+                            addSingleClipToMergedView(layerId, clip.config || clip);
+                        }
+                    } else {
+                        // For MISC layers, reveal the ??? clips one by one
+                        const miscLayer = document.getElementById(layerId);
+                        if (miscLayer) {
+                            const clipElement = miscLayer.querySelector(`[data-clip="${clip.id}"]`);
+                            if (clipElement) {
+                                clipElement.style.display = 'flex';
+                            }
+                        }
+                    }
+
+                    // Wait before revealing next clip (including after the last one)
+                    await new Promise(resolve => setTimeout(resolve, delayBetweenClips));
+                }
+
+                resolve();
+            });
+        }
+
+        // Add a single clip to merged view
+        function addSingleClipToMergedView(layerId, clip) {
+            const layerConfig = window.currentLayerConfig[layerId];
+
+            // Add to merged view
+            const mergedClip = document.createElement('div');
+            mergedClip.className = 'audio-clip revealed';
+            mergedClip.dataset.clip = clip.id;
+            mergedClip.dataset.layer = layerId;
+            mergedClip.style.left = clip.left;
+            mergedClip.style.width = clip.width;
+
+            // Position in merged view
+            const clipHash = clip.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const verticalVariation = (clipHash % 30) - 15;
+            mergedClip.style.top = `${layerConfig.baseHeight + verticalVariation}px`;
+            mergedClip.textContent = clip.id;
+
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (mergedTrack) {
+                mergedTrack.appendChild(mergedClip);
+            }
+        }
+
+        // Setup manual discovery for small clips in MISC layers
+        function setupSmallClipDiscovery() {
+            const trackContent = document.querySelector('#merged .track-content');
+            if (trackContent && !trackContent.hasAttribute('data-discovery-setup')) {
+                trackContent.setAttribute('data-discovery-setup', 'true');
+                trackContent.addEventListener('mousedown', startSmallClipSelection);
+                trackContent.addEventListener('mousemove', updateSmallClipSelection);
+                trackContent.addEventListener('mouseup', endSmallClipSelection);
+            }
+        }
+
+        // Small clip discovery system
+        let discoveryDrawing = false;
+        let discoveryBox = null;
+        let discoveryStartX = 0;
+        let discoveryStartY = 0;
+
+        function startSmallClipSelection(event) {
+            const hiddenClips = document.querySelectorAll('.audio-clip.hidden-small');
+            if (hiddenClips.length === 0) return;
+
+            discoveryDrawing = true;
+            const trackContent = event.target;
+            const rect = trackContent.getBoundingClientRect();
+
+            discoveryStartX = event.clientX - rect.left;
+            discoveryStartY = event.clientY - rect.top;
+
+            // Clean up existing boxes
+            const existingBoxes = event.target.querySelectorAll('.selection-box');
+            existingBoxes.forEach(box => box.remove());
+
+            // Create selection box
+            discoveryBox = document.createElement('div');
+            discoveryBox.className = 'selection-box';
+            trackContent.appendChild(discoveryBox);
+        }
+
+        function updateSmallClipSelection(event) {
+            if (!discoveryDrawing || !discoveryBox) return;
+
+            const trackContent = event.target;
+            const rect = trackContent.getBoundingClientRect();
+
+            const currentX = event.clientX - rect.left;
+            const currentY = event.clientY - rect.top;
+
+            const width = Math.abs(currentX - discoveryStartX);
+            const height = Math.abs(currentY - discoveryStartY);
+
+            discoveryBox.style.left = Math.min(discoveryStartX, currentX) + 'px';
+            discoveryBox.style.top = Math.min(discoveryStartY, currentY) + 'px';
+            discoveryBox.style.width = width + 'px';
+            discoveryBox.style.height = height + 'px';
+        }
+
+        function endSmallClipSelection(event) {
+            if (!discoveryDrawing || !discoveryBox) return;
+
+            // Find overlapping hidden clips
+            const hiddenClips = document.querySelectorAll('.misc-layer .audio-clip.hidden-small');
+            const boxRect = discoveryBox.getBoundingClientRect();
+
+            hiddenClips.forEach(clip => {
+                const clipRect = clip.getBoundingClientRect();
+
+                // Check for overlap
+                if (boxRect.left <= clipRect.right && boxRect.right >= clipRect.left &&
+                    boxRect.top <= clipRect.bottom && boxRect.bottom >= clipRect.top) {
+
+                    // Reveal the clip
+                    clip.classList.remove('hidden-small');
+                    clip.textContent = clip.dataset.clip;
+                    clip.style.pointerEvents = 'auto';
+                    clip.style.background = '';
+                    clip.style.color = '';
+                    clip.style.border = '';
+
+                    discoveredClips.add(clip.dataset.clip);
+                }
+            });
+
+            // Clean up
+            if (discoveryBox && discoveryBox.parentNode) {
+                discoveryBox.remove();
+            }
+            discoveryBox = null;
+            discoveryDrawing = false;
+        }
+
+        // Legacy function for backwards compatibility
         function analyzeWaveform(event) {
-            event.stopPropagation();
-            // Remove analyze button
-            event.target.closest('.analyze-overlay').remove();
-            // Start the game
-            initAnalysisGame();
+            stemIsolation(event);
         }
 
         // AUDIO CONTROL FUNCTIONS
@@ -2151,9 +2815,19 @@
             const selectedClipName = selectedClipDisplay.querySelector('.selected-clip-name');
             const selectedClipWaveform = selectedClipDisplay.querySelector('.selected-clip-waveform');
 
-            // Set clip name and style
+            // Set clip name and correct waveform color
             selectedClipName.textContent = selectedClip.dataset.clip;
-            selectedClipWaveform.style.background = selectedClip.style.background;
+
+            // Get the correct color based on the clip's layer
+            const clipLayerId = selectedClip.closest('.track-layer').id;
+            const clipColor = getClipColorByLayer(clipLayerId);
+            selectedClipWaveform.style.background = `linear-gradient(90deg, ${clipColor}22 0%, ${clipColor}11 100%)`;
+
+            // Reset playhead position
+            const playhead = selectedClipWaveform.querySelector('.selected-clip-playhead');
+            if (playhead) {
+                playhead.style.left = '0%';
+            }
 
             // Show the display and hide the tools message
             selectedClipDisplay.style.display = 'block';
@@ -2188,6 +2862,12 @@
                     clipPlaybackInterval = null;
                 }
                 isClipPlaying = false;
+
+                // Reset playhead position
+                const playhead = document.querySelector('.selected-clip-playhead');
+                if (playhead) {
+                    playhead.style.left = '0%';
+                }
 
                 // Hide selected clip display and show tools message
                 document.getElementById('selected-clip-display').style.display = 'none';
@@ -2385,17 +3065,17 @@
                 // Remove all revealed clips but preserve the waveform gradient
                 mergedTrack.querySelectorAll('.audio-clip').forEach(clip => clip.remove());
 
-                // Restore analyze overlay if it doesn't exist
+                // Restore stem isolation overlay if it doesn't exist
                 if (!mergedTrack.querySelector('.analyze-overlay')) {
                     const analyzeOverlay = document.createElement('div');
                     analyzeOverlay.className = 'analyze-overlay';
-                    analyzeOverlay.innerHTML = '<button class="analyze-btn" onclick="analyzeWaveform(event)">Analyze</button>';
+                    analyzeOverlay.innerHTML = '<button class="analyze-btn" onclick="stemIsolation(event)">Stem Isolation</button>';
                     mergedTrack.appendChild(analyzeOverlay);
                 }
             }
 
             // Reset tools panel
-            document.getElementById('tools-message').textContent = 'Completely analyze the track to unlock available tools.';
+            document.getElementById('tools-message').textContent = 'Run Stem Isolation to separate audio layers and unlock tools.';
             document.getElementById('tools-message').style.display = 'block';
             document.getElementById('tools-container').style.display = 'none';
             document.getElementById('selected-clip-display').style.display = 'none';
@@ -2492,12 +3172,16 @@
 
             // Initially hide the layer
             trackLayer.style.display = 'none';
+
+            // Return the created element
+            return trackLayer;
         }
 
         function stopClipPlayback(event) {
             event.stopPropagation();
             const playBtn = event.target.parentElement.querySelector('.selected-clip-play-btn');
             const timeDisplay = event.target.parentElement.querySelector('.selected-clip-time');
+            const playhead = document.querySelector('.selected-clip-playhead');
 
             // Stop playback
             if (clipPlaybackInterval) {
@@ -2509,12 +3193,18 @@
             playBtn.textContent = '▶';
             timeDisplay.textContent = '00:00.000';
             isClipPlaying = false;
+
+            // Reset playhead position
+            if (playhead) {
+                playhead.style.left = '0%';
+            }
         }
 
         function toggleClipPlayback(event) {
             event.stopPropagation();
             const playBtn = event.target;
             const timeDisplay = playBtn.parentElement.querySelector('.selected-clip-time');
+            const playhead = document.querySelector('.selected-clip-playhead');
 
             if (isClipPlaying) {
                 // Stop playback
@@ -2528,7 +3218,7 @@
                 playBtn.textContent = '⏸';
                 isClipPlaying = true;
 
-                // Update time display every 50ms
+                // Update time display and playhead every 50ms
                 clipPlaybackInterval = setInterval(() => {
                     const elapsed = Date.now() - clipStartTime;
                     if (elapsed >= clipDuration) {
@@ -2537,7 +3227,18 @@
                         playBtn.textContent = '▶';
                         timeDisplay.textContent = '00:00.000';
                         isClipPlaying = false;
+                        if (playhead) {
+                            playhead.style.left = '100%';
+                        }
                         return;
+                    }
+
+                    // Calculate progress percentage
+                    const progress = (elapsed / clipDuration) * 100;
+
+                    // Update playhead position
+                    if (playhead) {
+                        playhead.style.left = `${progress}%`;
                     }
 
                     // Format time as MM:SS.mmm

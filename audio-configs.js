@@ -74,7 +74,7 @@ const AUDIO_CONFIGS = {
                 color: '#e74c3c',
                 baseHeight: 40,
                 clips: [
-                    { id: 'recording_static', left: '5%', width: '90%', title: 'Digital corruption masking evidence' }
+                    { id: 'recording_static', left: '5%', width: '90%', title: 'Digital corruption masking evidence', type: 'large' }
                 ]
             },
             'engine-signature': {
@@ -83,7 +83,7 @@ const AUDIO_CONFIGS = {
                 color: '#3498db',
                 baseHeight: 80,
                 clips: [
-                    { id: 'vehicle_engine', left: '10%', width: '80%', title: 'Hidden engine sound signature' }
+                    { id: 'vehicle_engine', left: '10%', width: '80%', title: 'Hidden engine sound signature', type: 'large' }
                 ]
             }
         }
@@ -108,11 +108,11 @@ const AUDIO_CONFIGS = {
                 color: '#e67e22',
                 baseHeight: 50,
                 clips: [
-                    { id: 'verse_one', left: '5%', width: '20%', title: 'First verse - needs boost' },
-                    { id: 'chorus_one', left: '28%', width: '22%', title: 'First chorus - too loud' },
-                    { id: 'verse_two', left: '53%', width: '18%', title: 'Second verse - good level' },
-                    { id: 'chorus_two', left: '73%', width: '22%', title: 'Second chorus - needs boost' },
-                    { id: 'outro_whisper', left: '96%', width: '3%', title: 'Whispered outro - needs major boost' }
+                    { id: 'verse_one', left: '5%', width: '20%', title: 'First verse - needs boost', type: 'large' },
+                    { id: 'chorus_one', left: '28%', width: '22%', title: 'First chorus - too loud', type: 'large' },
+                    { id: 'verse_two', left: '53%', width: '18%', title: 'Second verse - good level', type: 'large' },
+                    { id: 'chorus_two', left: '73%', width: '22%', title: 'Second chorus - needs boost', type: 'large' },
+                    { id: 'outro_whisper', left: '96%', width: '3%', title: 'Whispered outro - needs major boost', type: 'small' }
                 ]
             }
         }
@@ -137,11 +137,11 @@ const AUDIO_CONFIGS = {
                 color: '#3498db',
                 baseHeight: 50,
                 clips: [
-                    { id: 'dot_dot_dot', left: '5%', width: '8%', title: 'S - ... (SOS start)' },
-                    { id: 'dash_dash_dash', left: '18%', width: '12%', title: 'O - --- (SOS middle)' },
-                    { id: 'dot_dot_dot_2', left: '35%', width: '8%', title: 'S - ... (SOS end)' },
-                    { id: 'help_signal', left: '50%', width: '25%', title: 'HELP - .... . .-.. .--..' },
-                    { id: 'coordinates', left: '80%', width: '15%', title: 'Grid coordinates' }
+                    { id: 'dot_dot_dot', left: '5%', width: '8%', title: 'S - ... (SOS start)', type: 'small' },
+                    { id: 'dash_dash_dash', left: '18%', width: '12%', title: 'O - --- (SOS middle)', type: 'large' },
+                    { id: 'dot_dot_dot_2', left: '35%', width: '8%', title: 'S - ... (SOS end)', type: 'small' },
+                    { id: 'help_signal', left: '50%', width: '25%', title: 'HELP - .... . .-.. .--.', type: 'large' },
+                    { id: 'coordinates', left: '80%', width: '15%', title: 'Grid coordinates', type: 'large' }
                 ]
             },
             'radio-static': {
@@ -150,9 +150,9 @@ const AUDIO_CONFIGS = {
                 color: '#95a5a6',
                 baseHeight: 120,
                 clips: [
-                    { id: 'carrier_wave', left: '5%', width: '25%', title: 'Carrier wave background' },
-                    { id: 'interference_1', left: '40%', width: '15%', title: 'Signal interference' },
-                    { id: 'interference_2', left: '70%', width: '20%', title: 'Atmospheric noise' }
+                    { id: 'carrier_wave', left: '5%', width: '25%', title: 'Carrier wave background', type: 'large' },
+                    { id: 'interference_1', left: '40%', width: '15%', title: 'Signal interference', type: 'large' },
+                    { id: 'interference_2', left: '70%', width: '20%', title: 'Atmospheric noise', type: 'large' }
                 ]
             }
         }
@@ -177,7 +177,7 @@ const AUDIO_CONFIGS = {
                 color: '#27ae60',
                 baseHeight: 30,
                 clips: [
-                    { id: 'robin_spring_song', left: '25%', width: '50%', title: 'Robin territorial call - spring indicator' }
+                    { id: 'robin_spring_song', left: '25%', width: '50%', title: 'Robin territorial call - spring indicator', type: 'large' }
                 ]
             },
             'forest-ambience': {
@@ -186,8 +186,8 @@ const AUDIO_CONFIGS = {
                 color: '#2c3e50',
                 baseHeight: 70,
                 clips: [
-                    { id: 'wind_through_leaves', left: '10%', width: '40%', title: 'Wind masking bird call' },
-                    { id: 'distant_stream', left: '60%', width: '35%', title: 'Stream noise interference' }
+                    { id: 'wind_through_leaves', left: '10%', width: '40%', title: 'Wind masking bird call', type: 'large' },
+                    { id: 'distant_stream', left: '60%', width: '35%', title: 'Stream noise interference', type: 'large' }
                 ]
             },
             'viola-breathing': {
@@ -196,7 +196,7 @@ const AUDIO_CONFIGS = {
                 color: '#8e44ad',
                 baseHeight: 110,
                 clips: [
-                    { id: 'recording_breath', left: '15%', width: '70%', title: 'Viola recording herself - why?' }
+                    { id: 'recording_breath', left: '15%', width: '70%', title: 'Viola recording herself - why?', type: 'large' }
                 ]
             },
             'unknown-presence': {
@@ -205,7 +205,7 @@ const AUDIO_CONFIGS = {
                 color: '#e74c3c',
                 baseHeight: 150,
                 clips: [
-                    { id: 'footsteps_nearby', left: '45%', width: '25%', title: 'Someone else is there...' }
+                    { id: 'footsteps_nearby', left: '45%', width: '25%', title: 'Someone else is there...', type: 'small' }
                 ]
             }
         }
@@ -253,9 +253,9 @@ const AUDIO_CONFIGS = {
                 // Array of audio clips in this layer
                 clips: [
                     // Each clip needs: unique id, position (left %), size (width %), and tooltip
-                    { id: 'initial_scream', left: '15%', width: '15%', title: 'Initial scream' },
-                    { id: 'struggle_sounds', left: '45%', width: '20%', title: 'Struggle sounds' },
-                    { id: 'last_words', left: '80%', width: '15%', title: 'Last words' }
+                    { id: 'initial_scream', left: '15%', width: '15%', title: 'Initial scream', type: 'large' },
+                    { id: 'struggle_sounds', left: '45%', width: '20%', title: 'Struggle sounds', type: 'large' },
+                    { id: 'last_words', left: '80%', width: '15%', title: 'Last words', type: 'large' }
                 ]
             },
             'ghost-voices': {
@@ -264,10 +264,10 @@ const AUDIO_CONFIGS = {
                 color: '#8e44ad',
                 baseHeight: 90,
                 clips: [
-                    { id: 'whisper_1', left: '20%', width: '10%', title: 'Second whisper' },
-                    { id: 'whisper_2', left: '35%', width: '10%', title: 'Third whisper' },
-                    { id: 'whisper_3', left: '55%', width: '7%', title: 'Fourth whisper' },
-                    { id: 'whisper_4', left: '70%', width: '9%', title: 'Fifth whisper' }
+                    { id: 'whisper_1', left: '20%', width: '10%', title: 'Second whisper', type: 'small' },
+                    { id: 'whisper_2', left: '35%', width: '10%', title: 'Third whisper', type: 'small' },
+                    { id: 'whisper_3', left: '55%', width: '7%', title: 'Fourth whisper', type: 'small' },
+                    { id: 'whisper_4', left: '70%', width: '9%', title: 'Fifth whisper', type: 'small' }
                 ]
             },
             'investigation': {
@@ -276,8 +276,8 @@ const AUDIO_CONFIGS = {
                 color: '#27ae60',
                 baseHeight: 150,
                 clips: [
-                    { id: 'police_report', left: '40%', width: '15%', title: 'Police recording' },
-                    { id: 'witness_statement', left: '70%', width: '20%', title: 'Witness statement' }
+                    { id: 'police_report', left: '40%', width: '15%', title: 'Police recording', type: 'large' },
+                    { id: 'witness_statement', left: '70%', width: '20%', title: 'Witness statement', type: 'large' }
                 ]
             },
             'ambient-static-wave': {
@@ -286,9 +286,9 @@ const AUDIO_CONFIGS = {
                 color: '#34495e',
                 baseHeight: 210,
                 clips: [
-                    { id: 'room_tone', left: '10%', width: '20%', title: 'Room tone' },
-                    { id: 'static_burst', left: '35%', width: '20%', title: 'Static burst' },
-                    { id: 'tape_hiss', left: '70%', width: '25%', title: 'Tape hiss' }
+                    { id: 'room_tone', left: '10%', width: '20%', title: 'Room tone', type: 'large' },
+                    { id: 'static_burst', left: '35%', width: '20%', title: 'Static burst', type: 'large' },
+                    { id: 'tape_hiss', left: '70%', width: '25%', title: 'Tape hiss', type: 'large' }
                 ]
             }
         }
@@ -314,9 +314,9 @@ const AUDIO_CONFIGS = {
                 color: '#e74c3c',
                 baseHeight: 20,
                 clips: [
-                    { id: 'clean_speech', left: '10%', width: '20%', title: 'Clean speech sample' },
-                    { id: 'distorted_voice', left: '40%', width: '25%', title: 'Distorted voice' },
-                    { id: 'whispered_words', left: '75%', width: '20%', title: 'Whispered words' }
+                    { id: 'clean_speech', left: '10%', width: '20%', title: 'Clean speech sample', type: 'large' },
+                    { id: 'distorted_voice', left: '40%', width: '25%', title: 'Distorted voice', type: 'large' },
+                    { id: 'whispered_words', left: '75%', width: '20%', title: 'Whispered words', type: 'large' }
                 ]
             },
             'background-noise': {
@@ -325,8 +325,8 @@ const AUDIO_CONFIGS = {
                 color: '#f39c12',
                 baseHeight: 50,
                 clips: [
-                    { id: 'room_ambience', left: '5%', width: '25%', title: 'Room ambience baseline' },
-                    { id: 'hvac_hum', left: '40%', width: '25%', title: 'HVAC system hum' }
+                    { id: 'room_ambience', left: '5%', width: '25%', title: 'Room ambience baseline', type: 'large' },
+                    { id: 'hvac_hum', left: '40%', width: '25%', title: 'HVAC system hum', type: 'large' }
                 ]
             },
             'electrical-interference': {
@@ -335,8 +335,8 @@ const AUDIO_CONFIGS = {
                 color: '#1abc9c',
                 baseHeight: 80,
                 clips: [
-                    { id: 'power_line_buzz', left: '20%', width: '25%', title: '60Hz power line buzz' },
-                    { id: 'fluorescent_flicker', left: '60%', width: '25%', title: 'Fluorescent light flicker' }
+                    { id: 'power_line_buzz', left: '20%', width: '25%', title: '60Hz power line buzz', type: 'large' },
+                    { id: 'fluorescent_flicker', left: '60%', width: '25%', title: 'Fluorescent light flicker', type: 'large' }
                 ]
             },
             'mechanical-sounds': {
@@ -345,9 +345,9 @@ const AUDIO_CONFIGS = {
                 color: '#e67e22',
                 baseHeight: 110,
                 clips: [
-                    { id: 'fan_motor', left: '15%', width: '25%', title: 'Cooling fan motor' },
-                    { id: 'hard_drive_seek', left: '50%', width: '15%', title: 'Hard drive seek noise' },
-                    { id: 'keyboard_clicks', left: '75%', width: '20%', title: 'Keyboard clicking' }
+                    { id: 'fan_motor', left: '15%', width: '25%', title: 'Cooling fan motor', type: 'large' },
+                    { id: 'hard_drive_seek', left: '50%', width: '15%', title: 'Hard drive seek noise', type: 'small' },
+                    { id: 'keyboard_clicks', left: '75%', width: '20%', title: 'Keyboard clicking', type: 'small' }
                 ]
             },
             'digital-artifacts': {
@@ -356,9 +356,9 @@ const AUDIO_CONFIGS = {
                 color: '#9b59b6',
                 baseHeight: 140,
                 clips: [
-                    { id: 'compression_artifacts', left: '25%', width: '20%', title: 'Compression artifacts' },
-                    { id: 'quantization_noise', left: '50%', width: '25%', title: 'Quantization noise' },
-                    { id: 'clock_jitter', left: '80%', width: '10%', title: 'Clock jitter' }
+                    { id: 'compression_artifacts', left: '25%', width: '20%', title: 'Compression artifacts', type: 'large' },
+                    { id: 'quantization_noise', left: '50%', width: '25%', title: 'Quantization noise', type: 'large' },
+                    { id: 'clock_jitter', left: '80%', width: '10%', title: 'Clock jitter', type: 'small' }
                 ]
             },
             'frequency-sweeps': {
@@ -367,9 +367,9 @@ const AUDIO_CONFIGS = {
                 color: '#27ae60',
                 baseHeight: 170,
                 clips: [
-                    { id: 'low_freq_sweep', left: '10%', width: '25%', title: 'Low frequency sweep' },
-                    { id: 'mid_freq_sweep', left: '40%', width: '25%', title: 'Mid frequency sweep' },
-                    { id: 'high_freq_sweep', left: '70%', width: '25%', title: 'High frequency sweep' }
+                    { id: 'low_freq_sweep', left: '10%', width: '25%', title: 'Low frequency sweep', type: 'large' },
+                    { id: 'mid_freq_sweep', left: '40%', width: '25%', title: 'Mid frequency sweep', type: 'large' },
+                    { id: 'high_freq_sweep', left: '70%', width: '25%', title: 'High frequency sweep', type: 'large' }
                 ]
             },
             'calibration-tones': {
@@ -378,11 +378,11 @@ const AUDIO_CONFIGS = {
                 color: '#34495e',
                 baseHeight: 200,
                 clips: [
-                    { id: 'reference_tone_440', left: '5%', width: '15%', title: '440Hz reference tone' },
-                    { id: 'reference_tone_1k', left: '25%', width: '15%', title: '1kHz reference tone' },
-                    { id: 'pink_noise_burst', left: '45%', width: '20%', title: 'Pink noise burst' },
-                    { id: 'white_noise_burst', left: '70%', width: '20%', title: 'White noise burst' },
-                    { id: 'silence_test', left: '92%', width: '6%', title: 'Silence test' }
+                    { id: 'reference_tone_440', left: '5%', width: '15%', title: '440Hz reference tone', type: 'large' },
+                    { id: 'reference_tone_1k', left: '25%', width: '15%', title: '1kHz reference tone', type: 'large' },
+                    { id: 'pink_noise_burst', left: '45%', width: '20%', title: 'Pink noise burst', type: 'large' },
+                    { id: 'white_noise_burst', left: '70%', width: '20%', title: 'White noise burst', type: 'large' },
+                    { id: 'silence_test', left: '92%', width: '6%', title: 'Silence test', type: 'small' }
                 ]
             }
         }
@@ -407,18 +407,18 @@ const AUDIO_CONFIGS = {
                 color: '#e74c3c',
                 baseHeight: 25,
                 clips: [
-                    { id: 'violin_opening_movement', left: '1%', width: '18%', title: 'Opening violin movement' },
-                    { id: 'violin_cough_1', left: '19%', width: '2%', title: 'Violinist cough' },
-                    { id: 'violin_lyrical_section', left: '22%', width: '15%', title: 'Lyrical violin section' },
-                    { id: 'violin_page_turn', left: '37%', width: '1%', title: 'Page turn noise' },
-                    { id: 'violin_development_passage', left: '39%', width: '22%', title: 'Development passage with arpeggios and tremolo' },
-                    { id: 'violin_bow_scratch', left: '61%', width: '2%', title: 'Bow scratch' },
-                    { id: 'violin_dramatic_crescendo', left: '64%', width: '16%', title: 'Dramatic crescendo build' },
-                    { id: 'violin_chair_creak', left: '80%', width: '1%', title: 'Chair creak' },
-                    { id: 'violin_finale_coda', left: '82%', width: '17%', title: 'Finale and coda' },
-                    { id: 'violin_sneeze', left: '84%', width: '2%', title: 'Sneeze' },
-                    { id: 'violin_string_snap', left: '92%', width: '1%', title: 'String snap' },
-                    { id: 'violin_tuning', left: '95%', width: '2%', title: 'Quick tuning' }
+                    { id: 'violin_opening_movement', left: '1%', width: '18%', title: 'Opening violin movement', type: 'large' },
+                    { id: 'violin_cough_1', left: '19%', width: '2%', title: 'Violinist cough', type: 'small' },
+                    { id: 'violin_lyrical_section', left: '22%', width: '15%', title: 'Lyrical violin section', type: 'large' },
+                    { id: 'violin_page_turn', left: '37%', width: '1%', title: 'Page turn noise', type: 'small' },
+                    { id: 'violin_development_passage', left: '39%', width: '22%', title: 'Development passage with arpeggios and tremolo', type: 'large' },
+                    { id: 'violin_bow_scratch', left: '61%', width: '2%', title: 'Bow scratch', type: 'small' },
+                    { id: 'violin_dramatic_crescendo', left: '64%', width: '16%', title: 'Dramatic crescendo build', type: 'large' },
+                    { id: 'violin_chair_creak', left: '80%', width: '1%', title: 'Chair creak', type: 'small' },
+                    { id: 'violin_finale_coda', left: '82%', width: '17%', title: 'Finale and coda', type: 'large' },
+                    { id: 'violin_sneeze', left: '84%', width: '2%', title: 'Sneeze', type: 'small' },
+                    { id: 'violin_string_snap', left: '92%', width: '1%', title: 'String snap', type: 'small' },
+                    { id: 'violin_tuning', left: '95%', width: '2%', title: 'Quick tuning', type: 'small' }
                 ]
             },
             'brass-section': {
@@ -427,16 +427,16 @@ const AUDIO_CONFIGS = {
                 color: '#f39c12',
                 baseHeight: 60,
                 clips: [
-                    { id: 'brass_fanfare_opening', left: '2%', width: '20%', title: 'Grand brass fanfare opening' },
-                    { id: 'trumpet_spit', left: '22%', width: '1%', title: 'Trumpet spit valve' },
-                    { id: 'brass_harmonic_development', left: '24%', width: '18%', title: 'Brass harmonic development section' },
-                    { id: 'trombone_bump', left: '42%', width: '2%', title: 'Trombone stand bump' },
-                    { id: 'brass_chorale_movement', left: '45%', width: '25%', title: 'Majestic brass chorale movement' },
-                    { id: 'horn_cough', left: '70%', width: '2%', title: 'French horn cough' },
-                    { id: 'brass_climactic_finale', left: '73%', width: '24%', title: 'Climactic brass finale with all sections' },
-                    { id: 'brass_valve_click', left: '85%', width: '1%', title: 'Valve click' },
-                    { id: 'tuba_wheeze', left: '90%', width: '2%', title: 'Tuba player wheeze' },
-                    { id: 'trombone_slide_squeak', left: '95%', width: '1%', title: 'Slide squeak' }
+                    { id: 'brass_fanfare_opening', left: '2%', width: '20%', title: 'Grand brass fanfare opening', type: 'large' },
+                    { id: 'trumpet_spit', left: '22%', width: '1%', title: 'Trumpet spit valve', type: 'small' },
+                    { id: 'brass_harmonic_development', left: '24%', width: '18%', title: 'Brass harmonic development section', type: 'large' },
+                    { id: 'trombone_bump', left: '42%', width: '2%', title: 'Trombone stand bump', type: 'small' },
+                    { id: 'brass_chorale_movement', left: '45%', width: '25%', title: 'Majestic brass chorale movement', type: 'large' },
+                    { id: 'horn_cough', left: '70%', width: '2%', title: 'French horn cough', type: 'small' },
+                    { id: 'brass_climactic_finale', left: '73%', width: '24%', title: 'Climactic brass finale with all sections', type: 'large' },
+                    { id: 'brass_valve_click', left: '85%', width: '1%', title: 'Valve click', type: 'small' },
+                    { id: 'tuba_wheeze', left: '90%', width: '2%', title: 'Tuba player wheeze', type: 'small' },
+                    { id: 'trombone_slide_squeak', left: '95%', width: '1%', title: 'Slide squeak', type: 'small' }
                 ]
             },
             'woodwind-section': {
@@ -445,18 +445,18 @@ const AUDIO_CONFIGS = {
                 color: '#27ae60',
                 baseHeight: 95,
                 clips: [
-                    { id: 'woodwind_pastoral_opening', left: '1%', width: '16%', title: 'Pastoral woodwind opening with flute and oboe' },
-                    { id: 'clarinet_squeak', left: '17%', width: '1%', title: 'Clarinet squeak' },
-                    { id: 'woodwind_development', left: '19%', width: '21%', title: 'Woodwind development with clarinet scales and bassoon' },
-                    { id: 'oboe_reed_pop', left: '40%', width: '1%', title: 'Oboe reed pop' },
-                    { id: 'woodwind_ensemble_movement', left: '42%', width: '26%', title: 'Full woodwind ensemble movement' },
-                    { id: 'flute_key_click', left: '68%', width: '1%', title: 'Flute key click' },
-                    { id: 'piccolo_screech', left: '70%', width: '1%', title: 'Piccolo screech' },
-                    { id: 'woodwind_harmonic_finale', left: '72%', width: '25%', title: 'Woodwind harmonic finale with all sections' },
-                    { id: 'clarinet_cough', left: '80%', width: '2%', title: 'Clarinetist cough' },
-                    { id: 'flute_breath_pop', left: '90%', width: '1%', title: 'Breath pop' },
-                    { id: 'sax_honk', left: '93%', width: '2%', title: 'Saxophone honk' },
-                    { id: 'woodwind_rustle', left: '96%', width: '1%', title: 'Music stand rustle' }
+                    { id: 'woodwind_pastoral_opening', left: '1%', width: '16%', title: 'Pastoral woodwind opening with flute and oboe', type: 'large' },
+                    { id: 'clarinet_squeak', left: '17%', width: '1%', title: 'Clarinet squeak', type: 'small' },
+                    { id: 'woodwind_development', left: '19%', width: '21%', title: 'Woodwind development with clarinet scales and bassoon', type: 'large' },
+                    { id: 'oboe_reed_pop', left: '40%', width: '1%', title: 'Oboe reed pop', type: 'small' },
+                    { id: 'woodwind_ensemble_movement', left: '42%', width: '26%', title: 'Full woodwind ensemble movement', type: 'large' },
+                    { id: 'flute_key_click', left: '68%', width: '1%', title: 'Flute key click', type: 'small' },
+                    { id: 'piccolo_screech', left: '70%', width: '1%', title: 'Piccolo screech', type: 'small' },
+                    { id: 'woodwind_harmonic_finale', left: '72%', width: '25%', title: 'Woodwind harmonic finale with all sections', type: 'large' },
+                    { id: 'clarinet_cough', left: '80%', width: '2%', title: 'Clarinetist cough', type: 'small' },
+                    { id: 'flute_breath_pop', left: '90%', width: '1%', title: 'Breath pop', type: 'small' },
+                    { id: 'sax_honk', left: '93%', width: '2%', title: 'Saxophone honk', type: 'small' },
+                    { id: 'woodwind_rustle', left: '96%', width: '1%', title: 'Music stand rustle', type: 'small' }
                 ]
             },
             'percussion-section': {
@@ -465,17 +465,17 @@ const AUDIO_CONFIGS = {
                 color: '#9b59b6',
                 baseHeight: 130,
                 clips: [
-                    { id: 'percussion_rhythmic_foundation', left: '3%', width: '28%', title: 'Rhythmic foundation - timpani, snare, and ensemble' },
-                    { id: 'cymbal_touch', left: '31%', width: '1%', title: 'Accidental cymbal touch' },
-                    { id: 'percussion_melodic_section', left: '33%', width: '22%', title: 'Melodic percussion - xylophone and mallet instruments' },
-                    { id: 'stick_drop', left: '55%', width: '1%', title: 'Drumstick drop' },
-                    { id: 'timpani_foot_tap', left: '57%', width: '1%', title: 'Foot pedal tap' },
-                    { id: 'percussion_dramatic_build', left: '59%', width: '28%', title: 'Dramatic build with all percussion to finale' },
-                    { id: 'triangle_ding', left: '73%', width: '1%', title: 'Early triangle' },
-                    { id: 'drum_rim_hit', left: '80%', width: '1%', title: 'Rim shot' },
-                    { id: 'percussion_cough', left: '85%', width: '2%', title: 'Percussionist cough' },
-                    { id: 'mallet_drop', left: '90%', width: '1%', title: 'Mallet drop' },
-                    { id: 'snare_buzz', left: '95%', width: '2%', title: 'Snare buzz' }
+                    { id: 'percussion_rhythmic_foundation', left: '3%', width: '28%', title: 'Rhythmic foundation - timpani, snare, and ensemble', type: 'large' },
+                    { id: 'cymbal_touch', left: '31%', width: '1%', title: 'Accidental cymbal touch', type: 'small' },
+                    { id: 'percussion_melodic_section', left: '33%', width: '22%', title: 'Melodic percussion - xylophone and mallet instruments', type: 'large' },
+                    { id: 'stick_drop', left: '55%', width: '1%', title: 'Drumstick drop', type: 'small' },
+                    { id: 'timpani_foot_tap', left: '57%', width: '1%', title: 'Foot pedal tap', type: 'small' },
+                    { id: 'percussion_dramatic_build', left: '59%', width: '28%', title: 'Dramatic build with all percussion to finale', type: 'large' },
+                    { id: 'triangle_ding', left: '73%', width: '1%', title: 'Early triangle', type: 'small' },
+                    { id: 'drum_rim_hit', left: '80%', width: '1%', title: 'Rim shot', type: 'small' },
+                    { id: 'percussion_cough', left: '85%', width: '2%', title: 'Percussionist cough', type: 'small' },
+                    { id: 'mallet_drop', left: '90%', width: '1%', title: 'Mallet drop', type: 'small' },
+                    { id: 'snare_buzz', left: '95%', width: '2%', title: 'Snare buzz', type: 'small' }
                 ]
             }
         }
