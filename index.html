@@ -1428,6 +1428,98 @@
             color: #95a5a6;
         }
 
+        /* Zoom controls styles */
+        .zoom-controls {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            display: none;
+            /* Hidden until stem isolation is complete */
+            gap: 4px;
+            z-index: 15;
+            pointer-events: auto;
+        }
+
+        .zoom-controls.enabled {
+            display: flex;
+        }
+
+        .zoom-btn {
+            width: 32px;
+            height: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .zoom-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary-purple);
+            transform: translateY(-1px);
+        }
+
+        .zoom-btn:active {
+            transform: translateY(0px);
+        }
+
+        .zoom-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .zoom-level-display {
+            position: absolute;
+            bottom: 32px;
+            right: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 10px;
+            color: var(--text-light);
+            z-index: 15;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            display: none;
+            /* Hidden until stem isolation is complete */
+        }
+
+        .zoom-level-display.enabled {
+            display: block;
+        }
+
+        .zoom-level-display.show {
+            opacity: 1;
+        }
+
+        /* Waveform canvas styles */
+        .waveform-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Hide gradient when canvas is active */
+        .track-content.canvas-active .main-waveform-gradient {
+            display: none;
+        }
+
         /* Popup styles for ??? clips */
         .clip-popup {
             position: fixed;
@@ -1551,6 +1643,15 @@
                         <div class="analyze-overlay">
                             <button class="analyze-btn" onclick="stemIsolation(event)">Stem Isolation</button>
                         </div>
+                        <!-- Zoom controls -->
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomOut(event)"
+                                title="Zoom Out (Mouse wheel down)">🔍−</button>
+                            <button class="zoom-btn" onclick="zoomIn(event)"
+                                title="Zoom In (Mouse wheel up)">🔍+</button>
+                        </div>
+                        <!-- Zoom level display -->
+                        <div class="zoom-level-display" id="zoom-level-display">100%</div>
                     </div>
                 </div>
 
@@ -1678,6 +1779,18 @@
         let isClipPlaying = false;
         let currentPopup = null;
 
+        // Zoom functionality
+        let currentZoom = 1.0; // Current default is min zoom (100%)
+        const minZoom = 1.0; // Current default is min (100%)
+        const maxZoom = 10.0; // Can zoom in 10x from current (1000%)
+        let zoomLevelTimeout = null;
+        let waveformOffsetX = 0; // Track horizontal position for zooming
+        let waveformCanvas = null;
+        let waveformCtx = null;
+        let waveformData = []; // Simulated waveform data
+        let originalClipData = new Map(); // Store original clip positions and sizes
+        let zoomEnabled = false; // Track if zoom functionality is enabled
+
         // Show popup for ??? clips
         function showClipPopup(event) {
             event.stopPropagation();
@@ -1739,6 +1852,463 @@
                 }, 200);
             }
         });
+
+        // Generate realistic waveform data based on filename
+        function generateWaveformData(filename, length = 10000) {
+            const data = [];
+
+            // Use filename as seed for reproducible randomness
+            const seed = hashString(filename);
+            let random = seededRandom(seed);
+
+            // Get file-specific characteristics
+            const fileParams = getWaveformParams(filename);
+
+            for (let i = 0; i < length; i++) {
+                const t = i / length;
+                let amplitude = 0;
+
+                // Dense noise base (much more realistic)
+                amplitude += (random() - 0.5) * fileParams.noiseLevel;
+
+                // Multiple frequency components with file-specific characteristics
+                for (let freq = 0; freq < fileParams.freqComponents.length; freq++) {
+                    const component = fileParams.freqComponents[freq];
+                    const phase = component.phase + t * Math.PI * component.frequency;
+                    amplitude += Math.sin(phase) * component.amplitude * (0.5 + 0.5 * Math.sin(t * Math.PI * component.modulation));
+                }
+
+                // Add file-specific patterns
+                if (fileParams.spikes && random() < fileParams.spikeChance) {
+                    amplitude += (random() - 0.5) * fileParams.spikeIntensity;
+                }
+
+                // Envelope shaping
+                const envelope = fileParams.envelope(t);
+                amplitude *= envelope;
+
+                // Clip to reasonable range
+                amplitude = Math.max(-1, Math.min(1, amplitude));
+
+                data.push(amplitude);
+            }
+            return data;
+        }
+
+        // Simple hash function for string
+        function hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        // Seeded random number generator
+        function seededRandom(seed) {
+            let state = seed;
+            return function () {
+                state = (state * 1664525 + 1013904223) % Math.pow(2, 32);
+                return state / Math.pow(2, 32);
+            };
+        }
+
+        // Get waveform parameters for different file types
+        function getWaveformParams(filename) {
+            const params = {
+                '1_simple_getaway_analysis.wav': {
+                    noiseLevel: 0.4,
+                    freqComponents: [
+                        { frequency: 2, amplitude: 0.3, phase: 0, modulation: 1 },
+                        { frequency: 15, amplitude: 0.2, phase: 1.2, modulation: 3 },
+                        { frequency: 80, amplitude: 0.15, phase: 2.1, modulation: 8 },
+                        { frequency: 320, amplitude: 0.1, phase: 0.5, modulation: 20 }
+                    ],
+                    spikes: true,
+                    spikeChance: 0.03,
+                    spikeIntensity: 0.6,
+                    envelope: (t) => 0.8 + 0.2 * Math.sin(t * Math.PI * 3)
+                },
+                '2_simple_vocal_harmony.wav': {
+                    noiseLevel: 0.25,
+                    freqComponents: [
+                        { frequency: 1, amplitude: 0.4, phase: 0, modulation: 0.5 },
+                        { frequency: 8, amplitude: 0.3, phase: 0.3, modulation: 2 },
+                        { frequency: 25, amplitude: 0.2, phase: 1.8, modulation: 5 },
+                        { frequency: 120, amplitude: 0.15, phase: 2.7, modulation: 12 },
+                        { frequency: 480, amplitude: 0.08, phase: 1.1, modulation: 30 }
+                    ],
+                    spikes: false,
+                    envelope: (t) => 0.6 + 0.4 * Math.sin(t * Math.PI * 2) * Math.sin(t * Math.PI * 0.8)
+                },
+                '3_medium_morse_code.wav': {
+                    noiseLevel: 0.35,
+                    freqComponents: [
+                        { frequency: 12, amplitude: 0.5, phase: 0, modulation: 0 },
+                        { frequency: 24, amplitude: 0.3, phase: 0.5, modulation: 0 },
+                        { frequency: 180, amplitude: 0.2, phase: 1.2, modulation: 15 },
+                        { frequency: 800, amplitude: 0.1, phase: 2.3, modulation: 40 }
+                    ],
+                    spikes: true,
+                    spikeChance: 0.02,
+                    spikeIntensity: 0.8,
+                    envelope: (t) => 0.7 + 0.3 * Math.abs(Math.sin(t * Math.PI * 16))
+                },
+                '4_medium_seasonal_birds.wav': {
+                    noiseLevel: 0.45,
+                    freqComponents: [
+                        { frequency: 3, amplitude: 0.2, phase: 0, modulation: 4 },
+                        { frequency: 18, amplitude: 0.25, phase: 1.5, modulation: 8 },
+                        { frequency: 75, amplitude: 0.3, phase: 0.8, modulation: 25 },
+                        { frequency: 300, amplitude: 0.2, phase: 2.9, modulation: 60 },
+                        { frequency: 1200, amplitude: 0.15, phase: 1.7, modulation: 80 }
+                    ],
+                    spikes: true,
+                    spikeChance: 0.04,
+                    spikeIntensity: 0.5,
+                    envelope: (t) => 0.5 + 0.5 * Math.sin(t * Math.PI * 6) * Math.sin(t * Math.PI * 1.3)
+                },
+                '5_medium_find_the_murderer.wav': {
+                    noiseLevel: 0.5,
+                    freqComponents: [
+                        { frequency: 1.5, amplitude: 0.25, phase: 0, modulation: 2 },
+                        { frequency: 6, amplitude: 0.2, phase: 1.1, modulation: 4 },
+                        { frequency: 20, amplitude: 0.3, phase: 2.3, modulation: 12 },
+                        { frequency: 95, amplitude: 0.25, phase: 0.7, modulation: 28 },
+                        { frequency: 380, amplitude: 0.2, phase: 1.9, modulation: 45 },
+                        { frequency: 1500, amplitude: 0.1, phase: 2.8, modulation: 120 }
+                    ],
+                    spikes: true,
+                    spikeChance: 0.025,
+                    spikeIntensity: 0.7,
+                    envelope: (t) => 0.6 + 0.4 * Math.sin(t * Math.PI * 5) * Math.sin(t * Math.PI * 1.8)
+                },
+                '6_complex_noise_profiling.wav': {
+                    noiseLevel: 0.6,
+                    freqComponents: [
+                        { frequency: 4, amplitude: 0.15, phase: 0, modulation: 3 },
+                        { frequency: 12, amplitude: 0.2, phase: 0.9, modulation: 6 },
+                        { frequency: 35, amplitude: 0.25, phase: 1.7, modulation: 18 },
+                        { frequency: 140, amplitude: 0.3, phase: 2.5, modulation: 35 },
+                        { frequency: 560, amplitude: 0.2, phase: 0.3, modulation: 70 },
+                        { frequency: 2200, amplitude: 0.15, phase: 1.4, modulation: 150 }
+                    ],
+                    spikes: true,
+                    spikeChance: 0.05,
+                    spikeIntensity: 0.4,
+                    envelope: (t) => 0.7 + 0.3 * Math.sin(t * Math.PI * 7) * Math.sin(t * Math.PI * 2.3)
+                },
+                '7_complex_orchestra_hickups.wav': {
+                    noiseLevel: 0.3,
+                    freqComponents: [
+                        { frequency: 0.8, amplitude: 0.35, phase: 0, modulation: 1 },
+                        { frequency: 4, amplitude: 0.3, phase: 0.6, modulation: 3 },
+                        { frequency: 16, amplitude: 0.25, phase: 1.9, modulation: 8 },
+                        { frequency: 64, amplitude: 0.2, phase: 2.7, modulation: 20 },
+                        { frequency: 256, amplitude: 0.15, phase: 1.3, modulation: 50 },
+                        { frequency: 1024, amplitude: 0.1, phase: 0.1, modulation: 100 }
+                    ],
+                    spikes: true,
+                    spikeChance: 0.015,
+                    spikeIntensity: 0.8,
+                    envelope: (t) => 0.8 + 0.2 * Math.sin(t * Math.PI * 4) * Math.sin(t * Math.PI * 0.7)
+                }
+            };
+
+            return params[filename] || params['5_medium_find_the_murderer.wav']; // Default fallback
+        }
+
+        // Draw waveform on canvas
+        function drawWaveform() {
+            if (!waveformCanvas || !waveformCtx) return;
+
+            const width = waveformCanvas.width;
+            const height = waveformCanvas.height;
+            const centerY = height / 2;
+
+            // Clear canvas
+            waveformCtx.clearRect(0, 0, width, height);
+
+            // Calculate how many samples to show based on zoom
+            const samplesPerPixel = Math.max(1, Math.floor(waveformData.length / (width * currentZoom)));
+            const startSample = Math.floor(waveformOffsetX * waveformData.length);
+
+            // Set waveform style
+            waveformCtx.strokeStyle = getCurrentWaveformColor();
+            waveformCtx.lineWidth = 1;
+            waveformCtx.beginPath();
+
+            for (let x = 0; x < width; x++) {
+                const sampleIndex = startSample + Math.floor(x * samplesPerPixel);
+                if (sampleIndex >= waveformData.length) break;
+
+                // Average samples for anti-aliasing when zoomed out
+                let amplitude = 0;
+                const samplesToAverage = Math.max(1, samplesPerPixel);
+                for (let s = 0; s < samplesToAverage && sampleIndex + s < waveformData.length; s++) {
+                    amplitude += waveformData[sampleIndex + s];
+                }
+                amplitude /= samplesToAverage;
+
+                const y = centerY + amplitude * centerY * 0.8;
+
+                if (x === 0) {
+                    waveformCtx.moveTo(x, y);
+                } else {
+                    waveformCtx.lineTo(x, y);
+                }
+            }
+
+            waveformCtx.stroke();
+        }
+
+        // Get current waveform color based on loaded file
+        function getCurrentWaveformColor() {
+            // Colors matching the main gradient themes
+            const colors = {
+                '1_simple_getaway_analysis.wav': '#e74c3c',
+                '2_simple_vocal_harmony.wav': '#e67e22',
+                '3_medium_morse_code.wav': '#3498db',
+                '4_medium_seasonal_birds.wav': '#27ae60',
+                '5_medium_find_the_murderer.wav': '#9b59b6',
+                '6_complex_noise_profiling.wav': '#f39c12',
+                '7_complex_orchestra_hickups.wav': '#e74c3c'
+            };
+
+            const currentFile = document.querySelector('#merged .track-info span:first-child')?.textContent;
+            return colors[currentFile] || '#9b59b6';
+        }
+
+        // Zoom functionality
+        function updateZoom(targetX = null) {
+            // Adjust offset position to keep target point in view
+            if (targetX !== null && waveformCanvas) {
+                const containerWidth = waveformCanvas.width;
+                const targetPercent = targetX / containerWidth;
+
+                // Calculate new offset to keep target centered
+                const maxOffset = 1 - (1 / currentZoom);
+                waveformOffsetX = targetPercent * maxOffset;
+                waveformOffsetX = Math.max(0, Math.min(maxOffset, waveformOffsetX));
+            }
+
+            // Redraw waveform with new zoom level
+            drawWaveform();
+
+            // Update clip positions and sizes based on zoom
+            updateClipPositions();
+
+            // Update zoom level display
+            const zoomDisplay = document.getElementById('zoom-level-display');
+            if (zoomDisplay) {
+                const percentage = Math.round(100 * currentZoom);
+                zoomDisplay.textContent = `${percentage}%`;
+                zoomDisplay.classList.add('show');
+
+                // Hide after 2 seconds
+                clearTimeout(zoomLevelTimeout);
+                zoomLevelTimeout = setTimeout(() => {
+                    zoomDisplay.classList.remove('show');
+                }, 2000);
+            }
+
+            // Update button states
+            updateZoomButtons();
+        }
+
+        function updateZoomButtons() {
+            const zoomInBtn = document.querySelector('.zoom-btn[onclick*="zoomIn"]');
+            const zoomOutBtn = document.querySelector('.zoom-btn[onclick*="zoomOut"]');
+
+            if (zoomInBtn) {
+                zoomInBtn.classList.toggle('disabled', !zoomEnabled || currentZoom >= maxZoom);
+            }
+            if (zoomOutBtn) {
+                zoomOutBtn.classList.toggle('disabled', !zoomEnabled || currentZoom <= minZoom);
+            }
+        }
+
+        // Enable zoom functionality and show controls
+        function enableZoomControls() {
+            zoomEnabled = true;
+
+            // Show zoom controls
+            const zoomControls = document.querySelector('.zoom-controls');
+            const zoomDisplay = document.getElementById('zoom-level-display');
+
+            if (zoomControls) {
+                zoomControls.classList.add('enabled');
+            }
+            if (zoomDisplay) {
+                zoomDisplay.classList.add('enabled');
+            }
+
+            // Update button states
+            updateZoomButtons();
+        }
+
+        function zoomIn(event) {
+            event.stopPropagation();
+            if (!zoomEnabled || currentZoom >= maxZoom) return;
+
+            currentZoom = Math.min(maxZoom, currentZoom * 1.25);
+            // Zoom to center for button clicks
+            const container = document.querySelector('#merged .track-content');
+            const centerX = container ? container.offsetWidth / 2 : 0;
+            updateZoom(centerX);
+        }
+
+        function zoomOut(event) {
+            event.stopPropagation();
+            if (!zoomEnabled || currentZoom <= minZoom) return;
+
+            currentZoom = Math.max(minZoom, currentZoom / 1.25);
+            // Zoom to center for button clicks
+            const container = document.querySelector('#merged .track-content');
+            const centerX = container ? container.offsetWidth / 2 : 0;
+            updateZoom(centerX);
+        }
+
+        // Store original clip positions and sizes for zoom calculations
+        function storeOriginalClipData() {
+            originalClipData.clear();
+
+            // Store data for all visible clips in merged view
+            const mergedClips = document.querySelectorAll('#merged .audio-clip');
+            mergedClips.forEach(clip => {
+                const left = parseFloat(clip.style.left.replace('%', ''));
+                const width = parseFloat(clip.style.width.replace('%', ''));
+                const clipId = clip.dataset.clip;
+
+                originalClipData.set(clipId, {
+                    left: left,
+                    width: width,
+                    element: clip
+                });
+            });
+        }
+
+        // Update clip positions and sizes based on current zoom level
+        function updateClipPositions() {
+            if (originalClipData.size === 0) return;
+
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (!mergedTrack) return;
+
+            // Calculate visible range in original coordinates (0-100%)
+            const visibleStart = waveformOffsetX * 100;
+            const visibleEnd = visibleStart + (100 / currentZoom);
+
+            originalClipData.forEach((originalData, clipId) => {
+                const clip = originalData.element;
+                if (!clip) return;
+
+                // Calculate original clip boundaries
+                const originalLeft = originalData.left;
+                const originalRight = originalData.left + originalData.width;
+
+                // Check if clip is visible in current zoom view
+                if (originalRight < visibleStart || originalLeft > visibleEnd) {
+                    // Clip is completely outside visible area
+                    clip.style.display = 'none';
+                    return;
+                }
+
+                // Clip is at least partially visible
+                clip.style.display = 'flex';
+
+                // Calculate new position and size
+                // Convert from original coordinates to zoomed coordinates
+                const newLeft = ((originalLeft - visibleStart) / (100 / currentZoom)) * 100;
+                const newWidth = (originalData.width / (100 / currentZoom)) * 100;
+
+                // Clamp to visible boundaries
+                const clampedLeft = Math.max(0, newLeft);
+                const clampedRight = Math.min(100, newLeft + newWidth);
+                const clampedWidth = clampedRight - clampedLeft;
+
+                // Apply new position and size
+                clip.style.left = `${clampedLeft}%`;
+                clip.style.width = `${clampedWidth}%`;
+
+                // Fade out clips that are partially visible at edges
+                if (clampedLeft <= 1 || clampedRight >= 99) {
+                    clip.style.opacity = '0.6';
+                } else {
+                    clip.style.opacity = '';
+                }
+            });
+        }
+
+        // Initialize waveform canvas
+        function initializeWaveformCanvas() {
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (!mergedTrack) return;
+
+            // Create canvas element
+            waveformCanvas = document.createElement('canvas');
+            waveformCanvas.className = 'waveform-canvas';
+            mergedTrack.appendChild(waveformCanvas);
+
+            // Get 2D context
+            waveformCtx = waveformCanvas.getContext('2d');
+
+            // Set canvas size to match container
+            function resizeCanvas() {
+                const rect = mergedTrack.getBoundingClientRect();
+                waveformCanvas.width = rect.width;
+                waveformCanvas.height = rect.height;
+                drawWaveform();
+            }
+
+            // Initial resize and setup
+            resizeCanvas();
+
+            // Handle window resize
+            window.addEventListener('resize', resizeCanvas);
+
+            // Mark track as canvas-active to hide gradient
+            mergedTrack.classList.add('canvas-active');
+
+            // Generate waveform data based on current file
+            const currentFile = document.querySelector('#merged .track-info span:first-child')?.textContent || '5_medium_find_the_murderer.wav';
+            waveformData = generateWaveformData(currentFile, 10000);
+            drawWaveform();
+        }
+
+        // Mouse wheel zoom functionality
+        function initializeZoomControls() {
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (mergedTrack) {
+                mergedTrack.addEventListener('wheel', function (event) {
+                    // Only prevent default and zoom if zoom is enabled
+                    if (!zoomEnabled) return;
+
+                    event.preventDefault();
+
+                    // Get mouse X position relative to the container
+                    const rect = mergedTrack.getBoundingClientRect();
+                    const mouseX = event.clientX - rect.left;
+
+                    if (event.deltaY < 0) {
+                        // Scroll up = zoom in
+                        if (currentZoom >= maxZoom) return;
+                        currentZoom = Math.min(maxZoom, currentZoom * 1.25);
+                        updateZoom(mouseX);
+                    } else {
+                        // Scroll down = zoom out
+                        if (currentZoom <= minZoom) return;
+                        currentZoom = Math.max(minZoom, currentZoom / 1.25);
+                        updateZoom(mouseX);
+                    }
+                });
+            }
+
+            // Initialize button states
+            updateZoomButtons();
+        }
 
         // Plugin configuration
         const PLUGIN_CONFIG = [
@@ -2198,6 +2768,10 @@
 
                 // If all clips are discovered, enable tools
                 if (remainingClips.length === 0) {
+                    // Store original clip data for zoom functionality
+                    storeOriginalClipData();
+                    // Enable zoom controls now that clips are available
+                    enableZoomControls();
                     enableTools();
                 }
             }, 500);
@@ -2495,6 +3069,12 @@
             // Remove loading overlay
             loadingOverlay.remove();
 
+            // Store original clip data for zoom functionality
+            storeOriginalClipData();
+
+            // Enable zoom controls now that clips are available
+            enableZoomControls();
+
             // Enable tools
             enableTools();
 
@@ -2723,6 +3303,17 @@
             const mergedTrack = document.querySelector('#merged .track-content');
             if (mergedTrack) {
                 mergedTrack.appendChild(mergedClip);
+
+                // Update stored clip data if we're already tracking clips
+                if (originalClipData.size > 0) {
+                    const left = parseFloat(clip.left.replace('%', ''));
+                    const width = parseFloat(clip.width.replace('%', ''));
+                    originalClipData.set(clip.id, {
+                        left: left,
+                        width: width,
+                        element: mergedClip
+                    });
+                }
             }
         }
 
@@ -3081,6 +3672,12 @@
             // Initialize sliders
             initSliders();
 
+            // Initialize zoom controls
+            initializeZoomControls();
+
+            // Initialize waveform canvas
+            initializeWaveformCanvas();
+
             // Load default file configuration (simplest file)
             const defaultConfig = AUDIO_CONFIGS['1_simple_getaway_analysis.wav'];
             if (defaultConfig) {
@@ -3142,6 +3739,20 @@
             // Clear all clip effects
             clipEffects.clear();
 
+            // Clear clip position data
+            originalClipData.clear();
+
+            // Disable zoom and hide controls
+            zoomEnabled = false;
+            const zoomControls = document.querySelector('.zoom-controls');
+            const zoomDisplay = document.getElementById('zoom-level-display');
+            if (zoomControls) {
+                zoomControls.classList.remove('enabled');
+            }
+            if (zoomDisplay) {
+                zoomDisplay.classList.remove('enabled');
+            }
+
             // Stop any playback
             if (isPlaying) {
                 stopMainPlayback({ stopPropagation: () => { } });
@@ -3156,6 +3767,20 @@
             currentTime = 0;
             updateTimeDisplay();
             updatePlaybackMarker();
+
+            // Reset zoom
+            currentZoom = 1.0;
+            waveformOffsetX = 0;
+
+            // Reset canvas waveform if it exists
+            if (waveformCanvas) {
+                // Regenerate waveform data for new file
+                const currentFile = document.querySelector('#merged .track-info span:first-child')?.textContent || '5_medium_find_the_murderer.wav';
+                waveformData = generateWaveformData(currentFile, 10000);
+                drawWaveform();
+            }
+
+            updateZoomButtons();
 
             // Hide and remove all dynamic track layers (keep only merged)
             const trackLayers = document.querySelectorAll('.track-layer:not(#merged)');
