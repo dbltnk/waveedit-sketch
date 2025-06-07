@@ -1427,6 +1427,45 @@
         #merged .audio-clip[data-layer^="misc-"] {
             color: #95a5a6;
         }
+
+        /* Popup styles for ??? clips */
+        .clip-popup {
+            position: fixed;
+            background: var(--bg-secondary);
+            border: 2px solid var(--primary-purple);
+            border-radius: 8px;
+            padding: 15px 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            color: var(--text-primary);
+            font-size: 14px;
+            max-width: 300px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.2s ease;
+        }
+
+        .clip-popup.show {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .clip-popup::before {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--primary-purple);
+        }
     </style>
 </head>
 
@@ -1637,6 +1676,69 @@
         let clipStartTime = 0;
         let clipDuration = 0;
         let isClipPlaying = false;
+        let currentPopup = null;
+
+        // Show popup for ??? clips
+        function showClipPopup(event) {
+            event.stopPropagation();
+
+            // Remove any existing popup
+            if (currentPopup) {
+                currentPopup.remove();
+                currentPopup = null;
+            }
+
+            // Only show popup for hidden ??? clips
+            if (!event.target.classList.contains('hidden-small')) {
+                return;
+            }
+
+            // Create popup
+            const popup = document.createElement('div');
+            popup.className = 'clip-popup';
+            popup.textContent = 'Zoom into the WAV file to find and identify this clip.';
+
+            // Position popup above the clip
+            const rect = event.target.getBoundingClientRect();
+            popup.style.left = `${rect.left + (rect.width / 2)}px`;
+            popup.style.top = `${rect.top - 10}px`;
+            popup.style.transform = 'translate(-50%, -100%) scale(0.8)';
+
+            document.body.appendChild(popup);
+            currentPopup = popup;
+
+            // Show popup with animation
+            requestAnimationFrame(() => {
+                popup.classList.add('show');
+                popup.style.transform = 'translate(-50%, -100%) scale(1)';
+            });
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                if (currentPopup === popup) {
+                    popup.classList.remove('show');
+                    setTimeout(() => {
+                        if (currentPopup === popup) {
+                            popup.remove();
+                            currentPopup = null;
+                        }
+                    }, 200);
+                }
+            }, 3000);
+        }
+
+        // Close popup when clicking elsewhere
+        document.addEventListener('click', function (event) {
+            if (currentPopup && !event.target.classList.contains('hidden-small')) {
+                currentPopup.classList.remove('show');
+                setTimeout(() => {
+                    if (currentPopup) {
+                        currentPopup.remove();
+                        currentPopup = null;
+                    }
+                }, 200);
+            }
+        });
 
         // Plugin configuration
         const PLUGIN_CONFIG = [
@@ -2513,7 +2615,8 @@
                               data-clip="${clip.id}"
                               data-layer="${miscLayer.id}"
                               style="left: ${clip.left}; width: ${clip.width}; height: 18px; top: 6px; display: none;" 
-                              title="${clip.title}">
+                              title="Zoom into the WAV file to find and identify this clip."
+                              onclick="showClipPopup(event)">
                             ???
                         </div>`
             ).join('')}
@@ -2798,6 +2901,7 @@
         function selectClip(event) {
             if (!event.target.classList.contains('audio-clip')) return;
             if (!isAnalyzed) return; // Don't allow selection before analysis
+            if (event.target.classList.contains('hidden-small')) return; // Don't allow selection of ??? clips
 
             event.stopPropagation();
 
