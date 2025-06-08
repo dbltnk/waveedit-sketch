@@ -1731,6 +1731,56 @@
             opacity: 1;
         }
 
+        /* Pan controls styles */
+        .pan-controls {
+            position: absolute;
+            bottom: 8px;
+            right: 80px;
+            /* Position to the left of zoom controls */
+            display: none;
+            /* Hidden until stem isolation is complete */
+            gap: 4px;
+            z-index: 15;
+            pointer-events: auto;
+        }
+
+        .pan-controls.enabled {
+            display: flex;
+        }
+
+        .pan-btn {
+            width: 32px;
+            height: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .pan-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary-purple);
+            transform: translateY(-1px);
+        }
+
+        .pan-btn:active {
+            transform: translateY(0px);
+        }
+
+        .pan-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         /* Waveform canvas styles */
         .waveform-canvas {
             position: absolute;
@@ -1908,6 +1958,11 @@
                             <button class="zoom-btn" onclick="zoomIn(event)"
                                 title="Zoom In (Mouse wheel up)">🔍+</button>
                         </div>
+                        <!-- Pan controls -->
+                        <div class="pan-controls">
+                            <button class="pan-btn" onclick="panLeft(event)" title="Pan Left (Left arrow)">◀</button>
+                            <button class="pan-btn" onclick="panRight(event)" title="Pan Right (Right arrow)">▶</button>
+                        </div>
                         <!-- Zoom level display -->
                         <div class="zoom-level-display" id="zoom-level-display">100%</div>
                     </div>
@@ -2056,7 +2111,7 @@
         let zoomEnabled = false; // Track if zoom functionality is enabled
 
         // View mode state
-        let currentViewMode = 'waveform'; // 'waveform' or 'spectrogram'
+        let currentViewMode = 'waveform'; // 'waveform', 'spectrogram', or 'combined'
         let viewModePreferences = {}; // Store per-file view mode preferences
 
         // Show popup for ??? clips
@@ -2690,6 +2745,8 @@
                 drawWaveformMode(width, height);
             } else if (currentViewMode === 'spectrogram') {
                 drawSpectrogramMode(width, height);
+            } else if (currentViewMode === 'combined') {
+                drawCombinedMode(width, height);
             }
         }
 
@@ -2814,6 +2871,99 @@
             waveformCtx.stroke();
         }
 
+        // Draw combined mode (spectrogram on bottom, waveform overlay on top)
+        function drawCombinedMode(width, height) {
+            // First draw the spectrogram as background
+            if (spectrogramData.length > 0) {
+                const imageData = waveformCtx.createImageData(width, height);
+                const data = imageData.data;
+
+                const spectrogramWidth = spectrogramData[0].length;
+                const spectrogramHeight = spectrogramData.length;
+
+                // Calculate visible range
+                const visibleSamples = spectrogramWidth / currentZoom;
+                const maxStartSample = Math.max(0, spectrogramWidth - visibleSamples);
+                const startSample = Math.floor(waveformOffsetX * maxStartSample);
+                const endSample = Math.min(spectrogramWidth, startSample + visibleSamples);
+
+                // Render spectrogram pixels
+                for (let x = 0; x < width; x++) {
+                    const timeProgress = x / width;
+                    const spectrogramX = Math.floor(startSample + timeProgress * (endSample - startSample));
+
+                    if (spectrogramX >= 0 && spectrogramX < spectrogramWidth) {
+                        for (let y = 0; y < height; y++) {
+                            const spectrogramY = Math.floor(((height - 1 - y) / height) * spectrogramHeight);
+
+                            if (spectrogramY >= 0 && spectrogramY < spectrogramHeight) {
+                                const intensity = spectrogramData[spectrogramY][spectrogramX];
+                                const [r, g, b] = intensityToColor(intensity);
+
+                                const pixelIndex = (y * width + x) * 4;
+                                // Dim the spectrogram colors slightly for background
+                                data[pixelIndex] = Math.floor(r * 0.7);
+                                data[pixelIndex + 1] = Math.floor(g * 0.7);
+                                data[pixelIndex + 2] = Math.floor(b * 0.7);
+                                data[pixelIndex + 3] = 255;
+                            }
+                        }
+                    }
+                }
+
+                waveformCtx.putImageData(imageData, 0, 0);
+            }
+
+            // Then draw waveform overlay in center third of canvas
+            const centerY = height / 2;
+            const waveformHeight = height * 0.4; // Use 40% of height for waveform
+
+            const waveformWidth = waveformData.length;
+            const visibleSamples = waveformWidth / currentZoom;
+            const maxStartSample = Math.max(0, waveformWidth - visibleSamples);
+            const startSample = Math.floor(waveformOffsetX * maxStartSample);
+            const endSample = Math.min(waveformWidth, startSample + visibleSamples);
+
+            // Set waveform style with higher opacity for visibility over spectrogram
+            waveformCtx.strokeStyle = getCurrentWaveformColor();
+            waveformCtx.lineWidth = 3; // Thicker line for better visibility
+            waveformCtx.beginPath();
+
+            for (let x = 0; x < width; x++) {
+                const timeProgress = x / width;
+                const sampleIndex = Math.floor(startSample + timeProgress * (endSample - startSample));
+
+                if (sampleIndex >= 0 && sampleIndex < waveformWidth) {
+                    const amplitude = waveformData[sampleIndex];
+                    const y = centerY + amplitude * (waveformHeight / 2);
+
+                    if (x === 0) {
+                        waveformCtx.moveTo(x, y);
+                    } else {
+                        waveformCtx.lineTo(x, y);
+                    }
+                }
+            }
+
+            waveformCtx.stroke();
+
+            // Draw alignment markers
+            waveformCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            waveformCtx.lineWidth = 1;
+
+            const mark15 = width * 0.15;
+            waveformCtx.beginPath();
+            waveformCtx.moveTo(mark15, 0);
+            waveformCtx.lineTo(mark15, height);
+            waveformCtx.stroke();
+
+            const mark50 = width * 0.5;
+            waveformCtx.beginPath();
+            waveformCtx.moveTo(mark50, 0);
+            waveformCtx.lineTo(mark50, height);
+            waveformCtx.stroke();
+        }
+
         // Get current waveform color based on loaded file
         function getCurrentWaveformColor() {
             // Colors matching the main gradient themes
@@ -2844,11 +2994,11 @@
                 waveformOffsetX = Math.max(0, Math.min(maxOffset, waveformOffsetX));
             }
 
-            // Redraw visualization with new zoom level
-            drawVisualization();
-
-            // Update clip positions and sizes based on zoom
-            updateClipPositions();
+            // Redraw visualization and update clip positions in the same frame
+            requestAnimationFrame(() => {
+                drawVisualization();
+                updateClipPositions();
+            });
 
             // Update zoom level display
             const zoomDisplay = document.getElementById('zoom-level-display');
@@ -2878,6 +3028,9 @@
             if (zoomOutBtn) {
                 zoomOutBtn.classList.toggle('disabled', !zoomEnabled || currentZoom <= minZoom);
             }
+
+            // Also update pan buttons
+            updatePanButtons();
         }
 
         // Enable zoom functionality and show controls
@@ -2887,12 +3040,16 @@
             // Show zoom controls
             const zoomControls = document.querySelector('.zoom-controls');
             const zoomDisplay = document.getElementById('zoom-level-display');
+            const panControls = document.querySelector('.pan-controls');
 
             if (zoomControls) {
                 zoomControls.classList.add('enabled');
             }
             if (zoomDisplay) {
                 zoomDisplay.classList.add('enabled');
+            }
+            if (panControls) {
+                panControls.classList.add('enabled');
             }
 
             // Update button states
@@ -2919,6 +3076,52 @@
             const container = document.querySelector('#merged .track-content');
             const centerX = container ? container.offsetWidth / 2 : 0;
             updateZoom(centerX);
+        }
+
+        // Pan functionality
+        function panLeft(event) {
+            event.stopPropagation();
+            if (!zoomEnabled || currentZoom <= minZoom) return;
+
+            const panAmount = 0.1 / currentZoom; // Smaller steps when more zoomed in
+            const maxOffset = 1 - (1 / currentZoom);
+            waveformOffsetX = Math.max(0, waveformOffsetX - panAmount);
+
+            updateVisualizationAndClips();
+            updatePanButtons();
+        }
+
+        function panRight(event) {
+            event.stopPropagation();
+            if (!zoomEnabled || currentZoom <= minZoom) return;
+
+            const panAmount = 0.1 / currentZoom; // Smaller steps when more zoomed in
+            const maxOffset = 1 - (1 / currentZoom);
+            waveformOffsetX = Math.min(maxOffset, waveformOffsetX + panAmount);
+
+            updateVisualizationAndClips();
+            updatePanButtons();
+        }
+
+        function updateVisualizationAndClips() {
+            // Use requestAnimationFrame to ensure both updates happen in the same frame
+            requestAnimationFrame(() => {
+                drawVisualization();
+                updateClipPositions();
+            });
+        }
+
+        function updatePanButtons() {
+            const panLeftBtn = document.querySelector('.pan-btn[onclick*="panLeft"]');
+            const panRightBtn = document.querySelector('.pan-btn[onclick*="panRight"]');
+            const maxOffset = 1 - (1 / currentZoom);
+
+            if (panLeftBtn) {
+                panLeftBtn.classList.toggle('disabled', !zoomEnabled || currentZoom <= minZoom || waveformOffsetX <= 0);
+            }
+            if (panRightBtn) {
+                panRightBtn.classList.toggle('disabled', !zoomEnabled || currentZoom <= minZoom || waveformOffsetX >= maxOffset);
+            }
         }
 
         // Store original clip positions and sizes for zoom calculations
@@ -2971,10 +3174,12 @@
 
             // Update MISC clip visibility for view mode change
             updateMiscClipVisibility();
-            updateClipPositions();
 
-            // Redraw visualization
-            drawVisualization();
+            // Synchronize visualization and clip updates for view mode switch
+            requestAnimationFrame(() => {
+                drawVisualization();
+                updateClipPositions();
+            });
         }
 
         // Update clip positions and sizes based on current zoom level
@@ -3118,6 +3323,79 @@
 
             // Initialize button states
             updateZoomButtons();
+
+            // Add keyboard event listeners for arrow key panning
+            document.addEventListener('keydown', handleKeyboardPanning);
+
+            // Add middle mouse drag for panning
+            if (mergedTrack) {
+                mergedTrack.addEventListener('mousedown', handleMiddleMouseDown);
+                document.addEventListener('mousemove', handleMiddleMouseMove);
+                document.addEventListener('mouseup', handleMiddleMouseUp);
+            }
+        }
+
+        // Variables for middle mouse dragging
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartOffset = 0;
+
+        // Keyboard panning with arrow keys
+        function handleKeyboardPanning(event) {
+            if (!zoomEnabled || currentZoom <= minZoom) return;
+
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                panLeft(event);
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                panRight(event);
+            }
+        }
+
+        // Middle mouse button drag for panning
+        function handleMiddleMouseDown(event) {
+            if (event.button === 1) { // Middle mouse button
+                event.preventDefault();
+                if (!zoomEnabled || currentZoom <= minZoom) return;
+
+                isDragging = true;
+                dragStartX = event.clientX;
+                dragStartOffset = waveformOffsetX;
+
+                // Change cursor to indicate dragging
+                document.body.style.cursor = 'grabbing';
+            }
+        }
+
+        function handleMiddleMouseMove(event) {
+            if (!isDragging) return;
+
+            event.preventDefault();
+            const deltaX = event.clientX - dragStartX;
+            const container = document.querySelector('#merged .track-content');
+            if (!container) return;
+
+            // Convert pixel movement to offset percentage
+            const containerWidth = container.offsetWidth;
+            const offsetDelta = -(deltaX / containerWidth) * (1 / currentZoom);
+
+            const maxOffset = 1 - (1 / currentZoom);
+            waveformOffsetX = Math.max(0, Math.min(maxOffset, dragStartOffset + offsetDelta));
+
+            // Synchronize visualization and clip updates for smooth dragging
+            requestAnimationFrame(() => {
+                drawVisualization();
+                updateClipPositions();
+                updatePanButtons();
+            });
+        }
+
+        function handleMiddleMouseUp(event) {
+            if (event.button === 1) { // Middle mouse button
+                isDragging = false;
+                document.body.style.cursor = '';
+            }
         }
 
         // Check if a MISC clip should be visible based on zoom and viewport
@@ -4097,6 +4375,9 @@
         let miscIdentificationStartY = 0;
 
         function startMiscClipIdentification(event) {
+            // Only respond to left mouse button (button 0)
+            if (event.button !== 0) return;
+
             // Only work on revealed MISC clips
             const miscClipElements = document.querySelectorAll('#merged .misc-clip-hidden');
 
@@ -4230,6 +4511,9 @@
         let discoveryStartY = 0;
 
         function startSmallClipSelection(event) {
+            // Only respond to left mouse button (button 0)
+            if (event.button !== 0) return;
+
             const hiddenClips = document.querySelectorAll('.audio-clip.hidden-small');
             if (hiddenClips.length === 0) return;
 
