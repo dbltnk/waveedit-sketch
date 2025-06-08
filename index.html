@@ -1829,6 +1829,7 @@
         let clipPlaybackInterval = null;
         let mergedMiscClips = []; // Track ??? clips in merged view
         let revealedMiscClips = new Set(); // Once revealed, always visible
+        let specOnlyMiscClips = new Set(); // MISC clips only visible in Spec view
         let clipStartTime = 0;
         let clipDuration = 0;
         let isClipPlaying = false;
@@ -2761,6 +2762,10 @@
                 viewModePreferences[currentFile] = mode;
             }
 
+            // Update MISC clip visibility for view mode change
+            updateMiscClipVisibility();
+            updateClipPositions();
+
             // Redraw visualization
             drawVisualization();
         }
@@ -2912,6 +2917,12 @@
         function shouldMiscClipBeVisible(miscClip) {
             const clipWidth = parseFloat(miscClip.originalWidth.replace('%', ''));
             const clipLeft = parseFloat(miscClip.originalLeft.replace('%', ''));
+            const clipId = miscClip.clipId;
+
+            // Check if this is a spec-only clip and we're in waveform view
+            if (specOnlyMiscClips.has(clipId) && currentViewMode === 'waveform') {
+                return false;
+            }
 
             // Check size threshold: 25% of view OR max zoom
             const sizeThresholdMet = (clipWidth * currentZoom >= 25) || (currentZoom >= maxZoom);
@@ -3750,6 +3761,16 @@
             });
             mergedMiscClips = [];
 
+            // Randomly select half of the clips to be spec-only
+            specOnlyMiscClips.clear();
+            if (smallClips.length > 1) {
+                const shuffled = [...smallClips].sort(() => Math.random() - 0.5);
+                const specOnlyCount = Math.floor(smallClips.length / 2);
+                for (let i = 0; i < specOnlyCount; i++) {
+                    specOnlyMiscClips.add(shuffled[i].id);
+                }
+            }
+
             // Calculate vertical spread for MISC clips
             const trackHeight = 240; // Merged track height
             const clipHeight = 18;
@@ -4373,6 +4394,7 @@
             // Reset MISC clip discovery
             mergedMiscClips = [];
             revealedMiscClips.clear();
+            specOnlyMiscClips.clear();
 
             // Disable zoom and hide controls
             zoomEnabled = false;
