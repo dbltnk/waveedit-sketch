@@ -56,443 +56,332 @@
  */
 const AUDIO_CONFIGS = {
     /**
-     * SIMPLEST CONFIGURATION: 1_simple_getaway_analysis.wav
-     * 
-     * Easy difficulty - Simple noise removal to reveal evidence
-     * Minimal complexity with just 2 layers and 2 clips
-     * TOOLS: Only basic noise removal needed
+     * DAY 1: Police surveillance tape restoration
+     * Vincent's first assignment - simple forensic work for local authorities
+     * TOOLS: Basic mute function only
      */
     '1_simple_getaway_analysis.wav': {
         name: '1_simple_getaway_analysis.wav',
-        totalDuration: 10, // Very short and focused
+        totalDuration: 15, // Short but not too brief
         gradientClass: 'forensic-waveform-gradient',
-        availableTools: ['mute'], // Only mute tool available for simplest level
+        availableTools: ['mute'], // Only mute tool available for first day
         layers: {
             'digital-corruption': {
                 name: 'Digital_Corruption',
-                displayName: 'Layer 1',
+                displayName: 'Interference',
                 color: '#e74c3c',
                 baseHeight: 40,
                 clips: [
-                    { id: 'recording_static', left: '5%', width: '90%', title: 'Digital corruption masking evidence', type: 'large' }
+                    { id: 'transmission_static', left: '5%', width: '90%', title: 'Digital transmission interference', type: 'large' }
                 ]
             },
             'engine-signature': {
-                name: 'Engine_Signature',
-                displayName: 'Layer 2',
+                name: 'Engine_Audio',
+                displayName: 'Target Signal',
                 color: '#3498db',
                 baseHeight: 80,
                 clips: [
-                    { id: 'vehicle_engine', left: '10%', width: '80%', title: 'Hidden engine sound signature', type: 'large' }
+                    { id: 'vehicle_engine_idle', left: '10%', width: '35%', title: 'Vehicle engine idle', type: 'large' },
+                    { id: 'vehicle_engine_rev', left: '55%', width: '35%', title: 'Engine acceleration', type: 'large' }
                 ]
             }
         }
     },
 
     /**
-     * SIMPLE CONFIGURATION: 2_simple_vocal_harmony.wav
-     * 
-     * Medium difficulty - Volume leveling task with single layer
-     * Simple structure focusing on precision volume matching
-     * TOOLS: Volume balancing focus
+     * DAY 2: Local band demo restoration
+     * Volume balancing for Munich indie band's demo tape
+     * TOOLS: Volume control introduction
      */
     '2_simple_vocal_harmony.wav': {
         name: '2_simple_vocal_harmony.wav',
-        totalDuration: 120, // 2 minutes
+        totalDuration: 25, // Logical progression from 15s
         gradientClass: 'vocal-waveform-gradient',
-        availableTools: ['volume', 'noise'], // Volume control and noise reduction for vocal work
+        availableTools: ['mute', 'volume'], // Add volume control to previous mute
         layers: {
             'vocal-track': {
-                name: 'Vocal_Track',
-                displayName: 'Layer 1',
+                name: 'Lead_Vocals',
+                displayName: 'Lead Vocals',
                 color: '#e67e22',
-                baseHeight: 50,
+                baseHeight: 40,
                 clips: [
-                    { id: 'verse_one', left: '5%', width: '20%', title: 'First verse - needs boost', type: 'large' },
-                    { id: 'chorus_one', left: '28%', width: '22%', title: 'First chorus - too loud', type: 'large' },
-                    { id: 'verse_two', left: '53%', width: '18%', title: 'Second verse - good level', type: 'large' },
-                    { id: 'chorus_two', left: '73%', width: '22%', title: 'Second chorus - needs boost', type: 'large' },
-                    { id: 'breath_intake_1', left: '2%', width: '2%', title: 'Sharp breath before verse', type: 'small' },
-                    { id: 'mouth_click_1', left: '26%', width: '1%', title: 'Mouth click between sections', type: 'small' },
-                    { id: 'lip_smack', left: '51%', width: '1%', title: 'Lip smack before verse two', type: 'small' },
-                    { id: 'throat_clear', left: '71%', width: '1%', title: 'Throat clearing', type: 'small' },
-                    { id: 'breath_intake_2', left: '95%', width: '2%', title: 'Deep breath before outro', type: 'small' },
-                    { id: 'outro_whisper', left: '97%', width: '2%', title: 'Whispered outro - needs major boost', type: 'small' }
+                    { id: 'verse_one', left: '5%', width: '20%', title: 'Verse 1 - too quiet', type: 'large' },
+                    { id: 'chorus_one', left: '28%', width: '20%', title: 'Chorus 1 - too loud', type: 'large' },
+                    { id: 'verse_two', left: '53%', width: '18%', title: 'Verse 2 - good level', type: 'large' },
+                    { id: 'outro_vocals', left: '75%', width: '20%', title: 'Outro - needs boost', type: 'large' }
+                ]
+            },
+            'backing-vocals': {
+                name: 'Backing_Vocals',
+                displayName: 'Backing Vocals',
+                color: '#f39c12',
+                baseHeight: 80,
+                clips: [
+                    { id: 'harmony_one', left: '28%', width: '20%', title: 'Chorus harmony', type: 'large' },
+                    { id: 'harmony_two', left: '75%', width: '20%', title: 'Outro harmony', type: 'large' }
                 ]
             }
         }
     },
 
     /**
-     * MEDIUM-SIMPLE CONFIGURATION: 3_medium_morse_code.wav
-     * 
-     * Example of a 2-layer configuration with radio/communication theme.
-     * Shows how to create themed content with appropriate naming and colors.
-     * TOOLS: Signal clarity and pitch adjustment for decoding morse
+     * DAY 3: Historical archive restoration
+     * Cold War era radio transmission for Munich historical society
+     * TOOLS: Noise reduction and signal enhancement
      */
     '3_medium_morse_code.wav': {
         name: '3_medium_morse_code.wav',
-        totalDuration: 32, // Shorter duration than default
-        gradientClass: 'morse-waveform-gradient', // Custom gradient for morse code theme
-        availableTools: ['noise', 'volume', 'voice', 'pitch'], // Signal clarity tools for morse decoding
+        totalDuration: 35, // Progressive duration increase
+        gradientClass: 'morse-waveform-gradient',
+        availableTools: ['mute', 'volume', 'noise', 'voice', 'pitch'], // Add noise reduction and clarity tools
         layers: {
             'morse-signals': {
-                name: 'Morse_Signals',
-                displayName: 'Layer 1',
+                name: 'Morse_Transmission',
+                displayName: 'Signal',
                 color: '#3498db',
-                baseHeight: 50,
+                baseHeight: 40,
                 clips: [
-                    { id: 'dot_dot_dot', left: '5%', width: '6%', title: 'S - ... (SOS start)', type: 'small' },
-                    { id: 'dash_dash_dash', left: '18%', width: '12%', title: 'O - --- (SOS middle)', type: 'large' },
-                    { id: 'dot_dot_dot_2', left: '35%', width: '6%', title: 'S - ... (SOS end)', type: 'small' },
-                    { id: 'help_signal', left: '50%', width: '25%', title: 'HELP - .... . .-.. .--.', type: 'large' },
-                    { id: 'coordinates', left: '80%', width: '15%', title: 'Grid coordinates', type: 'large' },
-                    { id: 'signal_start_beep', left: '2%', width: '2%', title: 'Transmission start beep', type: 'small' },
-                    { id: 'carrier_glitch', left: '15%', width: '2%', title: 'Carrier frequency glitch', type: 'small' },
-                    { id: 'signal_break', left: '46%', width: '3%', title: 'Signal interruption', type: 'small' },
-                    { id: 'frequency_drift', left: '77%', width: '2%', title: 'Frequency drift noise', type: 'small' },
-                    { id: 'transmission_end', left: '96%', width: '3%', title: 'End of transmission tone', type: 'small' }
+                    { id: 'sos_transmission', left: '10%', width: '25%', title: 'SOS emergency signal', type: 'large' },
+                    { id: 'coordinates_message', left: '45%', width: '30%', title: 'Grid coordinate transmission', type: 'large' },
+                    { id: 'end_transmission', left: '80%', width: '15%', title: 'Transmission end signal', type: 'large' }
                 ]
             },
             'radio-static': {
-                name: 'Radio_Static',
-                displayName: 'Layer 2',
+                name: 'Background_Static',
+                displayName: 'Interference',
                 color: '#95a5a6',
-                baseHeight: 120,
+                baseHeight: 80,
                 clips: [
-                    { id: 'carrier_wave', left: '5%', width: '25%', title: 'Carrier wave background', type: 'large' },
-                    { id: 'interference_1', left: '40%', width: '15%', title: 'Signal interference', type: 'large' },
-                    { id: 'interference_2', left: '70%', width: '20%', title: 'Atmospheric noise', type: 'large' }
+                    { id: 'atmospheric_noise', left: '5%', width: '90%', title: 'Atmospheric radio interference', type: 'large' }
                 ]
             }
         }
     },
 
     /**
-     * MEDIUM CONFIGURATION: 4_medium_seasonal_birds.wav
-     * 
-     * Medium difficulty - Isolate specific bird call among forest sounds
-     * Overlapping layers requiring careful frequency separation
-     * TOOLS: Frequency filtering to isolate bird calls from ambient noise
+     * DAY 4: Biological research field recording
+     * Ornithology department needs specific bird species isolated
+     * TOOLS: Frequency filtering introduction
      */
     '4_medium_seasonal_birds.wav': {
         name: '4_medium_seasonal_birds.wav',
-        totalDuration: 20, // Short but intense
+        totalDuration: 45, // Longer duration for complexity
         gradientClass: 'nature-waveform-gradient',
-        availableTools: ['noise', 'volume', 'voice', 'pitch', 'highpass', 'lowpass'], // Frequency filtering tools
+        availableTools: ['mute', 'volume', 'noise', 'voice', 'pitch', 'highpass', 'lowpass'], // Add frequency filtering
         layers: {
             'target-bird-call': {
-                name: 'Target_Bird_Call',
-                displayName: 'Layer 1',
+                name: 'Robin_Calls',
+                displayName: 'Target Species',
                 color: '#27ae60',
-                baseHeight: 30,
+                baseHeight: 40,
                 clips: [
-                    { id: 'robin_spring_song', left: '25%', width: '50%', title: 'Robin territorial call - spring indicator', type: 'large' }
+                    { id: 'robin_morning_call', left: '15%', width: '20%', title: 'Robin territorial call', type: 'large' },
+                    { id: 'robin_mating_song', left: '45%', width: '25%', title: 'Robin courtship song', type: 'large' },
+                    { id: 'robin_alarm_call', left: '75%', width: '15%', title: 'Robin alarm call', type: 'large' }
                 ]
             },
-            'forest-ambience': {
+            'ambient-forest-noise': {
                 name: 'Forest_Ambience',
-                displayName: 'Layer 2',
+                displayName: 'Background Noise',
                 color: '#2c3e50',
-                baseHeight: 70,
+                baseHeight: 80,
                 clips: [
-                    { id: 'wind_through_leaves', left: '10%', width: '40%', title: 'Wind masking bird call', type: 'large' },
-                    { id: 'distant_stream', left: '60%', width: '35%', title: 'Stream noise interference', type: 'large' }
+                    { id: 'wind_noise', left: '5%', width: '35%', title: 'Wind through trees', type: 'large' },
+                    { id: 'distant_stream', left: '35%', width: '30%', title: 'Distant water sound', type: 'large' },
+                    { id: 'rustling_leaves', left: '70%', width: '25%', title: 'Leaf rustling', type: 'large' }
                 ]
             },
-            'viola-breathing': {
-                name: 'Viola_Breathing',
-                displayName: 'Layer 3',
+            'other-bird-species': {
+                name: 'Other_Birds',
+                displayName: 'Interference',
                 color: '#8e44ad',
-                baseHeight: 110,
+                baseHeight: 120,
                 clips: [
-                    { id: 'recording_breath', left: '15%', width: '70%', title: 'Viola recording herself - why?', type: 'large' }
-                ]
-            },
-            'unknown-presence': {
-                name: 'Unknown_Presence',
-                displayName: 'Layer 4',
-                color: '#e74c3c',
-                baseHeight: 150,
-                clips: [
-                    { id: 'footsteps_nearby', left: '45%', width: '8%', title: 'Someone else is there...', type: 'large' },
-                    { id: 'branch_crack_1', left: '8%', width: '3%', title: 'Branch crack from movement', type: 'small' },
-                    { id: 'distant_whistle', left: '18%', width: '4%', title: 'Distant human whistle', type: 'small' },
-                    { id: 'metal_clink', left: '35%', width: '2%', title: 'Metallic object clink', type: 'small' },
-                    { id: 'fabric_rustle', left: '55%', width: '3%', title: 'Fabric rustling', type: 'small' },
-                    { id: 'twig_snap', left: '72%', width: '2%', title: 'Twig snapping underfoot', type: 'small' },
-                    { id: 'breathing_sound', left: '85%', width: '4%', title: 'Heavy breathing nearby', type: 'small' },
-                    { id: 'zipper_sound', left: '92%', width: '2%', title: 'Zipper or gear sound', type: 'small' }
+                    { id: 'crow_cawing', left: '20%', width: '15%', title: 'Crow interference', type: 'large' },
+                    { id: 'woodpecker_drilling', left: '60%', width: '10%', title: 'Woodpecker drilling', type: 'large' },
+                    { id: 'small_bird_chatter', left: '80%', width: '15%', title: 'Mixed small bird calls', type: 'large' }
                 ]
             }
         }
     },
 
     /**
-     * MEDIUM CONFIGURATION: 5_medium_find_the_murderer.wav
-     * 
-     * This is the reference configuration showing proper structure.
-     * Use this as a template when creating new audio file configurations.
-     * TOOLS: Advanced processing including time manipulation for evidence analysis
+     * DAY 5: First Viola tape - experimental vocal layers
+     * Vincent receives his first assignment from the mysterious Viola collection
+     * TOOLS: Time manipulation tools introduced for experimental audio
      */
     '5_medium_find_the_murderer.wav': {
-        // File display name (shown in merged track info)
         name: '5_medium_find_the_murderer.wav',
-
-        // Total audio duration in seconds (affects playback controls and timeline)
-        totalDuration: 47,
-
-        // CSS class name for merged view background gradient (must exist in gradients.css)
+        totalDuration: 55, // Longer for complex Viola analysis
         gradientClass: 'main-waveform-gradient',
+        availableTools: ['mute', 'volume', 'noise', 'voice', 'pitch', 'highpass', 'lowpass', 'reverse', 'speed'], // Add time manipulation
 
-        // Available tools for this level - adds time manipulation
-        availableTools: ['noise', 'volume', 'voice', 'pitch', 'highpass', 'lowpass', 'reverse', 'speed'],
-
-        // Layer definitions - each layer represents a track with audio clips
         layers: {
-            /**
-             * LAYER CONFIGURATION EXAMPLE:
-             * Each layer needs: unique ID, display properties, positioning, and clips array
-             */
-            'evidence-recording': {
-                // Technical name for display (with underscores for readability)
-                name: 'Evidence_Recording',
-
-                // User-friendly name shown in UI
-                displayName: 'Layer 1',
-
-                // Color for this layer's clips (must match CSS rules in index.html)
+            'viola-voice-forward': {
+                name: 'Primary_Vocals',
+                displayName: 'Viola Voice',
                 color: '#e74c3c',
-
-                // Vertical position in merged view (avoid conflicts with other layers)
-                baseHeight: 30,
-
-                // Array of audio clips in this layer
+                baseHeight: 40,
                 clips: [
-                    // Each clip needs: unique id, position (left %), size (width %), and tooltip
-                    { id: 'initial_scream', left: '15%', width: '15%', title: 'Initial scream', type: 'large' },
-                    { id: 'struggle_sounds', left: '45%', width: '20%', title: 'Struggle sounds', type: 'large' },
-                    { id: 'last_words', left: '80%', width: '15%', title: 'Last words', type: 'large' }
+                    { id: 'verse_fragment', left: '10%', width: '25%', title: 'Fragmented verse - clear', type: 'large' },
+                    { id: 'emotional_passage', left: '45%', width: '30%', title: 'Emotional vocal passage', type: 'large' },
+                    { id: 'whispered_ending', left: '80%', width: '15%', title: 'Whispered conclusion', type: 'large' }
                 ]
             },
-            'ghost-voices': {
-                name: 'Ghost_Voices',
-                displayName: 'Layer 2',
+            'backwards-vocals': {
+                name: 'Reversed_Elements',
+                displayName: 'Hidden Layers',
                 color: '#8e44ad',
-                baseHeight: 90,
+                baseHeight: 80,
                 clips: [
-                    { id: 'whisper_1', left: '20%', width: '5%', title: 'Second whisper', type: 'small' },
-                    { id: 'whisper_2', left: '35%', width: '4%', title: 'Third whisper', type: 'small' },
-                    { id: 'whisper_3', left: '55%', width: '3%', title: 'Fourth whisper', type: 'small' },
-                    { id: 'whisper_4', left: '70%', width: '6%', title: 'Fifth whisper', type: 'small' }
+                    { id: 'backwards_message_1', left: '20%', width: '15%', title: 'Reversed vocal fragment', type: 'large' },
+                    { id: 'backwards_message_2', left: '55%', width: '20%', title: 'Hidden backwards speech', type: 'large' }
                 ]
             },
-            'investigation': {
-                name: 'Investigation_Notes',
-                displayName: 'Layer 3',
+            'field-recording-base': {
+                name: 'Field_Recording',
+                displayName: 'Ambience',
                 color: '#27ae60',
-                baseHeight: 150,
+                baseHeight: 120,
                 clips: [
-                    { id: 'police_report', left: '40%', width: '15%', title: 'Police recording', type: 'large' },
-                    { id: 'witness_statement', left: '70%', width: '20%', title: 'Witness statement', type: 'large' }
+                    { id: 'outdoor_recording', left: '5%', width: '90%', title: 'Outdoor field recording ambience', type: 'large' }
                 ]
             },
-            'ambient-static-wave': {
-                name: 'Ambient_Static',
-                displayName: 'Layer 4',
+            'tape-artifacts': {
+                name: 'Tape_Degradation',
+                displayName: 'Technical Issues',
                 color: '#34495e',
-                baseHeight: 210,
+                baseHeight: 160,
                 clips: [
-                    { id: 'room_tone', left: '10%', width: '20%', title: 'Room tone', type: 'large' },
-                    { id: 'static_burst', left: '35%', width: '20%', title: 'Static burst', type: 'large' },
-                    { id: 'tape_hiss', left: '70%', width: '25%', title: 'Tape hiss', type: 'large' }
+                    { id: 'tape_warble', left: '15%', width: '25%', title: 'Tape speed variation', type: 'large' },
+                    { id: 'magnetic_dropouts', left: '50%', width: '20%', title: 'Magnetic tape dropouts', type: 'large' },
+                    { id: 'analog_hiss', left: '75%', width: '20%', title: 'Analog tape hiss', type: 'large' }
                 ]
             }
         }
     },
 
     /**
-     * COMPLEX CONFIGURATION: 6_complex_noise_profiling.wav
-     * 
-     * Example of a 7-layer configuration showing maximum complexity.
-     * Demonstrates proper baseHeight spacing and technical audio clip naming.
-     * Use this as reference for multi-layer configurations.
-     * TOOLS: Technical precision tools for professional audio analysis
+     * DAY 6: Second Viola tape - complex layered experimental composition
+     * More sophisticated Viola recording requiring advanced technical analysis
+     * TOOLS: Advanced stereo and technical processing tools
      */
     '6_complex_noise_profiling.wav': {
         name: '6_complex_noise_profiling.wav',
-        totalDuration: 28, // Shortest duration example
-        gradientClass: 'noise-waveform-gradient', // Multi-color gradient theme
-        availableTools: ['noise', 'volume', 'voice', 'pitch', 'highpass', 'lowpass', 'reverse', 'speed', 'bitrate', 'stereo'], // Technical precision tools
+        totalDuration: 65, // Complex analysis requires time
+        gradientClass: 'noise-waveform-gradient',
+        availableTools: ['mute', 'volume', 'noise', 'voice', 'pitch', 'highpass', 'lowpass', 'reverse', 'speed', 'bitrate', 'stereo'], // Full technical toolkit
         layers: {
-            'vocal-track': {
-                name: 'Vocal_Track',
-                displayName: 'Layer 1',
+            'viola-vocal-layers': {
+                name: 'Primary_Voice',
+                displayName: 'Viola Voice',
                 color: '#e74c3c',
-                baseHeight: 20,
+                baseHeight: 40,
                 clips: [
-                    { id: 'clean_speech', left: '10%', width: '20%', title: 'Clean speech sample', type: 'large' },
-                    { id: 'distorted_voice', left: '40%', width: '25%', title: 'Distorted voice', type: 'large' },
-                    { id: 'whispered_words', left: '75%', width: '20%', title: 'Whispered words', type: 'large' }
+                    { id: 'vocal_harmony_base', left: '10%', width: '30%', title: 'Primary vocal harmony', type: 'large' },
+                    { id: 'processed_vocals', left: '50%', width: '25%', title: 'Electronically processed voice', type: 'large' },
+                    { id: 'natural_voice_end', left: '80%', width: '15%', title: 'Raw vocal ending', type: 'large' }
                 ]
             },
-            'background-noise': {
-                name: 'Background_Noise',
-                displayName: 'Layer 2',
+            'synthesizer-textures': {
+                name: 'Synth_Elements',
+                displayName: 'Electronic Layers',
                 color: '#f39c12',
-                baseHeight: 50,
-                clips: [
-                    { id: 'room_ambience', left: '5%', width: '25%', title: 'Room ambience baseline', type: 'large' },
-                    { id: 'hvac_hum', left: '40%', width: '25%', title: 'HVAC system hum', type: 'large' }
-                ]
-            },
-            'electrical-interference': {
-                name: 'Electrical_Interference',
-                displayName: 'Layer 3',
-                color: '#1abc9c',
                 baseHeight: 80,
                 clips: [
-                    { id: 'power_line_buzz', left: '20%', width: '25%', title: '60Hz power line buzz', type: 'large' },
-                    { id: 'fluorescent_flicker', left: '60%', width: '25%', title: 'Fluorescent light flicker', type: 'large' }
+                    { id: 'modular_drones', left: '15%', width: '35%', title: 'Modular synthesizer drones', type: 'large' },
+                    { id: 'filtered_sequences', left: '60%', width: '30%', title: 'Filtered sequence patterns', type: 'large' }
                 ]
             },
-            'mechanical-sounds': {
-                name: 'Mechanical_Sounds',
-                displayName: 'Layer 4',
+            'found-sound-elements': {
+                name: 'Found_Sounds',
+                displayName: 'Field Recordings',
+                color: '#1abc9c',
+                baseHeight: 120,
+                clips: [
+                    { id: 'water_sounds', left: '5%', width: '25%', title: 'Water field recording', type: 'large' },
+                    { id: 'industrial_ambience', left: '40%', width: '30%', title: 'Industrial ambience', type: 'large' },
+                    { id: 'nature_textures', left: '75%', width: '20%', title: 'Nature texture layers', type: 'large' }
+                ]
+            },
+            'tape-manipulation': {
+                name: 'Tape_Effects',
+                displayName: 'Analog Processing',
                 color: '#e67e22',
-                baseHeight: 110,
+                baseHeight: 160,
                 clips: [
-                    { id: 'fan_motor', left: '15%', width: '25%', title: 'Cooling fan motor', type: 'large' },
-                    { id: 'hard_drive_seek', left: '50%', width: '4%', title: 'Hard drive seek noise', type: 'small' },
-                    { id: 'keyboard_clicks', left: '75%', width: '5%', title: 'Keyboard clicking', type: 'small' }
+                    { id: 'speed_variations', left: '20%', width: '25%', title: 'Tape speed manipulation', type: 'large' },
+                    { id: 'reverse_sections', left: '55%', width: '20%', title: 'Reversed tape sections', type: 'large' }
                 ]
             },
-            'digital-artifacts': {
-                name: 'Digital_Artifacts',
-                displayName: 'Layer 5',
+            'technical-artifacts': {
+                name: 'Recording_Issues',
+                displayName: 'Technical Problems',
                 color: '#9b59b6',
-                baseHeight: 140,
-                clips: [
-                    { id: 'compression_artifacts', left: '25%', width: '20%', title: 'Compression artifacts', type: 'large' },
-                    { id: 'quantization_noise', left: '50%', width: '25%', title: 'Quantization noise', type: 'large' },
-                    { id: 'clock_jitter', left: '80%', width: '3%', title: 'Clock jitter', type: 'small' }
-                ]
-            },
-            'frequency-sweeps': {
-                name: 'Frequency_Sweeps',
-                displayName: 'Layer 6',
-                color: '#27ae60',
-                baseHeight: 170,
-                clips: [
-                    { id: 'low_freq_sweep', left: '10%', width: '25%', title: 'Low frequency sweep', type: 'large' },
-                    { id: 'mid_freq_sweep', left: '40%', width: '25%', title: 'Mid frequency sweep', type: 'large' },
-                    { id: 'high_freq_sweep', left: '70%', width: '25%', title: 'High frequency sweep', type: 'large' }
-                ]
-            },
-            'calibration-tones': {
-                name: 'Calibration_Tones',
-                displayName: 'Layer 7',
-                color: '#34495e',
                 baseHeight: 200,
                 clips: [
-                    { id: 'reference_tone_440', left: '5%', width: '15%', title: '440Hz reference tone', type: 'large' },
-                    { id: 'reference_tone_1k', left: '25%', width: '15%', title: '1kHz reference tone', type: 'large' },
-                    { id: 'pink_noise_burst', left: '45%', width: '20%', title: 'Pink noise burst', type: 'large' },
-                    { id: 'white_noise_burst', left: '70%', width: '20%', title: 'White noise burst', type: 'large' },
-                    { id: 'silence_test', left: '92%', width: '6%', title: 'Silence test', type: 'small' }
+                    { id: 'analog_saturation', left: '5%', width: '90%', title: 'Analog tape saturation and noise', type: 'large' }
                 ]
             }
         }
     },
 
     /**
-     * MOST COMPLEX CONFIGURATION: 7_complex_orchestra_hickups.wav
-     * 
-     * Easy difficulty - Tutorial-like busywork removing coughs and mistakes
-     * 4 layers representing different orchestra sections with overlapping hickups
-     * TOOLS: Complete toolkit for masterful audio editing
+     * DAY 7: Final Viola tape - experimental orchestra session
+     * Viola's most complex recording with multiple performance interruptions to remove
+     * TOOLS: Complete Vincent's toolkit for masterful restoration
      */
     '7_complex_orchestra_hickups.wav': {
         name: '7_complex_orchestra_hickups.wav',
-        totalDuration: 300, // 5 minutes - long track for practice
+        totalDuration: 75, // Reasonable length for final challenge
         gradientClass: 'orchestra-waveform-gradient',
-        availableTools: ['noise', 'volume', 'voice', 'pitch', 'highpass', 'lowpass', 'reverse', 'speed', 'bitrate', 'stereo', 'mute'], // All tools available
+        availableTools: ['mute', 'volume', 'noise', 'voice', 'pitch', 'highpass', 'lowpass', 'reverse', 'speed', 'bitrate', 'stereo'], // Vincent's complete toolkit
         layers: {
-            'violin-section': {
-                name: 'Violin_Section',
-                displayName: 'Layer 1',
+            'viola-experimental-strings': {
+                name: 'String_Section',
+                displayName: 'Viola & Strings',
                 color: '#e74c3c',
-                baseHeight: 25,
+                baseHeight: 40,
                 clips: [
-                    { id: 'violin_opening_movement', left: '1%', width: '18%', title: 'Opening violin movement', type: 'large' },
-                    { id: 'violin_cough_1', left: '19%', width: '2%', title: 'Violinist cough', type: 'small' },
-                    { id: 'violin_lyrical_section', left: '22%', width: '15%', title: 'Lyrical violin section', type: 'large' },
-                    { id: 'violin_page_turn', left: '37%', width: '1%', title: 'Page turn noise', type: 'small' },
-                    { id: 'violin_development_passage', left: '39%', width: '22%', title: 'Development passage with arpeggios and tremolo', type: 'large' },
-                    { id: 'violin_bow_scratch', left: '61%', width: '2%', title: 'Bow scratch', type: 'small' },
-                    { id: 'violin_dramatic_crescendo', left: '64%', width: '16%', title: 'Dramatic crescendo build', type: 'large' },
-                    { id: 'violin_chair_creak', left: '80%', width: '1%', title: 'Chair creak', type: 'small' },
-                    { id: 'violin_finale_coda', left: '82%', width: '17%', title: 'Finale and coda', type: 'large' },
-                    { id: 'violin_sneeze', left: '84%', width: '2%', title: 'Sneeze', type: 'small' },
-                    { id: 'violin_string_snap', left: '92%', width: '1%', title: 'String snap', type: 'small' },
-                    { id: 'violin_tuning', left: '95%', width: '2%', title: 'Quick tuning', type: 'small' }
+                    { id: 'experimental_violin_melody', left: '10%', width: '30%', title: 'Experimental violin melody', type: 'large' },
+                    { id: 'violin_cough_mistake', left: '45%', width: '3%', title: 'Violinist cough interruption', type: 'small' },
+                    { id: 'viola_solo_section', left: '55%', width: '25%', title: 'Viola solo - Viola herself playing', type: 'large' },
+                    { id: 'string_section_finale', left: '85%', width: '12%', title: 'String section finale', type: 'large' }
                 ]
             },
-            'brass-section': {
-                name: 'Brass_Section',
-                displayName: 'Layer 2',
+            'wind-instruments': {
+                name: 'Wind_Section',
+                displayName: 'Winds & Brass',
                 color: '#f39c12',
-                baseHeight: 60,
+                baseHeight: 80,
                 clips: [
-                    { id: 'brass_fanfare_opening', left: '2%', width: '20%', title: 'Grand brass fanfare opening', type: 'large' },
-                    { id: 'trumpet_spit', left: '22%', width: '1%', title: 'Trumpet spit valve', type: 'small' },
-                    { id: 'brass_harmonic_development', left: '24%', width: '18%', title: 'Brass harmonic development section', type: 'large' },
-                    { id: 'trombone_bump', left: '42%', width: '2%', title: 'Trombone stand bump', type: 'small' },
-                    { id: 'brass_chorale_movement', left: '45%', width: '25%', title: 'Majestic brass chorale movement', type: 'large' },
-                    { id: 'horn_cough', left: '70%', width: '2%', title: 'French horn cough', type: 'small' },
-                    { id: 'brass_climactic_finale', left: '73%', width: '24%', title: 'Climactic brass finale with all sections', type: 'large' },
-                    { id: 'brass_valve_click', left: '85%', width: '1%', title: 'Valve click', type: 'small' },
-                    { id: 'tuba_wheeze', left: '90%', width: '2%', title: 'Tuba player wheeze', type: 'small' },
-                    { id: 'trombone_slide_squeak', left: '95%', width: '1%', title: 'Slide squeak', type: 'small' }
+                    { id: 'atmospheric_winds', left: '5%', width: '35%', title: 'Atmospheric wind instruments', type: 'large' },
+                    { id: 'reed_squeak', left: '42%', width: '2%', title: 'Reed instrument squeak', type: 'small' },
+                    { id: 'brass_harmony_section', left: '50%', width: '30%', title: 'Brass harmony section', type: 'large' },
+                    { id: 'musician_cough', left: '83%', width: '3%', title: 'Musician cough', type: 'small' }
                 ]
             },
-            'woodwind-section': {
-                name: 'Woodwind_Section',
-                displayName: 'Layer 3',
+            'percussion-and-found-sounds': {
+                name: 'Rhythm_Section',
+                displayName: 'Percussion & Objects',
                 color: '#27ae60',
-                baseHeight: 95,
+                baseHeight: 120,
                 clips: [
-                    { id: 'woodwind_pastoral_opening', left: '1%', width: '16%', title: 'Pastoral woodwind opening with flute and oboe', type: 'large' },
-                    { id: 'clarinet_squeak', left: '17%', width: '1%', title: 'Clarinet squeak', type: 'small' },
-                    { id: 'woodwind_development', left: '19%', width: '21%', title: 'Woodwind development with clarinet scales and bassoon', type: 'large' },
-                    { id: 'oboe_reed_pop', left: '40%', width: '1%', title: 'Oboe reed pop', type: 'small' },
-                    { id: 'woodwind_ensemble_movement', left: '42%', width: '26%', title: 'Full woodwind ensemble movement', type: 'large' },
-                    { id: 'flute_key_click', left: '68%', width: '1%', title: 'Flute key click', type: 'small' },
-                    { id: 'piccolo_screech', left: '70%', width: '1%', title: 'Piccolo screech', type: 'small' },
-                    { id: 'woodwind_harmonic_finale', left: '72%', width: '25%', title: 'Woodwind harmonic finale with all sections', type: 'large' },
-                    { id: 'clarinet_cough', left: '80%', width: '2%', title: 'Clarinetist cough', type: 'small' },
-                    { id: 'flute_breath_pop', left: '90%', width: '1%', title: 'Breath pop', type: 'small' },
-                    { id: 'sax_honk', left: '93%', width: '2%', title: 'Saxophone honk', type: 'small' },
-                    { id: 'woodwind_rustle', left: '96%', width: '1%', title: 'Music stand rustle', type: 'small' }
+                    { id: 'experimental_percussion', left: '15%', width: '40%', title: 'Experimental percussion and found objects', type: 'large' },
+                    { id: 'accidental_knock', left: '58%', width: '2%', title: 'Accidental equipment knock', type: 'small' },
+                    { id: 'rhythmic_finale', left: '65%', width: '30%', title: 'Complex rhythmic finale', type: 'large' }
                 ]
             },
-            'percussion-section': {
-                name: 'Percussion_Section',
-                displayName: 'Layer 4',
+            'session-ambience': {
+                name: 'Room_Tone',
+                displayName: 'Session Atmosphere',
                 color: '#9b59b6',
-                baseHeight: 130,
+                baseHeight: 160,
                 clips: [
-                    { id: 'percussion_rhythmic_foundation', left: '3%', width: '28%', title: 'Rhythmic foundation - timpani, snare, and ensemble', type: 'large' },
-                    { id: 'cymbal_touch', left: '31%', width: '1%', title: 'Accidental cymbal touch', type: 'small' },
-                    { id: 'percussion_melodic_section', left: '33%', width: '22%', title: 'Melodic percussion - xylophone and mallet instruments', type: 'large' },
-                    { id: 'stick_drop', left: '55%', width: '1%', title: 'Drumstick drop', type: 'small' },
-                    { id: 'timpani_foot_tap', left: '57%', width: '1%', title: 'Foot pedal tap', type: 'small' },
-                    { id: 'percussion_dramatic_build', left: '59%', width: '28%', title: 'Dramatic build with all percussion to finale', type: 'large' },
-                    { id: 'triangle_ding', left: '73%', width: '1%', title: 'Early triangle', type: 'small' },
-                    { id: 'drum_rim_hit', left: '80%', width: '1%', title: 'Rim shot', type: 'small' },
-                    { id: 'percussion_cough', left: '85%', width: '2%', title: 'Percussionist cough', type: 'small' },
-                    { id: 'mallet_drop', left: '90%', width: '1%', title: 'Mallet drop', type: 'small' },
-                    { id: 'snare_buzz', left: '95%', width: '2%', title: 'Snare buzz', type: 'small' }
+                    { id: 'studio_ambience', left: '5%', width: '40%', title: 'Recording studio ambience', type: 'large' },
+                    { id: 'chair_creak', left: '48%', width: '2%', title: 'Chair creak during session', type: 'small' },
+                    { id: 'tape_machine_hum', left: '55%', width: '35%', title: 'Tape machine background hum', type: 'large' },
+                    { id: 'session_end_chatter', left: '92%', width: '5%', title: 'End of session chatter', type: 'small' }
                 ]
             }
         }
