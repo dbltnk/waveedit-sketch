@@ -256,14 +256,89 @@
 
         /* Transport Controls */
         .transport-controls {
-            height: 60px;
+            height: 80px;
             background: var(--bg-transport);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            padding: 0 20px;
-            gap: 15px;
+            justify-content: center;
+            padding: 15px 20px;
             flex-shrink: 0;
+        }
+
+        .main-playback-container {
+            background: linear-gradient(135deg, var(--primary-purple-dark), var(--primary-purple));
+            border: 2px solid var(--primary-purple);
+            border-radius: 12px;
+            padding: 12px 20px;
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .main-playback-title {
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .main-playback-controls {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .main-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .main-loop-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-loop-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 6px 12px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .main-loop-label:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .main-loop-label input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+            accent-color: var(--primary-orange);
+        }
+
+        .loop-text {
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-time-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .transport-btn {
@@ -271,24 +346,44 @@
             cursor: pointer;
             transition: var(--transition-fast);
             font-weight: bold;
-            border-radius: 5px;
-            width: 40px;
-            height: 40px;
-            background: var(--bg-hover);
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
             font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1;
+            backdrop-filter: blur(5px);
         }
 
         .transport-btn:hover {
-            background: var(--bg-hover-light);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .transport-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
 
         .time-display {
-            margin-left: auto;
             font-family: 'Courier New', monospace;
-            background: var(--bg-primary);
-            padding: 8px 15px;
-            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
         }
 
         /* Timeline */
@@ -299,8 +394,8 @@
             overflow-y: auto;
             overflow-x: hidden;
             position: relative;
-            max-height: calc(100vh - 160px);
-            /* Account for title bar, menu, transport controls */
+            max-height: calc(100vh - 180px);
+            /* Account for title bar, menu, transport controls (now 80px) */
         }
 
         /* Custom scrollbar for timeline */
@@ -1162,9 +1257,38 @@
 
         .selected-clip-controls {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            align-items: flex-start;
+            gap: 15px;
             margin-bottom: 8px;
+        }
+
+        .clip-buttons {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .clip-playback-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .clip-loop-label {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            color: var(--text-light);
+            font-size: 11px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .clip-loop-label input[type="checkbox"] {
+            margin: 0;
+            transform: scale(0.8);
+            cursor: pointer;
         }
 
         .selected-clip-play-btn,
@@ -1669,11 +1793,26 @@
         <div class="main-content">
             <div class="center-panel">
                 <div class="transport-controls">
-                    <button class="transport-btn" onclick="toggleMainPlayback(event)">▶</button>
-                    <button class="transport-btn" onclick="stopMainPlayback(event)">⏹</button>
-                    <button class="transport-btn" onclick="seekToStart(event)">⏮</button>
-                    <button class="transport-btn" onclick="seekToEnd(event)">⏭</button>
-                    <div class="time-display">00:00.000 / 00:47.000</div>
+                    <div class="main-playback-container">
+                        <div class="main-playback-title">🎵 MAIN PLAYBACK</div>
+                        <div class="main-playback-controls">
+                            <div class="main-buttons">
+                                <button class="transport-btn" onclick="toggleMainPlayback(event)">▶</button>
+                                <button class="transport-btn" onclick="stopMainPlayback(event)">⏹</button>
+                                <button class="transport-btn" onclick="seekToStart(event)">⏮</button>
+                                <button class="transport-btn" onclick="seekToEnd(event)">⏭</button>
+                            </div>
+                            <div class="main-loop-container">
+                                <label class="main-loop-label">
+                                    <input type="checkbox" id="main-loop-checkbox">
+                                    <span class="loop-text">🔄 Loop</span>
+                                </label>
+                            </div>
+                            <div class="main-time-display">
+                                <div class="time-display">00:00.000 / 00:47.000</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="track-layer" id="merged">
@@ -1802,9 +1941,16 @@
                     <div class="selected-clip-title">Selected Clip:</div>
                     <div class="selected-clip-name"></div>
                     <div class="selected-clip-controls">
-                        <button class="selected-clip-play-btn" onclick="toggleClipPlayback(event)">▶</button>
-                        <button class="selected-clip-stop-btn" onclick="stopClipPlayback(event)">⏹</button>
-                        <span class="selected-clip-time">00:00.000</span>
+                        <div class="clip-buttons">
+                            <button class="selected-clip-play-btn" onclick="toggleClipPlayback(event)">▶</button>
+                            <button class="selected-clip-stop-btn" onclick="stopClipPlayback(event)">⏹</button>
+                        </div>
+                        <div class="clip-playback-info">
+                            <span class="selected-clip-time">0.0 / 0.0</span>
+                            <label class="clip-loop-label">
+                                <input type="checkbox" id="clip-loop-checkbox"> Loop
+                            </label>
+                        </div>
                     </div>
                     <div class="selected-clip-waveform">
                         <div class="selected-clip-playhead"></div>
@@ -1832,6 +1978,7 @@
         let specOnlyMiscClips = new Set(); // MISC clips only visible in Spec view
         let clipStartTime = 0;
         let clipDuration = 0;
+        let clipElapsedTime = 0; // Track elapsed time when paused
         let isClipPlaying = false;
         let currentPopup = null;
 
@@ -3105,6 +3252,8 @@
         let totalDuration = 47; // Total duration in seconds
         let playbackInterval;
         let playbackSpeed = 1; // Normal speed
+        let mainLoopEnabled = false; // Main playback loop state
+        let clipLoopEnabled = false; // Clip playback loop state
 
         // Format time as MM:SS.mmm
         function formatTime(seconds) {
@@ -3112,6 +3261,11 @@
             const remainingSeconds = Math.floor(seconds % 60);
             const milliseconds = Math.floor((seconds % 1) * 1000);
             return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        }
+
+        // Format time for clips as seconds with 1 decimal place
+        function formatClipTime(seconds) {
+            return seconds.toFixed(1);
         }
 
         // Update time display
@@ -3130,6 +3284,12 @@
         // Toggle playback
         function toggleMainPlayback(event) {
             event.stopPropagation();
+
+            // If starting main playback, pause any clip playback first
+            if (!isPlaying && isClipPlaying) {
+                pauseClipPlayback();
+            }
+
             isPlaying = !isPlaying;
 
             // Update button icon
@@ -3137,12 +3297,22 @@
             playBtn.textContent = isPlaying ? '⏸' : '▶';
 
             if (isPlaying) {
+                // Get current loop state
+                const loopCheckbox = document.getElementById('main-loop-checkbox');
+                mainLoopEnabled = loopCheckbox ? loopCheckbox.checked : false;
+
                 // Start playback
                 playbackInterval = setInterval(() => {
                     currentTime += 0.1 * playbackSpeed;
                     if (currentTime >= totalDuration) {
-                        stopMainPlayback(event);
-                        return;
+                        if (mainLoopEnabled) {
+                            // Loop: reset to start and continue playing
+                            currentTime = 0;
+                        } else {
+                            // No loop: stop playback
+                            stopMainPlayback(event);
+                            return;
+                        }
                     }
                     updateTimeDisplay();
                     updatePlaybackMarker();
@@ -3151,6 +3321,16 @@
                 // Pause playback
                 clearInterval(playbackInterval);
             }
+        }
+
+        // Pause main playback (without resetting time)
+        function pauseMainPlayback() {
+            isPlaying = false;
+            clearInterval(playbackInterval);
+
+            // Update play button icon
+            const playBtn = document.querySelector('.transport-controls .transport-btn:first-child');
+            playBtn.textContent = '▶';
         }
 
         // Stop playback
@@ -4160,9 +4340,17 @@
             const selectedClipDisplay = document.getElementById('selected-clip-display');
             const selectedClipName = selectedClipDisplay.querySelector('.selected-clip-name');
             const selectedClipWaveform = selectedClipDisplay.querySelector('.selected-clip-waveform');
+            const selectedClipTime = selectedClipDisplay.querySelector('.selected-clip-time');
 
             // Set clip name and correct waveform color
             selectedClipName.textContent = selectedClip.dataset.clip;
+
+            // Calculate and display clip duration in time format
+            const clipWidthPercent = parseFloat(selectedClip.style.width.replace('%', ''));
+            const calculatedDuration = (clipWidthPercent / 100) * totalDuration;
+            if (selectedClipTime) {
+                selectedClipTime.textContent = `0.0 / ${formatClipTime(calculatedDuration)}`;
+            }
 
             // Get the correct color based on the clip's layer
             const clipLayerId = selectedClip.closest('.track-layer').id;
@@ -4209,10 +4397,16 @@
                 }
                 isClipPlaying = false;
 
-                // Reset playhead position
+                // Reset playhead position and time display
                 const playhead = document.querySelector('.selected-clip-playhead');
                 if (playhead) {
                     playhead.style.left = '0%';
+                }
+
+                // Reset time display
+                const timeDisplay = document.querySelector('.selected-clip-time');
+                if (timeDisplay) {
+                    timeDisplay.textContent = '0.0 / 0.0';
                 }
 
                 // Hide selected clip display and show tools message
@@ -4416,6 +4610,7 @@
                 clipPlaybackInterval = null;
             }
             isClipPlaying = false;
+            clipElapsedTime = 0; // Reset clip elapsed time
 
             // Reset time
             currentTime = 0;
@@ -4425,6 +4620,14 @@
             // Reset zoom
             currentZoom = 1.0;
             waveformOffsetX = 0;
+
+            // Reset loop states and checkboxes
+            mainLoopEnabled = false;
+            clipLoopEnabled = false;
+            const mainLoopCheckbox = document.getElementById('main-loop-checkbox');
+            const clipLoopCheckbox = document.getElementById('clip-loop-checkbox');
+            if (mainLoopCheckbox) mainLoopCheckbox.checked = false;
+            if (clipLoopCheckbox) clipLoopCheckbox.checked = false;
 
             // Note: Don't reset view mode here - let loadAudioConfiguration handle it
             // Reset canvas visualization if it exists
@@ -4576,6 +4779,29 @@
             return trackLayer;
         }
 
+        // Pause clip playback (without resetting time)
+        function pauseClipPlayback() {
+            // Calculate and store elapsed time before stopping
+            if (isClipPlaying && clipStartTime > 0) {
+                clipElapsedTime += Date.now() - clipStartTime;
+            }
+
+            // Stop playback interval but don't reset time/position
+            if (clipPlaybackInterval) {
+                clearInterval(clipPlaybackInterval);
+                clipPlaybackInterval = null;
+            }
+
+            // Update UI state
+            isClipPlaying = false;
+
+            // Update play button icon
+            const playBtn = document.querySelector('.selected-clip-play-btn');
+            if (playBtn) {
+                playBtn.textContent = '▶';
+            }
+        }
+
         function stopClipPlayback(event) {
             event.stopPropagation();
             const playBtn = event.target.parentElement.querySelector('.selected-clip-play-btn');
@@ -4588,10 +4814,19 @@
                 clipPlaybackInterval = null;
             }
 
-            // Reset UI
+            // Reset UI and elapsed time
             playBtn.textContent = '▶';
-            timeDisplay.textContent = '00:00.000';
             isClipPlaying = false;
+            clipElapsedTime = 0; // Reset elapsed time on stop
+
+            // Reset time display to show 0 / total duration
+            if (selectedClip) {
+                const clipWidthPercent = parseFloat(selectedClip.style.width.replace('%', ''));
+                const calculatedDuration = (clipWidthPercent / 100) * totalDuration;
+                timeDisplay.textContent = `0.0 / ${formatClipTime(calculatedDuration)}`;
+            } else {
+                timeDisplay.textContent = '0.0 / 0.0';
+            }
 
             // Reset playhead position
             if (playhead) {
@@ -4602,7 +4837,7 @@
         function toggleClipPlayback(event) {
             event.stopPropagation();
             const playBtn = event.target;
-            const timeDisplay = playBtn.parentElement.querySelector('.selected-clip-time');
+            const timeDisplay = document.querySelector('.selected-clip-time');
             const playhead = document.querySelector('.selected-clip-playhead');
 
             if (isClipPlaying) {
@@ -4611,9 +4846,25 @@
                 playBtn.textContent = '▶';
                 isClipPlaying = false;
             } else {
-                // Start playback
-                clipStartTime = Date.now();
-                clipDuration = 5000; // 5 seconds for demo
+                // If starting clip playback, pause main playback first
+                if (isPlaying) {
+                    pauseMainPlayback();
+                }
+
+                // Get current loop state
+                const clipLoopCheckbox = document.getElementById('clip-loop-checkbox');
+                clipLoopEnabled = clipLoopCheckbox ? clipLoopCheckbox.checked : false;
+
+                // Calculate clip duration based on clip width percentage and total duration
+                if (selectedClip) {
+                    const clipWidthPercent = parseFloat(selectedClip.style.width.replace('%', ''));
+                    clipDuration = (clipWidthPercent / 100) * totalDuration * 1000; // Convert to milliseconds
+                } else {
+                    clipDuration = 5000; // Fallback to 5 seconds
+                }
+
+                // Start playback (account for any previously elapsed time)
+                clipStartTime = Date.now() - clipElapsedTime;
                 playBtn.textContent = '⏸';
                 isClipPlaying = true;
 
@@ -4621,15 +4872,30 @@
                 clipPlaybackInterval = setInterval(() => {
                     const elapsed = Date.now() - clipStartTime;
                     if (elapsed >= clipDuration) {
-                        // Stop at end of clip
-                        clearInterval(clipPlaybackInterval);
-                        playBtn.textContent = '▶';
-                        timeDisplay.textContent = '00:00.000';
-                        isClipPlaying = false;
-                        if (playhead) {
-                            playhead.style.left = '100%';
+                        if (clipLoopEnabled) {
+                            // Loop: reset to start and continue playing
+                            clipStartTime = Date.now();
+                            clipElapsedTime = 0; // Reset elapsed time on loop
+                            if (playhead) {
+                                playhead.style.left = '0%';
+                            }
+                            return;
+                        } else {
+                            // No loop: stop at end of clip
+                            clearInterval(clipPlaybackInterval);
+                            playBtn.textContent = '▶';
+                            isClipPlaying = false;
+                            clipElapsedTime = 0; // Reset elapsed time when finished
+
+                            // Reset time display to show 0 / total duration
+                            const totalTimeInSeconds = clipDuration / 1000;
+                            timeDisplay.textContent = `0.0 / ${formatClipTime(totalTimeInSeconds)}`;
+
+                            if (playhead) {
+                                playhead.style.left = '100%';
+                            }
+                            return;
                         }
-                        return;
                     }
 
                     // Calculate progress percentage
@@ -4640,12 +4906,10 @@
                         playhead.style.left = `${progress}%`;
                     }
 
-                    // Format time as MM:SS.mmm
-                    const seconds = Math.floor(elapsed / 1000);
-                    const milliseconds = elapsed % 1000;
-                    const minutes = Math.floor(seconds / 60);
-                    const remainingSeconds = seconds % 60;
-                    timeDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
+                    // Format time as seconds.decimal / seconds.decimal (current / total)
+                    const currentTimeInSeconds = elapsed / 1000;
+                    const totalTimeInSeconds = clipDuration / 1000;
+                    timeDisplay.textContent = `${formatClipTime(currentTimeInSeconds)} / ${formatClipTime(totalTimeInSeconds)}`;
                 }, 50);
             }
         }
