@@ -1801,14 +1801,8 @@
         let selectedPlugin = null;
         let selectedClip = null;
         let draggedClip = null;
-        let remainingClips = [];
-        let currentAnalysisClip = null;
         let discoveredClips = new Set();
         let isAnalyzed = false;
-        let isDrawing = false;
-        let selectionBox = null;
-        let startX = 0;
-        let startY = 0;
         let clipPlaybackInterval = null;
         let clipStartTime = 0;
         let clipDuration = 0;
@@ -3126,240 +3120,6 @@
             stemIsolation(fakeEvent);
         }
 
-        // Initialize the analysis minigame
-        function initAnalysisGame() {
-            if (!window.currentLayerConfig) {
-                console.error('No layer configuration loaded');
-                return;
-            }
-
-            // Collect all clips from current configuration
-            remainingClips = [];
-            Object.entries(window.currentLayerConfig).forEach(([layerId, layerConfig]) => {
-                const layer = document.getElementById(layerId);
-                if (!layer) {
-                    console.error('Layer not found:', layerId);
-                    return;
-                }
-                const clips = layer.querySelectorAll('.audio-clip');
-                // Hide all clips initially
-                clips.forEach(clip => {
-                    clip.style.display = 'none';
-                    remainingClips.push({
-                        id: clip.dataset.clip,
-                        layer: layerId,
-                        left: clip.style.left,
-                        width: clip.style.width,
-                        baseHeight: layerConfig.baseHeight
-                    });
-                });
-            });
-
-            // Hide all layers except merged
-            Object.keys(window.currentLayerConfig).forEach(layerId => {
-                const layer = document.getElementById(layerId);
-                if (layer) {
-                    layer.style.display = 'none';
-                }
-            });
-
-            // Show first random clip
-            showNextAnalysisClip();
-
-            // Add mouse event listeners for selection box
-            const trackContent = document.querySelector('#waveedit #merged .track-content');
-            if (trackContent) {
-                trackContent.addEventListener('mousedown', startSelection);
-                trackContent.addEventListener('mousemove', updateSelection);
-                trackContent.addEventListener('mouseup', endSelection);
-            }
-        }
-
-        function startSelection(event) {
-            if (!currentAnalysisClip) return;
-
-            // Clean up any existing selection boxes first
-            const existingBoxes = event.target.querySelectorAll('.selection-box');
-            existingBoxes.forEach(box => box.remove());
-
-            isDrawing = true;
-            const trackContent = event.target;
-            const rect = trackContent.getBoundingClientRect();
-
-            // Calculate position relative to track content
-            startX = event.clientX - rect.left;
-            startY = event.clientY - rect.top;
-
-            // Create selection box
-            selectionBox = document.createElement('div');
-            selectionBox.className = 'selection-box';
-            trackContent.appendChild(selectionBox);
-        }
-
-        function updateSelection(event) {
-            if (!isDrawing || !selectionBox) return;
-
-            const trackContent = event.target;
-            const rect = trackContent.getBoundingClientRect();
-
-            // Calculate current position relative to track content
-            const currentX = event.clientX - rect.left;
-            const currentY = event.clientY - rect.top;
-
-            // Calculate width and height, capped at 200px
-            let width = Math.abs(currentX - startX);
-            let height = Math.abs(currentY - startY);
-
-            // Cap dimensions
-            width = Math.min(width, 9999);
-            height = Math.min(height, 150);
-
-            // Update selection box position and size
-            selectionBox.style.left = Math.min(startX, currentX) + 'px';
-            selectionBox.style.top = Math.min(startY, currentY) + 'px';
-            selectionBox.style.width = width + 'px';
-            selectionBox.style.height = height + 'px';
-        }
-
-        function endSelection(event) {
-            if (!isDrawing || !selectionBox || !currentAnalysisClip) return;
-
-            const width = parseInt(selectionBox.style.width);
-            const height = parseInt(selectionBox.style.height);
-
-            // Check if selection contains the clip
-            const clipRect = currentAnalysisClip.getBoundingClientRect();
-            const selectionRect = selectionBox.getBoundingClientRect();
-
-            const isSelectionValid = selectionRect.left <= clipRect.left &&
-                selectionRect.right >= clipRect.right &&
-                selectionRect.top <= clipRect.top &&
-                selectionRect.bottom >= clipRect.bottom;
-
-            if (isSelectionValid) {
-                revealClip(currentAnalysisClip);
-            }
-
-            // Clean up
-            if (selectionBox && selectionBox.parentNode) {
-                selectionBox.remove();
-            }
-            selectionBox = null;
-            isDrawing = false;
-        }
-
-        // Add cleanup on mouse leave
-        document.querySelector('#waveedit #merged .track-content').addEventListener('mouseleave', function () {
-            if (selectionBox && selectionBox.parentNode) {
-                selectionBox.remove();
-            }
-            selectionBox = null;
-            isDrawing = false;
-        });
-
-        function revealClip(clip) {
-            const clipData = remainingClips.find(c => c.id === clip.dataset.clip);
-            if (!clipData) return;
-
-            // Reveal the clip
-            clip.classList.add('revealed');
-            clip.style.color = 'white';
-            clip.style.borderColor = '#f39c12';
-            clip.textContent = clipData.id;
-
-            // Create a copy of the clip for the merged view
-            const mergedClip = document.createElement('div');
-            mergedClip.className = 'audio-clip revealed';
-            mergedClip.dataset.clip = clipData.id;
-            mergedClip.dataset.layer = clipData.layer;
-            mergedClip.style.left = clipData.left;
-            mergedClip.style.width = clipData.width;
-            mergedClip.textContent = clipData.id;
-
-            // Create a hash of the clip ID to get a consistent but varied position
-            const clipHash = clipData.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            const verticalVariation = (clipHash % 30) - 15; // -15 to +15 pixels variation
-
-            mergedClip.style.top = `${clipData.baseHeight + verticalVariation}px`;
-
-            // Add the clip to the merged view
-            const mergedTrack = document.querySelector('#merged .track-content');
-            if (mergedTrack) {
-                mergedTrack.appendChild(mergedClip);
-            }
-
-            // Show the layer and clip after a short delay
-            setTimeout(() => {
-                const layer = document.getElementById(clipData.layer);
-                if (layer) {
-                    layer.style.display = 'flex';
-                    const targetClip = layer.querySelector(`.audio-clip[data-clip="${clipData.id}"]`);
-                    if (targetClip) {
-                        targetClip.style.display = 'flex';
-                        discoveredClips.add(clipData.id);
-                    }
-                }
-
-                // Remove from remaining clips
-                remainingClips = remainingClips.filter(c => c.id !== clipData.id);
-
-                // Remove analysis clip
-                clip.remove();
-                currentAnalysisClip = null;
-
-                // Show next clip
-                showNextAnalysisClip();
-
-                // If all clips are discovered, enable tools
-                if (remainingClips.length === 0) {
-                    // Store original clip data for zoom functionality
-                    storeOriginalClipData();
-                    // Enable zoom controls now that clips are available
-                    enableZoomControls();
-                    enableTools();
-                }
-            }, 500);
-        }
-
-        function showNextAnalysisClip() {
-            if (remainingClips.length === 0) {
-                return;
-            }
-
-            // Remove previous analysis clip if exists
-            if (currentAnalysisClip) {
-                currentAnalysisClip.remove();
-            }
-
-            // Get random clip
-            const randomIndex = Math.floor(Math.random() * remainingClips.length);
-            const clipData = remainingClips[randomIndex];
-
-            // Create analysis clip
-            const clip = document.createElement('div');
-            clip.className = 'analysis-clip';
-            clip.textContent = '???';
-            clip.style.left = clipData.left;
-            clip.style.width = clipData.width;
-            clip.dataset.layer = clipData.layer;
-            clip.dataset.clip = clipData.id;
-
-            // Create a hash of the clip ID to get a consistent but varied position
-            const clipHash = clipData.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            const verticalVariation = (clipHash % 30) - 15; // -15 to +15 pixels variation
-
-            clip.style.top = `${clipData.baseHeight + verticalVariation}px`;
-
-            // Add to merged track
-            const trackContent = document.querySelector('#waveedit #merged .track-content');
-            if (trackContent) {
-                trackContent.appendChild(clip);
-                currentAnalysisClip = clip;
-            } else {
-                console.error('Track content not found');
-            }
-        }
-
         function selectPlugin(pluginName) {
             if (!selectedClip || !isAnalyzed) return;
 
@@ -3447,47 +3207,37 @@
         // Create MISC layers for small clips
         function createMiscLayers(smallClips) {
             const miscLayers = [];
-            let currentMiscClips = [];
-            let currentWidth = 0;
-            let miscLayerIndex = 1;
 
-            smallClips.forEach(clip => {
-                const clipWidth = parseFloat(clip.width.replace('%', ''));
-
-                // Check if adding this clip would exceed 95% width (leaving 5% margin)
-                if (currentWidth + clipWidth > 95 && currentMiscClips.length > 0) {
-                    // Create new MISC layer with current clips
-                    miscLayers.push({
-                        id: `misc-${miscLayerIndex}`,
-                        name: `MISC_${miscLayerIndex}`,
-                        displayName: `MISC ${miscLayerIndex}`,
-                        clips: [...currentMiscClips],
-                        baseHeight: 50 + (miscLayerIndex - 1) * 60 // Space them out vertically
-                    });
-
-                    miscLayerIndex++;
-                    currentMiscClips = [];
-                    currentWidth = 0;
-                }
-
-                // Add clip to current MISC layer with updated position
-                currentMiscClips.push({
-                    ...clip,
-                    left: `${currentWidth + 2}%`, // 2% left margin
-                    originalLeft: clip.left
-                });
-                currentWidth += clipWidth + 3; // Add 3% spacing between clips
+            // Sort clips by their original timeline position to maintain order
+            const sortedClips = [...smallClips].sort((a, b) => {
+                const leftA = parseFloat(a.left.replace('%', ''));
+                const leftB = parseFloat(b.left.replace('%', ''));
+                return leftA - leftB;
             });
 
-            // Add remaining clips to final MISC layer
-            if (currentMiscClips.length > 0) {
-                miscLayers.push({
+            // Group clips into MISC layers while preserving their timeline positions
+            let miscLayerIndex = 1;
+            const clipsPerLayer = Math.ceil(sortedClips.length / Math.max(1, Math.ceil(sortedClips.length / 8))); // ~8 clips per layer max
+
+            for (let i = 0; i < sortedClips.length; i += clipsPerLayer) {
+                const layerClips = sortedClips.slice(i, i + clipsPerLayer);
+
+                // Keep original positions - don't repack them to the left
+                const miscLayer = {
                     id: `misc-${miscLayerIndex}`,
                     name: `MISC_${miscLayerIndex}`,
                     displayName: `MISC ${miscLayerIndex}`,
-                    clips: currentMiscClips,
-                    baseHeight: 50 + (miscLayerIndex - 1) * 60
-                });
+                    clips: layerClips.map(clip => ({
+                        ...clip,
+                        // Preserve original timeline position
+                        left: clip.left,
+                        width: clip.width
+                    })),
+                    baseHeight: 50 + (miscLayerIndex - 1) * 60 // Space them out vertically
+                };
+
+                miscLayers.push(miscLayer);
+                miscLayerIndex++;
             }
 
             return miscLayers;
@@ -3621,15 +3371,6 @@
 
             // Enable tools
             enableTools();
-
-            // Update remaining clips for manual discovery
-            remainingClips = smallClips.map(clip => ({
-                id: clip.id,
-                layer: `misc-${Math.ceil(smallClips.indexOf(clip) / 10) + 1}`, // Rough assignment
-                left: clip.originalLeft || clip.left,
-                width: clip.width,
-                baseHeight: 50 // Will be updated by discovery system
-            }));
 
             // Set up manual discovery for small clips
             setupSmallClipDiscovery();
@@ -3951,10 +3692,7 @@
             discoveryDrawing = false;
         }
 
-        // Legacy function for backwards compatibility
-        function analyzeWaveform(event) {
-            stemIsolation(event);
-        }
+
 
         // AUDIO CONTROL FUNCTIONS
         function toggleTrackMute(trackId) {
@@ -4275,10 +4013,8 @@
             // Reset analysis state
             isAnalyzed = false;
             discoveredClips.clear();
-            remainingClips = [];
             selectedClip = null;
             selectedPlugin = null;
-            currentAnalysisClip = null;
 
             // Clear all clip effects
             clipEffects.clear();

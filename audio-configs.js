@@ -112,7 +112,12 @@ const AUDIO_CONFIGS = {
                     { id: 'chorus_one', left: '28%', width: '22%', title: 'First chorus - too loud', type: 'large' },
                     { id: 'verse_two', left: '53%', width: '18%', title: 'Second verse - good level', type: 'large' },
                     { id: 'chorus_two', left: '73%', width: '22%', title: 'Second chorus - needs boost', type: 'large' },
-                    { id: 'outro_whisper', left: '96%', width: '3%', title: 'Whispered outro - needs major boost', type: 'small' }
+                    { id: 'breath_intake_1', left: '2%', width: '2%', title: 'Sharp breath before verse', type: 'small' },
+                    { id: 'mouth_click_1', left: '26%', width: '1%', title: 'Mouth click between sections', type: 'small' },
+                    { id: 'lip_smack', left: '51%', width: '1%', title: 'Lip smack before verse two', type: 'small' },
+                    { id: 'throat_clear', left: '71%', width: '1%', title: 'Throat clearing', type: 'small' },
+                    { id: 'breath_intake_2', left: '95%', width: '2%', title: 'Deep breath before outro', type: 'small' },
+                    { id: 'outro_whisper', left: '97%', width: '2%', title: 'Whispered outro - needs major boost', type: 'small' }
                 ]
             }
         }
@@ -137,11 +142,16 @@ const AUDIO_CONFIGS = {
                 color: '#3498db',
                 baseHeight: 50,
                 clips: [
-                    { id: 'dot_dot_dot', left: '5%', width: '8%', title: 'S - ... (SOS start)', type: 'small' },
+                    { id: 'dot_dot_dot', left: '5%', width: '6%', title: 'S - ... (SOS start)', type: 'small' },
                     { id: 'dash_dash_dash', left: '18%', width: '12%', title: 'O - --- (SOS middle)', type: 'large' },
-                    { id: 'dot_dot_dot_2', left: '35%', width: '8%', title: 'S - ... (SOS end)', type: 'small' },
+                    { id: 'dot_dot_dot_2', left: '35%', width: '6%', title: 'S - ... (SOS end)', type: 'small' },
                     { id: 'help_signal', left: '50%', width: '25%', title: 'HELP - .... . .-.. .--.', type: 'large' },
-                    { id: 'coordinates', left: '80%', width: '15%', title: 'Grid coordinates', type: 'large' }
+                    { id: 'coordinates', left: '80%', width: '15%', title: 'Grid coordinates', type: 'large' },
+                    { id: 'signal_start_beep', left: '2%', width: '2%', title: 'Transmission start beep', type: 'small' },
+                    { id: 'carrier_glitch', left: '15%', width: '2%', title: 'Carrier frequency glitch', type: 'small' },
+                    { id: 'signal_break', left: '46%', width: '3%', title: 'Signal interruption', type: 'small' },
+                    { id: 'frequency_drift', left: '77%', width: '2%', title: 'Frequency drift noise', type: 'small' },
+                    { id: 'transmission_end', left: '96%', width: '3%', title: 'End of transmission tone', type: 'small' }
                 ]
             },
             'radio-static': {
@@ -205,7 +215,14 @@ const AUDIO_CONFIGS = {
                 color: '#e74c3c',
                 baseHeight: 150,
                 clips: [
-                    { id: 'footsteps_nearby', left: '45%', width: '25%', title: 'Someone else is there...', type: 'small' }
+                    { id: 'footsteps_nearby', left: '45%', width: '8%', title: 'Someone else is there...', type: 'large' },
+                    { id: 'branch_crack_1', left: '8%', width: '3%', title: 'Branch crack from movement', type: 'small' },
+                    { id: 'distant_whistle', left: '18%', width: '4%', title: 'Distant human whistle', type: 'small' },
+                    { id: 'metal_clink', left: '35%', width: '2%', title: 'Metallic object clink', type: 'small' },
+                    { id: 'fabric_rustle', left: '55%', width: '3%', title: 'Fabric rustling', type: 'small' },
+                    { id: 'twig_snap', left: '72%', width: '2%', title: 'Twig snapping underfoot', type: 'small' },
+                    { id: 'breathing_sound', left: '85%', width: '4%', title: 'Heavy breathing nearby', type: 'small' },
+                    { id: 'zipper_sound', left: '92%', width: '2%', title: 'Zipper or gear sound', type: 'small' }
                 ]
             }
         }
@@ -264,10 +281,10 @@ const AUDIO_CONFIGS = {
                 color: '#8e44ad',
                 baseHeight: 90,
                 clips: [
-                    { id: 'whisper_1', left: '20%', width: '10%', title: 'Second whisper', type: 'small' },
-                    { id: 'whisper_2', left: '35%', width: '10%', title: 'Third whisper', type: 'small' },
-                    { id: 'whisper_3', left: '55%', width: '7%', title: 'Fourth whisper', type: 'small' },
-                    { id: 'whisper_4', left: '70%', width: '9%', title: 'Fifth whisper', type: 'small' }
+                    { id: 'whisper_1', left: '20%', width: '5%', title: 'Second whisper', type: 'small' },
+                    { id: 'whisper_2', left: '35%', width: '4%', title: 'Third whisper', type: 'small' },
+                    { id: 'whisper_3', left: '55%', width: '3%', title: 'Fourth whisper', type: 'small' },
+                    { id: 'whisper_4', left: '70%', width: '6%', title: 'Fifth whisper', type: 'small' }
                 ]
             },
             'investigation': {
@@ -346,8 +363,8 @@ const AUDIO_CONFIGS = {
                 baseHeight: 110,
                 clips: [
                     { id: 'fan_motor', left: '15%', width: '25%', title: 'Cooling fan motor', type: 'large' },
-                    { id: 'hard_drive_seek', left: '50%', width: '15%', title: 'Hard drive seek noise', type: 'small' },
-                    { id: 'keyboard_clicks', left: '75%', width: '20%', title: 'Keyboard clicking', type: 'small' }
+                    { id: 'hard_drive_seek', left: '50%', width: '4%', title: 'Hard drive seek noise', type: 'small' },
+                    { id: 'keyboard_clicks', left: '75%', width: '5%', title: 'Keyboard clicking', type: 'small' }
                 ]
             },
             'digital-artifacts': {
@@ -358,7 +375,7 @@ const AUDIO_CONFIGS = {
                 clips: [
                     { id: 'compression_artifacts', left: '25%', width: '20%', title: 'Compression artifacts', type: 'large' },
                     { id: 'quantization_noise', left: '50%', width: '25%', title: 'Quantization noise', type: 'large' },
-                    { id: 'clock_jitter', left: '80%', width: '10%', title: 'Clock jitter', type: 'small' }
+                    { id: 'clock_jitter', left: '80%', width: '3%', title: 'Clock jitter', type: 'small' }
                 ]
             },
             'frequency-sweeps': {
