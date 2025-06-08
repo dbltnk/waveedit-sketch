@@ -604,6 +604,37 @@
             display: none;
         }
 
+        /* View mode toggle styles */
+        .view-mode-toggle {
+            display: flex;
+            gap: 2px;
+            margin-top: 4px;
+        }
+
+        .mode-btn {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 2px 6px;
+            font-size: 0.65em;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            flex: 1;
+            text-align: center;
+        }
+
+        .mode-btn:hover {
+            background: var(--bg-hover-light);
+            border-color: var(--border-color-light);
+        }
+
+        .mode-btn.active {
+            background: var(--primary-purple);
+            border-color: var(--primary-purple-dark);
+            color: var(--text-primary);
+        }
+
         /* Add styles for merged view clips */
         #merged .audio-clip {
             pointer-events: none !important;
@@ -1626,8 +1657,14 @@
                         <span
                             style="font-size: 0.7em; color: #ecf0f1; font-weight: 500; line-height: 1.2; display: block; margin-bottom: 4px;">1_simple_getaway_analysis.wav</span>
                         <div id="task-hint"
-                            style="font-size: 0.75em; color: #f39c12; font-style: italic; line-height: 1.3;">
+                            style="font-size: 0.75em; color: #f39c12; font-style: italic; line-height: 1.3; margin-bottom: 8px;">
                             Silence unwanted elements to reveal hidden evidence</div>
+                        <div class="view-mode-toggle">
+                            <button class="mode-btn active" data-mode="waveform" onclick="switchViewMode('waveform')">📊
+                                Wave</button>
+                            <button class="mode-btn" data-mode="spectrogram" onclick="switchViewMode('spectrogram')">🌈
+                                Spec</button>
+                        </div>
                     </div>
                     <div class="track-content"
                         style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative; height: 60px;"
@@ -1788,8 +1825,13 @@
         let waveformCanvas = null;
         let waveformCtx = null;
         let waveformData = []; // Simulated waveform data
+        let spectrogramData = []; // 2D spectrogram data [frequency][time]
         let originalClipData = new Map(); // Store original clip positions and sizes
         let zoomEnabled = false; // Track if zoom functionality is enabled
+
+        // View mode state
+        let currentViewMode = 'waveform'; // 'waveform' or 'spectrogram'
+        let viewModePreferences = {}; // Store per-file view mode preferences
 
         // Show popup for ??? clips
         function showClipPopup(event) {
@@ -1915,6 +1957,150 @@
             };
         }
 
+        // Generate realistic spectrogram data based on filename
+        function generateSpectrogramData(filename, width = 10000, height = 256) {
+            const data = [];
+
+            // Use filename as seed for reproducible randomness
+            const seed = hashString(filename);
+            let random = seededRandom(seed);
+
+            // Get file-specific spectral characteristics
+            const spectralParams = getSpectralParams(filename);
+
+            // Initialize 2D array [frequency][time]
+            for (let freq = 0; freq < height; freq++) {
+                data[freq] = [];
+                for (let time = 0; time < width; time++) {
+                    data[freq][time] = 0;
+                }
+            }
+
+            // Generate frequency content
+            for (let time = 0; time < width; time++) {
+                const t = time / width;
+
+                // Add base noise floor
+                for (let freq = 0; freq < height; freq++) {
+                    data[freq][time] = random() * spectralParams.noiseFloor;
+                }
+
+                // Add frequency components based on file characteristics
+                spectralParams.frequencyBands.forEach(band => {
+                    const startFreq = Math.floor((band.freqRange[0] / 20000) * height);
+                    const endFreq = Math.floor((band.freqRange[1] / 20000) * height);
+
+                    for (let freq = startFreq; freq < endFreq; freq++) {
+                        const freqNorm = endFreq > startFreq ? (freq - startFreq) / (endFreq - startFreq) : 0;
+                        const timeVariation = Math.sin(t * Math.PI * band.timeModulation + band.phase);
+                        const freqVariation = Math.sin(freqNorm * Math.PI * band.freqModulation);
+
+                        let intensity = band.baseIntensity;
+                        intensity *= (0.5 + 0.5 * timeVariation);
+                        intensity *= (0.7 + 0.3 * freqVariation);
+                        intensity += (random() - 0.5) * band.randomness;
+
+                        data[freq][time] = Math.max(data[freq][time], Math.max(0, Math.min(1, intensity)));
+                    }
+                });
+
+                // Add transient events
+                if (random() < spectralParams.transientChance) {
+                    const centerFreq = Math.floor(random() * height);
+                    const bandwidth = Math.floor(10 + random() * 30);
+                    const intensity = 0.3 + random() * 0.7;
+
+                    for (let f = Math.max(0, centerFreq - bandwidth); f < Math.min(height, centerFreq + bandwidth); f++) {
+                        const distance = Math.abs(f - centerFreq);
+                        const falloff = Math.max(0, 1 - distance / bandwidth);
+                        data[f][time] = Math.max(data[f][time], intensity * falloff);
+                    }
+                }
+            }
+
+            return data;
+        }
+
+        // Get spectral parameters for different file types
+        function getSpectralParams(filename) {
+            const params = {
+                '1_simple_getaway_analysis.wav': {
+                    noiseFloor: 0.05,
+                    transientChance: 0.02,
+                    frequencyBands: [
+                        { freqRange: [20, 200], baseIntensity: 0.4, timeModulation: 2, freqModulation: 1, phase: 0, randomness: 0.1 }, // Engine rumble
+                        { freqRange: [200, 2000], baseIntensity: 0.3, timeModulation: 5, freqModulation: 3, phase: 1.2, randomness: 0.15 }, // Dialogue
+                        { freqRange: [2000, 8000], baseIntensity: 0.2, timeModulation: 12, freqModulation: 8, phase: 2.1, randomness: 0.2 }, // Clarity
+                        { freqRange: [8000, 20000], baseIntensity: 0.15, timeModulation: 20, freqModulation: 15, phase: 0.5, randomness: 0.25 } // Digital artifacts
+                    ]
+                },
+                '2_simple_vocal_harmony.wav': {
+                    noiseFloor: 0.02,
+                    transientChance: 0.005,
+                    frequencyBands: [
+                        { freqRange: [80, 300], baseIntensity: 0.2, timeModulation: 1, freqModulation: 2, phase: 0, randomness: 0.05 }, // Fundamental
+                        { freqRange: [300, 1500], baseIntensity: 0.6, timeModulation: 3, freqModulation: 5, phase: 0.3, randomness: 0.1 }, // Vocals
+                        { freqRange: [1500, 4000], baseIntensity: 0.4, timeModulation: 8, freqModulation: 12, phase: 1.8, randomness: 0.1 }, // Harmonics
+                        { freqRange: [4000, 12000], baseIntensity: 0.25, timeModulation: 15, freqModulation: 20, phase: 2.7, randomness: 0.15 } // Brightness
+                    ]
+                },
+                '3_medium_morse_code.wav': {
+                    noiseFloor: 0.08,
+                    transientChance: 0.04,
+                    frequencyBands: [
+                        { freqRange: [600, 1000], baseIntensity: 0.8, timeModulation: 16, freqModulation: 0, phase: 0, randomness: 0.1 }, // Carrier tone
+                        { freqRange: [1000, 2000], baseIntensity: 0.3, timeModulation: 16, freqModulation: 2, phase: 0.5, randomness: 0.15 }, // Harmonics
+                        { freqRange: [50, 500], baseIntensity: 0.3, timeModulation: 0.5, freqModulation: 3, phase: 1.2, randomness: 0.2 }, // Static
+                        { freqRange: [5000, 15000], baseIntensity: 0.2, timeModulation: 25, freqModulation: 30, phase: 2.3, randomness: 0.3 } // Radio noise
+                    ]
+                },
+                '4_medium_seasonal_birds.wav': {
+                    noiseFloor: 0.06,
+                    transientChance: 0.03,
+                    frequencyBands: [
+                        { freqRange: [100, 800], baseIntensity: 0.3, timeModulation: 2, freqModulation: 4, phase: 0, randomness: 0.2 }, // Forest ambience
+                        { freqRange: [1000, 4000], baseIntensity: 0.4, timeModulation: 8, freqModulation: 15, phase: 1.5, randomness: 0.25 }, // Mid-range calls
+                        { freqRange: [4000, 12000], baseIntensity: 0.6, timeModulation: 25, freqModulation: 60, phase: 0.8, randomness: 0.3 }, // Bird chirps
+                        { freqRange: [12000, 20000], baseIntensity: 0.3, timeModulation: 80, freqModulation: 80, phase: 2.9, randomness: 0.4 } // High-freq details
+                    ]
+                },
+                '5_medium_find_the_murderer.wav': {
+                    noiseFloor: 0.1,
+                    transientChance: 0.025,
+                    frequencyBands: [
+                        { freqRange: [20, 150], baseIntensity: 0.3, timeModulation: 1.5, freqModulation: 2, phase: 0, randomness: 0.15 }, // Low rumble
+                        { freqRange: [150, 800], baseIntensity: 0.4, timeModulation: 4, freqModulation: 6, phase: 1.1, randomness: 0.2 }, // Mystery tones
+                        { freqRange: [800, 3000], baseIntensity: 0.5, timeModulation: 12, freqModulation: 20, phase: 2.3, randomness: 0.25 }, // Evidence sounds
+                        { freqRange: [3000, 8000], baseIntensity: 0.35, timeModulation: 28, freqModulation: 45, phase: 0.7, randomness: 0.3 }, // Clarity range
+                        { freqRange: [8000, 20000], baseIntensity: 0.25, timeModulation: 120, freqModulation: 120, phase: 1.9, randomness: 0.35 } // Artifacts
+                    ]
+                },
+                '6_complex_noise_profiling.wav': {
+                    noiseFloor: 0.15,
+                    transientChance: 0.05,
+                    frequencyBands: [
+                        { freqRange: [20, 500], baseIntensity: 0.4, timeModulation: 3, freqModulation: 6, phase: 0, randomness: 0.3 }, // Low noise
+                        { freqRange: [500, 2000], baseIntensity: 0.5, timeModulation: 18, freqModulation: 35, phase: 0.9, randomness: 0.35 }, // Mid noise
+                        { freqRange: [2000, 8000], baseIntensity: 0.6, timeModulation: 70, freqModulation: 70, phase: 1.7, randomness: 0.4 }, // High noise
+                        { freqRange: [8000, 20000], baseIntensity: 0.3, timeModulation: 150, freqModulation: 150, phase: 2.5, randomness: 0.45 } // Very high noise
+                    ]
+                },
+                '7_complex_orchestra_hickups.wav': {
+                    noiseFloor: 0.03,
+                    transientChance: 0.015,
+                    frequencyBands: [
+                        { freqRange: [40, 200], baseIntensity: 0.4, timeModulation: 1, freqModulation: 3, phase: 0, randomness: 0.08 }, // Double bass, cello
+                        { freqRange: [200, 800], baseIntensity: 0.5, timeModulation: 8, freqModulation: 20, phase: 0.6, randomness: 0.1 }, // Viola, low strings
+                        { freqRange: [800, 3000], baseIntensity: 0.6, timeModulation: 20, freqModulation: 50, phase: 1.9, randomness: 0.12 }, // Violin, woodwinds
+                        { freqRange: [3000, 8000], baseIntensity: 0.4, timeModulation: 50, freqModulation: 100, phase: 2.7, randomness: 0.15 }, // Brass, upper harmonics
+                        { freqRange: [8000, 20000], baseIntensity: 0.2, timeModulation: 100, freqModulation: 100, phase: 1.3, randomness: 0.2 } // Shimmer, hall acoustics
+                    ]
+                }
+            };
+
+            return params[filename] || params['5_medium_find_the_murderer.wav']; // Default fallback
+        }
+
         // Get waveform parameters for different file types
         function getWaveformParams(filename) {
             const params = {
@@ -2020,20 +2206,62 @@
             return params[filename] || params['5_medium_find_the_murderer.wav']; // Default fallback
         }
 
-        // Draw waveform on canvas
-        function drawWaveform() {
+        // Map intensity value to RGB color (traditional spectrogram colors)
+        function intensityToColor(intensity) {
+            // Clamp intensity to 0-1 range
+            intensity = Math.max(0, Math.min(1, intensity));
+
+            // Traditional spectrogram color mapping: Black -> Blue -> Green -> Yellow -> Red -> White
+            if (intensity < 0.2) {
+                // Black to Blue
+                const t = intensity / 0.2;
+                return [0, 0, Math.floor(t * 128)];
+            } else if (intensity < 0.4) {
+                // Blue to Green
+                const t = (intensity - 0.2) / 0.2;
+                return [0, Math.floor(t * 255), 128 - Math.floor(t * 128)];
+            } else if (intensity < 0.6) {
+                // Green to Yellow
+                const t = (intensity - 0.4) / 0.2;
+                return [Math.floor(t * 255), 255, 0];
+            } else if (intensity < 0.8) {
+                // Yellow to Red
+                const t = (intensity - 0.6) / 0.2;
+                return [255, 255 - Math.floor(t * 255), 0];
+            } else {
+                // Red to White
+                const t = (intensity - 0.8) / 0.2;
+                return [255, Math.floor(t * 255), Math.floor(t * 255)];
+            }
+        }
+
+        // Draw visualization based on current mode
+        function drawVisualization() {
             if (!waveformCanvas || !waveformCtx) return;
 
             const width = waveformCanvas.width;
             const height = waveformCanvas.height;
-            const centerY = height / 2;
 
             // Clear canvas
             waveformCtx.clearRect(0, 0, width, height);
 
-            // Calculate how many samples to show based on zoom
-            const samplesPerPixel = Math.max(1, Math.floor(waveformData.length / (width * currentZoom)));
-            const startSample = Math.floor(waveformOffsetX * waveformData.length);
+            if (currentViewMode === 'waveform') {
+                drawWaveformMode(width, height);
+            } else if (currentViewMode === 'spectrogram') {
+                drawSpectrogramMode(width, height);
+            }
+        }
+
+        // Draw waveform mode
+        function drawWaveformMode(width, height) {
+            const centerY = height / 2;
+
+            // Calculate visible range: fewer samples = more zoom (matches spectrogram logic)
+            const waveformWidth = waveformData.length; // 10,000 samples
+            const visibleSamples = waveformWidth / currentZoom;
+            const maxStartSample = Math.max(0, waveformWidth - visibleSamples);
+            const startSample = Math.floor(waveformOffsetX * maxStartSample);
+            const endSample = Math.min(waveformWidth, startSample + visibleSamples);
 
             // Set waveform style
             waveformCtx.strokeStyle = getCurrentWaveformColor();
@@ -2041,27 +2269,70 @@
             waveformCtx.beginPath();
 
             for (let x = 0; x < width; x++) {
-                const sampleIndex = startSample + Math.floor(x * samplesPerPixel);
-                if (sampleIndex >= waveformData.length) break;
+                // Map canvas X to waveform position within visible range
+                const timeProgress = x / width;
+                const sampleIndex = Math.floor(startSample + timeProgress * (endSample - startSample));
 
-                // Average samples for anti-aliasing when zoomed out
-                let amplitude = 0;
-                const samplesToAverage = Math.max(1, samplesPerPixel);
-                for (let s = 0; s < samplesToAverage && sampleIndex + s < waveformData.length; s++) {
-                    amplitude += waveformData[sampleIndex + s];
-                }
-                amplitude /= samplesToAverage;
+                if (sampleIndex >= 0 && sampleIndex < waveformWidth) {
+                    const amplitude = waveformData[sampleIndex];
+                    const y = centerY + amplitude * centerY * 0.8;
 
-                const y = centerY + amplitude * centerY * 0.8;
-
-                if (x === 0) {
-                    waveformCtx.moveTo(x, y);
-                } else {
-                    waveformCtx.lineTo(x, y);
+                    if (x === 0) {
+                        waveformCtx.moveTo(x, y);
+                    } else {
+                        waveformCtx.lineTo(x, y);
+                    }
                 }
             }
 
             waveformCtx.stroke();
+        }
+
+        // Draw spectrogram mode
+        function drawSpectrogramMode(width, height) {
+            if (spectrogramData.length === 0) return;
+
+            // Create ImageData for pixel manipulation
+            const imageData = waveformCtx.createImageData(width, height);
+            const data = imageData.data;
+
+            // Calculate which portion of spectrogram to show based on zoom
+            const spectrogramWidth = spectrogramData[0].length; // 10,000 samples
+            const spectrogramHeight = spectrogramData.length;   // 256 frequency bins
+
+            // Calculate visible range: fewer samples = more zoom
+            const visibleSamples = spectrogramWidth / currentZoom;
+            const maxStartSample = Math.max(0, spectrogramWidth - visibleSamples);
+            const startSample = Math.floor(waveformOffsetX * maxStartSample);
+            const endSample = Math.min(spectrogramWidth, startSample + visibleSamples);
+
+            // Render each pixel
+            for (let x = 0; x < width; x++) {
+                // Map canvas X to spectrogram time position within visible range
+                const timeProgress = x / width;
+                const spectrogramX = Math.floor(startSample + timeProgress * (endSample - startSample));
+
+                if (spectrogramX >= 0 && spectrogramX < spectrogramWidth) {
+                    for (let y = 0; y < height; y++) {
+                        // Map canvas Y to spectrogram frequency (flip Y axis)
+                        const spectrogramY = Math.floor(((height - 1 - y) / height) * spectrogramHeight);
+
+                        if (spectrogramY >= 0 && spectrogramY < spectrogramHeight) {
+                            const intensity = spectrogramData[spectrogramY][spectrogramX];
+                            const [r, g, b] = intensityToColor(intensity);
+
+                            const pixelIndex = (y * width + x) * 4;
+                            data[pixelIndex] = r;     // Red
+                            data[pixelIndex + 1] = g; // Green
+                            data[pixelIndex + 2] = b; // Blue
+                            data[pixelIndex + 3] = 255; // Alpha
+                        }
+                    }
+                }
+            }
+
+            // Draw the image data to canvas
+            waveformCtx.putImageData(imageData, 0, 0);
         }
 
         // Get current waveform color based on loaded file
@@ -2094,8 +2365,8 @@
                 waveformOffsetX = Math.max(0, Math.min(maxOffset, waveformOffsetX));
             }
 
-            // Redraw waveform with new zoom level
-            drawWaveform();
+            // Redraw visualization with new zoom level
+            drawVisualization();
 
             // Update clip positions and sizes based on zoom
             updateClipPositions();
@@ -2190,6 +2461,27 @@
             });
         }
 
+        // Switch between waveform and spectrogram view modes
+        function switchViewMode(mode) {
+            if (mode === currentViewMode) return;
+
+            currentViewMode = mode;
+
+            // Update button states
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            // Store preference for current file
+            const currentFile = document.querySelector('#merged .track-info span:first-child')?.textContent;
+            if (currentFile) {
+                viewModePreferences[currentFile] = mode;
+            }
+
+            // Redraw visualization
+            drawVisualization();
+        }
+
         // Update clip positions and sizes based on current zoom level
         function updateClipPositions() {
             if (originalClipData.size === 0) return;
@@ -2260,7 +2552,7 @@
                 const rect = mergedTrack.getBoundingClientRect();
                 waveformCanvas.width = rect.width;
                 waveformCanvas.height = rect.height;
-                drawWaveform();
+                drawVisualization();
             }
 
             // Initial resize and setup
@@ -2275,7 +2567,8 @@
             // Generate waveform data based on current file
             const currentFile = document.querySelector('#merged .track-info span:first-child')?.textContent || '5_medium_find_the_murderer.wav';
             waveformData = generateWaveformData(currentFile, 10000);
-            drawWaveform();
+            spectrogramData = generateSpectrogramData(currentFile);
+            drawVisualization();
         }
 
         // Mouse wheel zoom functionality
@@ -3772,12 +4065,14 @@
             currentZoom = 1.0;
             waveformOffsetX = 0;
 
-            // Reset canvas waveform if it exists
+            // Note: Don't reset view mode here - let loadAudioConfiguration handle it
+            // Reset canvas visualization if it exists
             if (waveformCanvas) {
-                // Regenerate waveform data for new file
+                // Regenerate data for new file
                 const currentFile = document.querySelector('#merged .track-info span:first-child')?.textContent || '5_medium_find_the_murderer.wav';
                 waveformData = generateWaveformData(currentFile, 10000);
-                drawWaveform();
+                spectrogramData = generateSpectrogramData(currentFile);
+                drawVisualization();
             }
 
             updateZoomButtons();
@@ -3867,6 +4162,24 @@
 
             // Update global layer config for analysis game
             window.currentLayerConfig = config.layers;
+
+            // Restore view mode preference for this file
+            const savedViewMode = viewModePreferences[config.name];
+            if (savedViewMode && savedViewMode !== currentViewMode) {
+                switchViewMode(savedViewMode);
+            } else {
+                // Update button states to reflect current mode
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === currentViewMode);
+                });
+            }
+
+            // Generate both waveform and spectrogram data for the new file
+            if (waveformCanvas) {
+                waveformData = generateWaveformData(config.name, 10000);
+                spectrogramData = generateSpectrogramData(config.name);
+                drawVisualization();
+            }
 
 
         }
