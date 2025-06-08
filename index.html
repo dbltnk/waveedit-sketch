@@ -5232,26 +5232,32 @@
             }
         }
 
-        // Add click handler to track content to deselect clips
-        document.querySelectorAll('.track-content').forEach(track => {
-            track.addEventListener('click', function (event) {
-                if (event.target === this) { // Only if clicking the track itself, not a clip
-                    deselectClip();
-                }
-            });
-        });
 
-        // Add click handler to document to deselect when clicking outside
+
+        // Add click handler to document to deselect when clicking outside or in empty space
         document.addEventListener('click', function (event) {
             // Don't deselect if clicking on tools panel or its buttons
             if (event.target.closest('.right-panel')) {
                 return;
             }
 
-            // Check if click is outside of any track content
-            if (!event.target.closest('.track-content')) {
-                deselectClip();
+            // Don't deselect if clicking on left panel controls or VU meters
+            if (event.target.closest('.left-panel')) {
+                return;
             }
+
+            // Don't deselect if clicking on interactive elements like buttons or controls
+            if (event.target.closest('button, .zoom-controls, .pan-controls, .analyze-overlay, .view-mode-overlay')) {
+                return;
+            }
+
+            // Don't deselect if clicking directly on an audio clip
+            if (event.target.classList.contains('audio-clip')) {
+                return;
+            }
+
+            // Deselect if clicking anywhere else (empty space, track content, center panel, etc.)
+            deselectClip();
         });
 
         // Initially disable all clips
