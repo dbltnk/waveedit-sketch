@@ -930,6 +930,32 @@
             /* Base layer for clip */
         }
 
+        /* Override the vertical line pattern from gradients.css with flat color */
+        .audio-clip::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1) !important;
+            opacity: 1 !important;
+            z-index: 0;
+        }
+
+        /* Clip waveform visualization */
+        .clip-waveform {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: currentColor;
+            opacity: 0.3;
+            z-index: 1;
+            pointer-events: none;
+        }
+
         /* Clip effect icons container */
         .clip-effects-container {
             position: absolute;
@@ -1626,6 +1652,23 @@
             position: relative;
             overflow: hidden;
             border: 1px solid #444;
+        }
+
+        .selected-clip-waveform .clip-waveform {
+            opacity: 0.7;
+        }
+
+        /* Override the selected clip waveform pattern from gradients.css with flat color */
+        .selected-clip-waveform::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.2) !important;
+            opacity: 1 !important;
+            z-index: 0;
         }
 
         .selected-clip-playhead {
@@ -3982,6 +4025,64 @@
             updatePlaybackMarker();
         }
 
+        // Clip waveform generation
+        function generateClipWaveform(clipId) {
+            // Create a unique seed based on clip ID for consistent waveforms
+            const seed = clipId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+            const seededRandom = (x) => ((Math.sin(x * seed * 9999) % 1) + 1) / 2;
+
+            // Generate waveform points (using percentages for CSS)
+            const points = [];
+            const numPoints = 50; // Number of waveform segments
+
+            for (let i = 0; i < numPoints; i++) {
+                const x = (i / (numPoints - 1)) * 100; // X position as percentage
+                const baseY = 30 + seededRandom(i * 0.3) * 40; // Y height as percentage (30-70%)
+
+                // Add some variation based on clip characteristics
+                let amplitude = 1;
+                if (clipId.includes('whisper') || clipId.includes('breath')) amplitude = 0.6;
+                if (clipId.includes('scream') || clipId.includes('crash')) amplitude = 1.4;
+                if (clipId.includes('static') || clipId.includes('noise')) amplitude = 0.8;
+
+                const finalY = 50 + (baseY - 50) * amplitude;
+                points.push(`${x}% ${Math.max(10, Math.min(90, finalY))}%`);
+            }
+
+            return `polygon(${points.join(', ')})`;
+        }
+
+        // Apply waveform to clip
+        function applyWaveformToClip(clipElement) {
+            let clipId = clipElement.dataset.clip;
+
+            // For selected clip waveform, get the clip ID from the selected clip
+            if (!clipId && selectedClip) {
+                clipId = selectedClip.dataset.clip;
+            }
+
+            if (!clipId) return;
+
+            // Remove existing waveform
+            const existingWaveform = clipElement.querySelector('.clip-waveform');
+            if (existingWaveform) {
+                existingWaveform.remove();
+            }
+
+            // Create new waveform element
+            const waveform = document.createElement('div');
+            waveform.className = 'clip-waveform';
+            waveform.style.clipPath = generateClipWaveform(clipId);
+            clipElement.appendChild(waveform);
+        }
+
+        // Apply waveforms to all clips
+        function applyWaveformsToAllClips() {
+            document.querySelectorAll('.audio-clip').forEach(clip => {
+                applyWaveformToClip(clip);
+            });
+        }
+
         // VU Meter animation functions
         function startVUMeterAnimation() {
             if (vuMeterInterval) clearInterval(vuMeterInterval);
@@ -4579,6 +4680,8 @@
                 const mergedTrack = document.querySelector('#merged .track-content');
                 if (mergedTrack) {
                     mergedTrack.appendChild(mergedClip);
+                    // Apply waveform to the new clip
+                    applyWaveformToClip(mergedClip);
                 }
             });
         }
@@ -4727,6 +4830,8 @@
             const mergedTrack = document.querySelector('#merged .track-content');
             if (mergedTrack) {
                 mergedTrack.appendChild(mergedClip);
+                // Apply waveform to the new clip
+                applyWaveformToClip(mergedClip);
 
                 // Update stored clip data if we're already tracking clips
                 if (originalClipData.size > 0) {
@@ -5181,6 +5286,10 @@
             const clipLayerId = selectedClip.closest('.track-layer').id;
             const clipColor = getClipColorByLayer(clipLayerId);
             selectedClipWaveform.style.background = `linear-gradient(90deg, ${clipColor}22 0%, ${clipColor}11 100%)`;
+            selectedClipWaveform.style.color = clipColor;
+
+            // Apply waveform to selected clip display
+            applyWaveformToClip(selectedClipWaveform);
 
             // Reset playhead position
             const playhead = selectedClipWaveform.querySelector('.selected-clip-playhead');
@@ -5394,6 +5503,11 @@
             if (defaultConfig) {
                 loadAudioConfiguration(defaultConfig);
             }
+
+            // Apply waveforms to initial clips
+            setTimeout(() => {
+                applyWaveformsToAllClips();
+            }, 100);
         }
 
         // Call initialization after the page loads
@@ -5654,6 +5768,11 @@
                 drawVisualization();
             }
 
+            // Apply waveforms to all newly created clips
+            setTimeout(() => {
+                applyWaveformsToAllClips();
+            }, 100);
+
 
         }
 
@@ -5687,6 +5806,11 @@
 
             // Initially hide the layer
             trackLayer.style.display = 'none';
+
+            // Apply waveforms to all clips in this layer
+            trackLayer.querySelectorAll('.audio-clip').forEach(clip => {
+                applyWaveformToClip(clip);
+            });
 
             // Return the created element
             return trackLayer;
