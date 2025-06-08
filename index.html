@@ -1663,6 +1663,17 @@
             margin: 8px 0;
         }
 
+        .slider-center-mark {
+            position: absolute;
+            left: 50%;
+            top: -2px;
+            bottom: -2px;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
         .slider-fill {
             position: absolute;
             height: 100%;
@@ -1713,7 +1724,11 @@
             position: relative;
         }
 
-        .plugin-section:hover:not(.disabled) {
+        .plugin-section:has(.slider-container) {
+            cursor: default;
+        }
+
+        .plugin-section:hover:not(.disabled):not(:has(.slider-container)) {
             background: var(--bg-hover);
             border-color: var(--primary-purple);
         }
@@ -3884,7 +3899,7 @@
 
         function createSliderPlugin(plugin) {
             return `
-                <div class="plugin-section disabled" onclick="selectPlugin('${plugin.id}')">
+                <div class="plugin-section disabled">
                     <div class="plugin-title">${plugin.icon} ${plugin.name}</div>
                     <div class="slider-container">
                         <div class="slider-labels">
@@ -3892,6 +3907,7 @@
                             <span>${plugin.range[1]}</span>
                         </div>
                         <div class="slider-track">
+                            <div class="slider-center-mark"></div>
                             <div class="slider-fill"></div>
                             <div class="slider-thumb"></div>
                         </div>
@@ -5247,7 +5263,7 @@
             }
 
             // Don't deselect if clicking on interactive elements like buttons or controls
-            if (event.target.closest('button, .zoom-controls, .pan-controls, .analyze-overlay, .view-mode-overlay')) {
+            if (event.target.closest('button, .zoom-controls, .pan-controls, .analyze-overlay, .view-mode-overlay, .slider-track, .slider-thumb')) {
                 return;
             }
 
@@ -5271,15 +5287,31 @@
             document.querySelectorAll('.slider-track').forEach(track => {
                 const thumb = track.querySelector('.slider-thumb');
                 const fill = track.querySelector('.slider-fill');
+                const pluginSection = track.closest('.plugin-section');
                 let isDragging = false;
+                const SNAP_TOLERANCE = 5; // 5% tolerance around center for snapping
 
-                function updateSlider(e) {
+                function updateSlider(e, skipSnap = false) {
                     const rect = track.getBoundingClientRect();
                     const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-                    const percent = (x / rect.width) * 100;
+                    let percent = (x / rect.width) * 100;
 
+                    // Snap to center if within tolerance (unless explicitly skipped)
+                    if (!skipSnap && Math.abs(percent - 50) <= SNAP_TOLERANCE) {
+                        percent = 50;
+                    }
+
+                    // Update slider position
                     fill.style.width = `${percent}%`;
                     thumb.style.left = `${percent}%`;
+
+                    // Update plugin section active state based on position
+                    const isAtCenter = Math.abs(percent - 50) < 1; // Very close to center
+                    if (isAtCenter) {
+                        pluginSection.classList.remove('active');
+                    } else {
+                        pluginSection.classList.add('active');
+                    }
 
                     // Handle speed slider specifically
                     if (track.closest('.plugin-section').querySelector('.plugin-title').textContent.includes('Speed')) {
@@ -5294,7 +5326,7 @@
                     }
                 }
 
-                thumb.addEventListener('mousedown', () => {
+                function handleMouseDown(e) {
                     isDragging = true;
                     // Store original width when starting to drag speed slider
                     if (track.closest('.plugin-section').querySelector('.plugin-title').textContent.includes('Speed')) {
@@ -5303,21 +5335,40 @@
                             clip.dataset.originalWidth = clip.style.width;
                         }
                     }
-                });
+                    // Prevent event bubbling to avoid any parent click handlers
+                    e.stopPropagation();
+                }
 
-                document.addEventListener('mousemove', (e) => {
+                function handleMouseMove(e) {
                     if (isDragging) {
                         updateSlider(e);
+                        e.stopPropagation();
                     }
-                });
+                }
 
-                document.addEventListener('mouseup', () => {
-                    isDragging = false;
-                });
+                function handleMouseUp(e) {
+                    if (isDragging) {
+                        isDragging = false;
+                        e.stopPropagation();
+                    }
+                }
 
-                track.addEventListener('click', (e) => {
-                    updateSlider(e);
-                });
+                function handleTrackClick(e) {
+                    if (!isDragging) {
+                        updateSlider(e);
+                    }
+                    e.stopPropagation();
+                }
+
+                // Event listeners
+                thumb.addEventListener('mousedown', handleMouseDown);
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                track.addEventListener('click', handleTrackClick);
+
+                // Prevent plugin section clicks when interacting with sliders
+                track.addEventListener('click', (e) => e.stopPropagation());
+                thumb.addEventListener('click', (e) => e.stopPropagation());
             });
         }
 
@@ -5528,12 +5579,14 @@
                 section.classList.remove('active');
                 section.classList.add('disabled');
 
-                // Reset sliders to center position
+                // Reset sliders to center position and remove active state
                 const sliderFill = section.querySelector('.slider-fill');
                 const sliderThumb = section.querySelector('.slider-thumb');
                 if (sliderFill && sliderThumb) {
                     sliderFill.style.width = '50%';
                     sliderThumb.style.left = '50%';
+                    // Sliders at center should not be active
+                    section.classList.remove('active');
                 }
             });
 
