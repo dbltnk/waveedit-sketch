@@ -210,6 +210,56 @@
             background: var(--bg-hover);
         }
 
+        /* Settings dropdown styles */
+        .settings-menu {
+            position: relative;
+        }
+
+        .settings-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 200px;
+            background: var(--bg-menu);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-shadow: var(--shadow-subtle);
+            z-index: 1000;
+            display: none;
+        }
+
+        .settings-dropdown.show {
+            display: block;
+        }
+
+        .settings-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-option:hover {
+            background: var(--bg-hover);
+        }
+
+        .settings-option:last-child {
+            border-bottom: none;
+        }
+
+        .settings-option:hover {
+            background: var(--bg-hover);
+        }
+
+        .settings-checkbox {
+            margin: 0;
+            cursor: pointer;
+            accent-color: var(--primary-orange);
+        }
+
         /* Main Content */
         .main-content {
             flex: 1;
@@ -1786,6 +1836,16 @@
             <span class="menu-item inactive">Analyze</span>
             <span class="menu-item inactive">Details</span>
             <span class="menu-item inactive">Plugins</span>
+            <span class="menu-item settings-menu" onclick="toggleSettingsMenu(event)">Settings ▼
+                <div class="settings-dropdown" id="settings-dropdown">
+                    <div class="settings-option" onclick="removeBaseOverlay(); event.stopPropagation()">
+                        <span>Remove base layers overlay</span>
+                    </div>
+                    <div class="settings-option" onclick="removeBaseTracks(); event.stopPropagation()">
+                        <span>Remove base layers below</span>
+                    </div>
+                </div>
+            </span>
             <span class="menu-item inactive">Help</span>
             <span class="menu-item inactive">License</span>
         </div>
@@ -3700,6 +3760,8 @@
 
             // Set up manual discovery for small clips
             setupSmallClipDiscovery();
+
+
         }
 
         // Create a regular layer with large clips (old function for backwards compatibility)
@@ -4540,13 +4602,49 @@
             dropdown.classList.toggle('show');
         }
 
+        // Settings menu functionality
+        function toggleSettingsMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('settings-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Remove base layer clips from overlay (one-shot)
+        function removeBaseOverlay() {
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (!mergedTrack) return;
+
+            const baseClips = mergedTrack.querySelectorAll('.audio-clip.revealed');
+            baseClips.forEach(clip => {
+                clip.remove();
+            });
+        }
+
+        // Remove base track layers (one-shot)
+        function removeBaseTracks() {
+            const allLayers = document.querySelectorAll('.track-layer');
+            const baseLayers = Array.from(allLayers).filter(layer => {
+                return layer.id !== 'merged' && !layer.classList.contains('misc-layer');
+            });
+
+            baseLayers.forEach(layer => {
+                layer.remove();
+            });
+        }
+
         // Close dropdown when clicking outside
         document.addEventListener('click', function (event) {
-            const dropdown = document.getElementById('load-dropdown');
+            const loadDropdown = document.getElementById('load-dropdown');
             const loadMenu = event.target.closest('.load-menu');
+            const settingsDropdown = document.getElementById('settings-dropdown');
+            const settingsMenu = event.target.closest('.settings-menu');
 
-            if (!loadMenu && dropdown.classList.contains('show')) {
-                dropdown.classList.remove('show');
+            if (!loadMenu && loadDropdown.classList.contains('show')) {
+                loadDropdown.classList.remove('show');
+            }
+
+            if (!settingsMenu && settingsDropdown.classList.contains('show')) {
+                settingsDropdown.classList.remove('show');
             }
         });
 
