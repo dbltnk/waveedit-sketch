@@ -4072,10 +4072,6 @@
             playBtn.textContent = isPlaying ? '⏸' : '▶';
 
             if (isPlaying) {
-                // Get current loop state
-                const loopCheckbox = document.getElementById('main-loop-checkbox');
-                mainLoopEnabled = loopCheckbox ? loopCheckbox.checked : false;
-
                 // Start VU meter animation
                 startVUMeterAnimation();
 
@@ -4083,12 +4079,27 @@
                 playbackInterval = setInterval(() => {
                     currentTime += 0.1 * playbackSpeed;
                     if (currentTime >= totalDuration) {
-                        if (mainLoopEnabled) {
+                        // Check current loop state dynamically
+                        const loopCheckbox = document.getElementById('main-loop-checkbox');
+                        const currentLoopState = loopCheckbox ? loopCheckbox.checked : false;
+
+                        if (currentLoopState) {
                             // Loop: reset to start and continue playing
                             currentTime = 0;
                         } else {
-                            // No loop: stop playback
-                            stopMainPlayback(event);
+                            // No loop: stop playback and update button
+                            isPlaying = false;
+                            isMainPlaying = false;
+                            clearInterval(playbackInterval);
+                            currentTime = 0;
+                            updateTimeDisplay();
+                            updatePlaybackMarker();
+
+                            // Stop VU meter animation
+                            stopVUMeterAnimation();
+
+                            // Update play button icon
+                            playBtn.textContent = '▶';
                             return;
                         }
                     }
@@ -5638,6 +5649,9 @@
             // Update UI state
             isClipPlaying = false;
 
+            // Stop VU meter animation when clip is paused
+            stopVUMeterAnimation();
+
             // Update play button icon
             const playBtn = document.querySelector('.selected-clip-play-btn');
             if (playBtn) {
@@ -5661,6 +5675,9 @@
             playBtn.textContent = '▶';
             isClipPlaying = false;
             clipElapsedTime = 0; // Reset elapsed time on stop
+
+            // Stop VU meter animation
+            stopVUMeterAnimation();
 
             // Reset time display to show 0 / total duration
             if (selectedClip) {
@@ -5688,15 +5705,14 @@
                 clearInterval(clipPlaybackInterval);
                 playBtn.textContent = '▶';
                 isClipPlaying = false;
+
+                // Stop VU meter animation if no audio is playing
+                stopVUMeterAnimation();
             } else {
                 // If starting clip playback, pause main playback first
                 if (isPlaying) {
                     pauseMainPlayback();
                 }
-
-                // Get current loop state
-                const clipLoopCheckbox = document.getElementById('clip-loop-checkbox');
-                clipLoopEnabled = clipLoopCheckbox ? clipLoopCheckbox.checked : false;
 
                 // Calculate clip duration based on clip width percentage and total duration
                 if (selectedClip) {
@@ -5711,11 +5727,18 @@
                 playBtn.textContent = '⏸';
                 isClipPlaying = true;
 
+                // Start VU meter animation for clip playback
+                startVUMeterAnimation();
+
                 // Update time display and playhead every 50ms
                 clipPlaybackInterval = setInterval(() => {
                     const elapsed = Date.now() - clipStartTime;
                     if (elapsed >= clipDuration) {
-                        if (clipLoopEnabled) {
+                        // Check current loop state dynamically
+                        const clipLoopCheckbox = document.getElementById('clip-loop-checkbox');
+                        const currentLoopState = clipLoopCheckbox ? clipLoopCheckbox.checked : false;
+
+                        if (currentLoopState) {
                             // Loop: reset to start and continue playing
                             clipStartTime = Date.now();
                             clipElapsedTime = 0; // Reset elapsed time on loop
@@ -5729,6 +5752,9 @@
                             playBtn.textContent = '▶';
                             isClipPlaying = false;
                             clipElapsedTime = 0; // Reset elapsed time when finished
+
+                            // Stop VU meter animation when clip finishes
+                            stopVUMeterAnimation();
 
                             // Reset time display to show 0 / total duration
                             const totalTimeInSeconds = clipDuration / 1000;
