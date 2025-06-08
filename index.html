@@ -1544,12 +1544,13 @@
             width: 100%;
             height: 100%;
             z-index: 1;
+            /* Ensure pixel-perfect alignment with track content below */
+            box-sizing: border-box;
         }
 
-        /* Hide gradient when canvas is active */
-        .track-content.canvas-active .main-waveform-gradient {
-            display: none;
-        }
+        /* Canvas waveform styling */
+
+        /* Ensure perfect alignment between waveform and clips */
 
         /* Popup styles for ??? clips */
         .clip-popup {
@@ -1667,11 +1668,9 @@
                         </div>
                     </div>
                     <div class="track-content"
-                        style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative; height: 60px;"
+                        style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative;"
                         onclick="selectClip(event)">
-                        <!-- Waveform visualization -->
-                        <div class="main-waveform-gradient"
-                            style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div>
+                        <!-- Canvas-based waveform visualization -->
                         <!-- Playback marker -->
                         <div id="playback-marker"
                             style="position: absolute; top: 0; bottom: 0; width: 2px; background: #f39c12; left: 0%; pointer-events: none; z-index: 100;">
@@ -1895,6 +1894,170 @@
             }
         });
 
+        // Generate realistic transients for different audio types
+        function generateTransients(filename, length, random) {
+            const transients = new Array(length).fill(0);
+
+            const transientPatterns = {
+                '1_simple_getaway_analysis.wav': [
+                    { time: 0.08, type: 'car_door_slam', intensity: 0.8 },
+                    { time: 0.32, type: 'car_door_slam', intensity: 0.7 },
+                    { time: 0.65, type: 'engine_rev', intensity: 0.6 },
+                    { time: 0.89, type: 'tire_screech', intensity: 0.9 }
+                ],
+                '2_simple_vocal_harmony.wav': [
+                    { time: 0.15, type: 'breath_intake', intensity: 0.3 },
+                    { time: 0.35, type: 'consonant_pop', intensity: 0.4 },
+                    { time: 0.58, type: 'breath_intake', intensity: 0.25 },
+                    { time: 0.82, type: 'mouth_click', intensity: 0.2 }
+                ],
+                '3_medium_morse_code.wav': [
+                    { time: 0.12, type: 'radio_pop', intensity: 0.7 },
+                    { time: 0.45, type: 'static_burst', intensity: 0.8 },
+                    { time: 0.67, type: 'carrier_glitch', intensity: 0.5 },
+                    { time: 0.85, type: 'radio_pop', intensity: 0.6 }
+                ],
+                '4_medium_seasonal_birds.wav': [
+                    { time: 0.22, type: 'wing_flap', intensity: 0.4 },
+                    { time: 0.48, type: 'branch_snap', intensity: 0.6 },
+                    { time: 0.73, type: 'bird_alarm', intensity: 0.8 },
+                    { time: 0.91, type: 'rustling', intensity: 0.3 }
+                ],
+                '5_medium_find_the_murderer.wav': [
+                    { time: 0.18, type: 'footstep', intensity: 0.5 },
+                    { time: 0.41, type: 'door_creak', intensity: 0.7 },
+                    { time: 0.59, type: 'glass_break', intensity: 0.9 },
+                    { time: 0.78, type: 'metallic_clang', intensity: 0.6 }
+                ],
+                '6_complex_noise_profiling.wav': [
+                    { time: 0.11, type: 'power_surge', intensity: 0.8 },
+                    { time: 0.33, type: 'digital_glitch', intensity: 0.6 },
+                    { time: 0.56, type: 'motor_start', intensity: 0.7 },
+                    { time: 0.79, type: 'electrical_pop', intensity: 0.5 }
+                ],
+                '7_complex_orchestra_hickups.wav': [
+                    { time: 0.21, type: 'string_snap', intensity: 0.8 },
+                    { time: 0.44, type: 'bow_scratch', intensity: 0.4 },
+                    { time: 0.67, type: 'chair_squeak', intensity: 0.3 },
+                    { time: 0.89, type: 'music_stand_bump', intensity: 0.5 }
+                ]
+            };
+
+            const patterns = transientPatterns[filename] || transientPatterns['5_medium_find_the_murderer.wav'];
+
+            patterns.forEach(transient => {
+                const startSample = Math.floor(transient.time * length);
+                const transientLength = getTransientLength(transient.type);
+
+                for (let i = 0; i < transientLength && startSample + i < length; i++) {
+                    const progress = i / transientLength;
+                    const envelope = getTransientEnvelope(transient.type, progress);
+                    const amplitude = getTransientAmplitude(transient.type, progress, random) * transient.intensity;
+
+                    transients[startSample + i] += amplitude * envelope;
+                }
+            });
+
+            return transients;
+        }
+
+        // Get transient length in samples
+        function getTransientLength(type) {
+            const lengths = {
+                'car_door_slam': 150,
+                'engine_rev': 300,
+                'tire_screech': 250,
+                'breath_intake': 80,
+                'consonant_pop': 20,
+                'mouth_click': 15,
+                'radio_pop': 40,
+                'static_burst': 120,
+                'carrier_glitch': 60,
+                'wing_flap': 35,
+                'branch_snap': 25,
+                'bird_alarm': 180,
+                'rustling': 90,
+                'footstep': 50,
+                'door_creak': 200,
+                'glass_break': 300,
+                'metallic_clang': 180,
+                'power_surge': 100,
+                'digital_glitch': 80,
+                'motor_start': 220,
+                'electrical_pop': 30,
+                'string_snap': 40,
+                'bow_scratch': 70,
+                'chair_squeak': 60,
+                'music_stand_bump': 45
+            };
+            return lengths[type] || 50;
+        }
+
+        // Get transient envelope shape
+        function getTransientEnvelope(type, progress) {
+            const envelopes = {
+                'car_door_slam': Math.exp(-progress * 8) * (1 - progress),
+                'engine_rev': Math.sin(progress * Math.PI) * (1 - progress * 0.3),
+                'tire_screech': Math.sin(progress * Math.PI * 0.8) * Math.exp(-progress * 2),
+                'breath_intake': Math.sin(progress * Math.PI) * 0.6,
+                'consonant_pop': Math.exp(-progress * 12),
+                'mouth_click': Math.exp(-progress * 15),
+                'radio_pop': Math.exp(-progress * 10),
+                'static_burst': Math.sin(progress * Math.PI) * (1 - progress * 0.5),
+                'carrier_glitch': Math.abs(Math.sin(progress * Math.PI * 4)) * (1 - progress),
+                'wing_flap': Math.sin(progress * Math.PI * 2) * (1 - progress),
+                'branch_snap': Math.exp(-progress * 6),
+                'bird_alarm': Math.sin(progress * Math.PI) * (1 - progress * 0.2),
+                'rustling': Math.sin(progress * Math.PI) * 0.7,
+                'footstep': Math.exp(-progress * 5) * (1 - progress),
+                'door_creak': Math.sin(progress * Math.PI) * (1 - progress * 0.3),
+                'glass_break': Math.exp(-progress * 4) * (1 - progress * 0.5),
+                'metallic_clang': Math.exp(-progress * 3) * Math.sin(progress * Math.PI * 2),
+                'power_surge': Math.sin(progress * Math.PI) * (1 - progress * 0.4),
+                'digital_glitch': Math.abs(Math.sin(progress * Math.PI * 8)) * (1 - progress),
+                'motor_start': Math.sin(progress * Math.PI) * (1 - progress * 0.2),
+                'electrical_pop': Math.exp(-progress * 12),
+                'string_snap': Math.exp(-progress * 8) * Math.sin(progress * Math.PI * 3),
+                'bow_scratch': Math.sin(progress * Math.PI) * 0.8,
+                'chair_squeak': Math.sin(progress * Math.PI) * 0.6,
+                'music_stand_bump': Math.exp(-progress * 6)
+            };
+            return envelopes[type] || Math.exp(-progress * 5);
+        }
+
+        // Get transient amplitude pattern
+        function getTransientAmplitude(type, progress, random) {
+            const baseAmplitude = 0.6; // Increased from 0.4 for more prominence
+            const patterns = {
+                'car_door_slam': baseAmplitude * (0.8 + 0.4 * Math.sin(progress * Math.PI * 20)),
+                'engine_rev': baseAmplitude * (0.6 + 0.4 * Math.sin(progress * Math.PI * 15)),
+                'tire_screech': baseAmplitude * (0.7 + 0.6 * Math.sin(progress * Math.PI * 50)),
+                'breath_intake': baseAmplitude * 0.3,
+                'consonant_pop': baseAmplitude * (0.9 + 0.2 * (random() - 0.5)),
+                'mouth_click': baseAmplitude * 0.4,
+                'radio_pop': baseAmplitude * (0.8 + 0.4 * (random() - 0.5)),
+                'static_burst': baseAmplitude * (0.6 + 0.8 * (random() - 0.5)),
+                'carrier_glitch': baseAmplitude * (0.5 + 0.5 * Math.sin(progress * Math.PI * 12)),
+                'wing_flap': baseAmplitude * (0.4 + 0.3 * Math.sin(progress * Math.PI * 8)),
+                'branch_snap': baseAmplitude * (0.7 + 0.3 * (random() - 0.5)),
+                'bird_alarm': baseAmplitude * (0.8 + 0.4 * Math.sin(progress * Math.PI * 25)),
+                'rustling': baseAmplitude * (0.3 + 0.4 * (random() - 0.5)),
+                'footstep': baseAmplitude * (0.6 + 0.2 * (random() - 0.5)),
+                'door_creak': baseAmplitude * (0.5 + 0.3 * Math.sin(progress * Math.PI * 6)),
+                'glass_break': baseAmplitude * (0.9 + 0.2 * (random() - 0.5)),
+                'metallic_clang': baseAmplitude * (0.7 + 0.5 * Math.sin(progress * Math.PI * 18)),
+                'power_surge': baseAmplitude * (0.8 + 0.4 * Math.sin(progress * Math.PI * 10)),
+                'digital_glitch': baseAmplitude * (0.6 + 0.6 * (random() - 0.5)),
+                'motor_start': baseAmplitude * (0.7 + 0.3 * Math.sin(progress * Math.PI * 12)),
+                'electrical_pop': baseAmplitude * (0.9 + 0.2 * (random() - 0.5)),
+                'string_snap': baseAmplitude * (0.8 + 0.4 * Math.sin(progress * Math.PI * 30)),
+                'bow_scratch': baseAmplitude * (0.5 + 0.3 * Math.sin(progress * Math.PI * 15)),
+                'chair_squeak': baseAmplitude * (0.4 + 0.2 * Math.sin(progress * Math.PI * 8)),
+                'music_stand_bump': baseAmplitude * (0.6 + 0.3 * (random() - 0.5))
+            };
+            return patterns[type] || baseAmplitude * 0.5;
+        }
+
         // Generate realistic waveform data based on filename
         function generateWaveformData(filename, length = 10000) {
             const data = [];
@@ -1905,6 +2068,9 @@
 
             // Get file-specific characteristics
             const fileParams = getWaveformParams(filename);
+
+            // Generate realistic transients based on file type
+            const transients = generateTransients(filename, length, random);
 
             for (let i = 0; i < length; i++) {
                 const t = i / length;
@@ -1924,6 +2090,9 @@
                 if (fileParams.spikes && random() < fileParams.spikeChance) {
                     amplitude += (random() - 0.5) * fileParams.spikeIntensity;
                 }
+
+                // Inject realistic transients
+                amplitude += transients[i];
 
                 // Envelope shaping
                 const envelope = fileParams.envelope(t);
@@ -2115,7 +2284,13 @@
                     spikes: true,
                     spikeChance: 0.03,
                     spikeIntensity: 0.6,
-                    envelope: (t) => 0.8 + 0.2 * Math.sin(t * Math.PI * 3)
+                    envelope: (t) => {
+                        // Getaway analysis: Engine revving + dialog gaps
+                        const enginePulse = 0.7 + 0.3 * Math.sin(t * Math.PI * 2.1); // Engine rhythm
+                        const speechGaps = Math.max(0.1, Math.sin(t * Math.PI * 8.5) * 0.6 + 0.4); // Speech pauses
+                        const carEvents = t > 0.3 && t < 0.35 ? 1.2 : 1; // Car door slam
+                        return Math.min(1, enginePulse * speechGaps * carEvents);
+                    }
                 },
                 '2_simple_vocal_harmony.wav': {
                     noiseLevel: 0.25,
@@ -2127,7 +2302,13 @@
                         { frequency: 480, amplitude: 0.08, phase: 1.1, modulation: 30 }
                     ],
                     spikes: false,
-                    envelope: (t) => 0.6 + 0.4 * Math.sin(t * Math.PI * 2) * Math.sin(t * Math.PI * 0.8)
+                    envelope: (t) => {
+                        // Vocal harmony: Breathing + phrase structure
+                        const breathing = 0.3 + 0.7 * Math.sin(t * Math.PI * 1.2); // Natural breathing
+                        const phrases = Math.max(0.2, Math.sin(t * Math.PI * 3.8) * 0.6 + 0.4); // Musical phrases
+                        const dynamics = 0.8 + 0.2 * Math.sin(t * Math.PI * 0.5); // Overall dynamics
+                        return breathing * phrases * dynamics;
+                    }
                 },
                 '3_medium_morse_code.wav': {
                     noiseLevel: 0.35,
@@ -2140,7 +2321,13 @@
                     spikes: true,
                     spikeChance: 0.02,
                     spikeIntensity: 0.8,
-                    envelope: (t) => 0.7 + 0.3 * Math.abs(Math.sin(t * Math.PI * 16))
+                    envelope: (t) => {
+                        // Morse code: Sharp on/off pulses + static bursts
+                        const morsePattern = Math.abs(Math.sin(t * Math.PI * 24)) > 0.6 ? 0.9 : 0.15; // Morse pulses
+                        const staticBursts = t > 0.6 && t < 0.65 ? 1.3 : 1; // Static interference
+                        const carrierTone = 0.4 + 0.3 * Math.sin(t * Math.PI * 0.8); // Carrier modulation
+                        return Math.min(1.2, morsePattern * staticBursts * carrierTone);
+                    }
                 },
                 '4_medium_seasonal_birds.wav': {
                     noiseLevel: 0.45,
@@ -2154,7 +2341,13 @@
                     spikes: true,
                     spikeChance: 0.04,
                     spikeIntensity: 0.5,
-                    envelope: (t) => 0.5 + 0.5 * Math.sin(t * Math.PI * 6) * Math.sin(t * Math.PI * 1.3)
+                    envelope: (t) => {
+                        // Bird calls: Chirp bursts + forest ambience cycles
+                        const birdChirps = Math.sin(t * Math.PI * 12) > 0.4 ? 0.8 + 0.2 * Math.sin(t * Math.PI * 40) : 0.3; // Sharp chirps
+                        const forestBreeze = 0.2 + 0.3 * Math.sin(t * Math.PI * 0.6); // Wind through trees
+                        const seasonalActivity = 0.6 + 0.4 * Math.sin(t * Math.PI * 2.1); // Seasonal variation
+                        return birdChirps * forestBreeze * seasonalActivity;
+                    }
                 },
                 '5_medium_find_the_murderer.wav': {
                     noiseLevel: 0.5,
@@ -2169,7 +2362,14 @@
                     spikes: true,
                     spikeChance: 0.025,
                     spikeIntensity: 0.7,
-                    envelope: (t) => 0.6 + 0.4 * Math.sin(t * Math.PI * 5) * Math.sin(t * Math.PI * 1.8)
+                    envelope: (t) => {
+                        // Mystery/evidence: Dramatic tension + sudden reveals
+                        const tension = 0.4 + 0.3 * Math.sin(t * Math.PI * 1.5); // Building tension
+                        const reveals = t > 0.25 && t < 0.3 ? 1.4 : (t > 0.7 && t < 0.75 ? 1.2 : 1); // Evidence reveals
+                        const whispers = Math.sin(t * Math.PI * 20) > 0.8 ? 0.6 : 1; // Quiet whisper moments
+                        const atmosphericDread = 0.3 + 0.5 * Math.sin(t * Math.PI * 0.4); // Ominous undertone
+                        return tension * reveals * whispers * atmosphericDread;
+                    }
                 },
                 '6_complex_noise_profiling.wav': {
                     noiseLevel: 0.6,
@@ -2184,7 +2384,14 @@
                     spikes: true,
                     spikeChance: 0.05,
                     spikeIntensity: 0.4,
-                    envelope: (t) => 0.7 + 0.3 * Math.sin(t * Math.PI * 7) * Math.sin(t * Math.PI * 2.3)
+                    envelope: (t) => {
+                        // Complex noise: Variable interference patterns
+                        const electricalSurges = 0.5 + 0.4 * Math.sin(t * Math.PI * 4.2); // Power fluctuations
+                        const digitalGlitches = Math.sin(t * Math.PI * 15) > 0.7 ? 0.3 : 1; // Digital dropouts
+                        const mechanicalNoise = 0.6 + 0.3 * Math.sin(t * Math.PI * 8.7); // Mechanical interference
+                        const testToneEvents = t > 0.1 && t < 0.15 ? 1.5 : (t > 0.8 && t < 0.85 ? 1.3 : 1); // Calibration tones
+                        return electricalSurges * digitalGlitches * mechanicalNoise * testToneEvents;
+                    }
                 },
                 '7_complex_orchestra_hickups.wav': {
                     noiseLevel: 0.3,
@@ -2199,7 +2406,14 @@
                     spikes: true,
                     spikeChance: 0.015,
                     spikeIntensity: 0.8,
-                    envelope: (t) => 0.8 + 0.2 * Math.sin(t * Math.PI * 4) * Math.sin(t * Math.PI * 0.7)
+                    envelope: (t) => {
+                        // Orchestra with hiccups: Musical phrases with sudden mistakes
+                        const musicalPhrase = 0.7 + 0.2 * Math.sin(t * Math.PI * 1.1); // Natural musical flow
+                        const orchestralBuilds = 0.5 + 0.5 * Math.sin(t * Math.PI * 0.3); // Dynamic swells
+                        const hiccups = (t > 0.2 && t < 0.22) || (t > 0.55 && t < 0.57) ? 0.1 : 1; // Performance mistakes
+                        const recoveries = (t > 0.22 && t < 0.25) || (t > 0.57 && t < 0.6) ? 1.3 : 1; // Post-mistake emphasis
+                        return Math.min(1.2, musicalPhrase * orchestralBuilds * hiccups * recoveries);
+                    }
                 }
             };
 
@@ -2265,7 +2479,7 @@
 
             // Set waveform style
             waveformCtx.strokeStyle = getCurrentWaveformColor();
-            waveformCtx.lineWidth = 1;
+            waveformCtx.lineWidth = 2; // Increased from 1 for better visibility
             waveformCtx.beginPath();
 
             for (let x = 0; x < width; x++) {
@@ -2275,7 +2489,7 @@
 
                 if (sampleIndex >= 0 && sampleIndex < waveformWidth) {
                     const amplitude = waveformData[sampleIndex];
-                    const y = centerY + amplitude * centerY * 0.8;
+                    const y = centerY + amplitude * (centerY - 5); // Leave 5px margin top/bottom
 
                     if (x === 0) {
                         waveformCtx.moveTo(x, y);
@@ -2286,6 +2500,26 @@
             }
 
             waveformCtx.stroke();
+
+            // Draw subtle alignment markers at key percentages (only in waveform mode)
+            if (currentViewMode === 'waveform') {
+                waveformCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                waveformCtx.lineWidth = 1;
+
+                // 15% mark (where first clip often starts)
+                const mark15 = width * 0.15;
+                waveformCtx.beginPath();
+                waveformCtx.moveTo(mark15, 0);
+                waveformCtx.lineTo(mark15, height);
+                waveformCtx.stroke();
+
+                // 50% mark (center reference)
+                const mark50 = width * 0.5;
+                waveformCtx.beginPath();
+                waveformCtx.moveTo(mark50, 0);
+                waveformCtx.lineTo(mark50, height);
+                waveformCtx.stroke();
+            }
         }
 
         // Draw spectrogram mode
@@ -2333,6 +2567,24 @@
 
             // Draw the image data to canvas
             waveformCtx.putImageData(imageData, 0, 0);
+
+            // Draw subtle alignment markers at key percentages (for spectrogram mode too)
+            waveformCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            waveformCtx.lineWidth = 1;
+
+            // 15% mark (where first clip often starts)
+            const mark15 = width * 0.15;
+            waveformCtx.beginPath();
+            waveformCtx.moveTo(mark15, 0);
+            waveformCtx.lineTo(mark15, height);
+            waveformCtx.stroke();
+
+            // 50% mark (center reference)
+            const mark50 = width * 0.5;
+            waveformCtx.beginPath();
+            waveformCtx.moveTo(mark50, 0);
+            waveformCtx.lineTo(mark50, height);
+            waveformCtx.stroke();
         }
 
         // Get current waveform color based on loaded file
@@ -2547,7 +2799,7 @@
             // Get 2D context
             waveformCtx = waveformCanvas.getContext('2d');
 
-            // Set canvas size to match container
+            // Set canvas size to match container exactly
             function resizeCanvas() {
                 const rect = mergedTrack.getBoundingClientRect();
                 waveformCanvas.width = rect.width;
@@ -2561,8 +2813,7 @@
             // Handle window resize
             window.addEventListener('resize', resizeCanvas);
 
-            // Mark track as canvas-active to hide gradient
-            mergedTrack.classList.add('canvas-active');
+            // Canvas is now the primary waveform display
 
             // Generate waveform data based on current file
             const currentFile = document.querySelector('#merged .track-info span:first-child')?.textContent || '5_medium_find_the_murderer.wav';
@@ -4139,11 +4390,7 @@
                 taskHintElement.textContent = TASK_HINTS[config.name] || 'Complete the audio analysis task';
             }
 
-            // Update merged track gradient
-            const mergedWaveform = document.querySelector('#merged .main-waveform-gradient');
-            if (mergedWaveform) {
-                mergedWaveform.className = `main-waveform-gradient ${config.gradientClass}`;
-            }
+            // Canvas-based waveform is already updated via generateWaveformData
 
             // Update tools based on available tools for this level
             const toolsContainer = document.getElementById('tools-container');
