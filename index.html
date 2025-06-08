@@ -524,16 +524,17 @@
             top: 5px;
             border-radius: 3px;
             cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1.5px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 10px;
             color: white;
-            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
             user-select: none;
             transition: all 0.2s ease;
-            background: transparent;
+            background: rgba(0, 0, 0, 0.1);
             overflow: hidden;
             font-style: normal !important;
             /* Prevent italic */
@@ -638,16 +639,18 @@
         /* Add styles for merged view clips */
         #merged .audio-clip {
             pointer-events: none !important;
-            opacity: 0.5;
+            opacity: 0.8;
             z-index: 1;
             height: 18px;
             top: 0;
             /* Reset top position, will be set by JS */
             cursor: default;
+            border: 1.5px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         #merged .audio-clip.revealed {
-            opacity: 0.7;
+            opacity: 0.9;
             z-index: 2;
             pointer-events: none !important;
         }
@@ -758,8 +761,8 @@
 
         .audio-clip:hover {
             transform: translateY(-1px);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.9), 0 4px 12px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.8);
         }
 
         .audio-clip.selected {
@@ -1459,6 +1462,26 @@
             color: #95a5a6;
         }
 
+        /* MISC clips in merged view (zoom discovery) */
+        .misc-clip-hidden {
+            background: #444 !important;
+            color: #666 !important;
+            border: 2px solid #666 !important;
+            pointer-events: auto !important;
+            z-index: 50 !important;
+            position: absolute !important;
+        }
+
+        /* Override the data-clip text display for MISC clips */
+        .misc-clip-hidden::after {
+            content: '???' !important;
+        }
+
+        /* Show true name for identified MISC clips */
+        .identified::after {
+            content: attr(data-clip) !important;
+        }
+
         /* Zoom controls styles */
         .zoom-controls {
             position: absolute;
@@ -1804,6 +1827,8 @@
         let discoveredClips = new Set();
         let isAnalyzed = false;
         let clipPlaybackInterval = null;
+        let mergedMiscClips = []; // Track ??? clips in merged view
+        let revealedMiscClips = new Set(); // Once revealed, always visible
         let clipStartTime = 0;
         let clipDuration = 0;
         let isClipPlaying = false;
@@ -2692,7 +2717,7 @@
         function storeOriginalClipData() {
             originalClipData.clear();
 
-            // Store data for all visible clips in merged view
+            // Store data for all visible clips in merged view (including MISC clips)
             const mergedClips = document.querySelectorAll('#merged .audio-clip');
             mergedClips.forEach(clip => {
                 const left = parseFloat(clip.style.left.replace('%', ''));
@@ -2703,6 +2728,18 @@
                     left: left,
                     width: width,
                     element: clip
+                });
+            });
+
+            // Store data for MISC clips (including hidden ones)
+            mergedMiscClips.forEach(miscClip => {
+                const left = parseFloat(miscClip.originalLeft.replace('%', ''));
+                const width = parseFloat(miscClip.originalWidth.replace('%', ''));
+
+                originalClipData.set(miscClip.clipId, {
+                    left: left,
+                    width: width,
+                    element: miscClip.element
                 });
             });
         }
@@ -2743,19 +2780,34 @@
                 const clip = originalData.element;
                 if (!clip) return;
 
+                // Check if this is a MISC clip
+                const isMiscClip = clip.classList.contains('misc-clip-hidden');
+
                 // Calculate original clip boundaries
                 const originalLeft = originalData.left;
                 const originalRight = originalData.left + originalData.width;
 
                 // Check if clip is visible in current zoom view
-                if (originalRight < visibleStart || originalLeft > visibleEnd) {
-                    // Clip is completely outside visible area
+                const isInViewport = !(originalRight < visibleStart || originalLeft > visibleEnd);
+
+                if (!isInViewport) {
+                    // Clip is completely outside visible area - hide all clips regardless of type
                     clip.style.display = 'none';
                     return;
                 }
 
-                // Clip is at least partially visible
-                clip.style.display = 'flex';
+                // Clip is at least partially visible in viewport
+                if (isMiscClip) {
+                    // For MISC clips, only show if already revealed
+                    if (revealedMiscClips.has(clipId)) {
+                        clip.style.display = 'flex';
+                    } else {
+                        clip.style.display = 'none';
+                    }
+                } else {
+                    // Regular clips show normally when in viewport
+                    clip.style.display = 'flex';
+                }
 
                 // Calculate new position and size
                 // Convert from original coordinates to zoomed coordinates
@@ -2778,6 +2830,9 @@
                     clip.style.opacity = '';
                 }
             });
+
+            // Update MISC clip visibility
+            updateMiscClipVisibility();
         }
 
         // Initialize waveform canvas
@@ -2842,10 +2897,87 @@
                         updateZoom(mouseX);
                     }
                 });
+
+                // Add box drawing for MISC clip identification
+                mergedTrack.addEventListener('mousedown', startMiscClipIdentification);
+                mergedTrack.addEventListener('mousemove', updateMiscClipIdentification);
+                mergedTrack.addEventListener('mouseup', endMiscClipIdentification);
             }
 
             // Initialize button states
             updateZoomButtons();
+        }
+
+        // Check if a MISC clip should be visible based on zoom and viewport
+        function shouldMiscClipBeVisible(miscClip) {
+            const clipWidth = parseFloat(miscClip.originalWidth.replace('%', ''));
+            const clipLeft = parseFloat(miscClip.originalLeft.replace('%', ''));
+
+            // Check size threshold: 25% of view OR max zoom
+            const sizeThresholdMet = (clipWidth * currentZoom >= 25) || (currentZoom >= maxZoom);
+            if (!sizeThresholdMet) return false;
+
+            // Check if in viewport
+            const visibleStart = waveformOffsetX * 100;
+            const visibleEnd = visibleStart + (100 / currentZoom);
+            const clipEnd = clipLeft + clipWidth;
+
+            const inViewport = (clipEnd > visibleStart) && (clipLeft < visibleEnd);
+
+            return inViewport;
+        }
+
+        // Update MISC clip visibility based on current zoom and scroll
+        function updateMiscClipVisibility() {
+            if (mergedMiscClips.length === 0) return;
+
+            mergedMiscClips.forEach(miscClip => {
+                const clipId = miscClip.clipId;
+
+                // Check if should be revealed now (but don't show yet - let updateClipPositions handle viewport)
+                if (!revealedMiscClips.has(clipId) && shouldMiscClipBeVisible(miscClip)) {
+                    revealMiscClip(miscClip);
+                }
+            });
+        }
+
+        // Reveal a MISC clip with animation
+        function revealMiscClip(miscClip) {
+            const element = miscClip.element;
+            const clipId = miscClip.clipId;
+
+            // Mark as revealed (permanent)
+            revealedMiscClips.add(clipId);
+
+            // Note: Don't set display here - let updateClipPositions handle viewport visibility
+            // But only animate if the element will be visible
+            const originalLeft = parseFloat(miscClip.originalLeft);
+            const originalRight = originalLeft + parseFloat(miscClip.originalWidth);
+            const visibleStart = waveformOffsetX * 100;
+            const visibleEnd = visibleStart + (100 / currentZoom);
+            const isInViewport = !(originalRight < visibleStart || originalLeft > visibleEnd);
+
+            if (isInViewport) {
+                // Show the element for animation
+                element.style.display = 'flex';
+
+                // Start animation from small scale and transparent
+                element.style.transform = 'scale(0.5)';
+                element.style.opacity = '0';
+                element.style.transition = 'all 0.5s ease-out';
+                element.style.zIndex = '50'; // Above regular clips
+
+                // Animate to full size and opacity
+                requestAnimationFrame(() => {
+                    element.style.transform = 'scale(1.0)';
+                    element.style.opacity = '1';
+
+                    // Clean up transition after animation
+                    setTimeout(() => {
+                        element.style.transition = '';
+                    }, 500);
+                });
+            }
         }
 
         // Plugin configuration
@@ -3369,6 +3501,9 @@
             // Enable zoom controls now that clips are available
             enableZoomControls();
 
+            // Create MISC clips in merged view for zoom discovery
+            createMergedMiscClips(smallClips);
+
             // Enable tools
             enableTools();
 
@@ -3602,6 +3737,85 @@
             }
         }
 
+        // Create MISC clips in merged view for zoom discovery
+        function createMergedMiscClips(smallClips) {
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (!mergedTrack) return;
+
+            // Clear any existing MISC clips
+            mergedMiscClips.forEach(miscClip => {
+                if (miscClip.element && miscClip.element.parentNode) {
+                    miscClip.element.remove();
+                }
+            });
+            mergedMiscClips = [];
+
+            // Calculate vertical spread for MISC clips
+            const trackHeight = 240; // Merged track height
+            const clipHeight = 18;
+            const margin = 10; // Margin from top and bottom edges
+            const availableHeight = trackHeight - (2 * margin) - clipHeight;
+
+            // Create ??? clips for each small clip
+            smallClips.forEach((clip, index) => {
+                // Create the ??? clip element
+                const miscClip = document.createElement('div');
+                miscClip.className = 'audio-clip misc-clip-hidden';
+                miscClip.dataset.clip = clip.id;
+                miscClip.dataset.layer = clip.layerId;
+                miscClip.style.left = clip.left;
+                miscClip.style.width = clip.width;
+                miscClip.style.height = '18px';
+
+                // Distribute clips vertically across available space
+                let topPosition;
+                if (smallClips.length === 1) {
+                    // Single clip: center it
+                    topPosition = margin + (availableHeight / 2);
+                } else {
+                    // Multiple clips: spread them evenly
+                    const step = availableHeight / (smallClips.length - 1);
+                    topPosition = margin + (index * step);
+                }
+                miscClip.style.top = `${topPosition}px`;
+
+                miscClip.style.display = 'none'; // Hidden initially
+                miscClip.style.zIndex = '50'; // Above regular clips
+                miscClip.style.background = '#555';
+                miscClip.style.color = '#bbb';
+                miscClip.style.border = '2px solid #888';
+                miscClip.style.boxShadow = '0 0 0 0.5px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.4)';
+                miscClip.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.9)';
+                miscClip.style.pointerEvents = 'auto';
+                miscClip.textContent = '???';
+                miscClip.title = 'Zoom into the WAV file to find and identify this clip.';
+
+                // Add click handler for popup
+                miscClip.addEventListener('click', showClipPopup);
+
+                // Add to merged track
+                mergedTrack.appendChild(miscClip);
+
+                // Store tracking data
+                mergedMiscClips.push({
+                    clipId: clip.id,
+                    layerId: clip.layerId,
+                    originalLeft: clip.left,
+                    originalWidth: clip.width,
+                    element: miscClip
+                });
+
+                // Add to zoom tracking data so MISC clips scale with zoom
+                const left = parseFloat(clip.left.replace('%', ''));
+                const width = parseFloat(clip.width.replace('%', ''));
+                originalClipData.set(clip.id, {
+                    left: left,
+                    width: width,
+                    element: miscClip
+                });
+            });
+        }
+
         // Setup manual discovery for small clips in MISC layers
         function setupSmallClipDiscovery() {
             const trackContent = document.querySelector('#merged .track-content');
@@ -3610,6 +3824,139 @@
                 trackContent.addEventListener('mousedown', startSmallClipSelection);
                 trackContent.addEventListener('mousemove', updateSmallClipSelection);
                 trackContent.addEventListener('mouseup', endSmallClipSelection);
+            }
+        }
+
+        // MISC clip identification system (for merged view)
+        let miscIdentificationDrawing = false;
+        let miscIdentificationBox = null;
+        let miscIdentificationStartX = 0;
+        let miscIdentificationStartY = 0;
+
+        function startMiscClipIdentification(event) {
+            // Only work on revealed MISC clips
+            const miscClipElements = document.querySelectorAll('#merged .misc-clip-hidden');
+
+            // Check if any revealed clips are visible
+            const visibleRevealedClips = Array.from(miscClipElements).filter(clip =>
+                clip.style.display === 'flex' && revealedMiscClips.has(clip.dataset.clip)
+            );
+
+            // Always allow box drawing for testing, even if no clips available
+            miscIdentificationDrawing = true;
+            // Find the track content container, not the canvas
+            const trackContent = event.target.closest('.track-content') || document.querySelector('#merged .track-content');
+            const rect = trackContent.getBoundingClientRect();
+
+            miscIdentificationStartX = event.clientX - rect.left;
+            miscIdentificationStartY = event.clientY - rect.top;
+
+            // Clean up existing boxes
+            const existingBoxes = trackContent.querySelectorAll('.selection-box');
+            existingBoxes.forEach(box => box.remove());
+
+            // Create selection box
+            miscIdentificationBox = document.createElement('div');
+            miscIdentificationBox.className = 'selection-box';
+            trackContent.appendChild(miscIdentificationBox);
+        }
+
+        function updateMiscClipIdentification(event) {
+            if (!miscIdentificationDrawing || !miscIdentificationBox) {
+                return;
+            }
+
+            // Use the same track content container we used for the start
+            const trackContent = miscIdentificationBox.parentNode;
+            const rect = trackContent.getBoundingClientRect();
+
+            const currentX = event.clientX - rect.left;
+            const currentY = event.clientY - rect.top;
+
+            const width = Math.abs(currentX - miscIdentificationStartX);
+            const height = Math.abs(currentY - miscIdentificationStartY);
+
+            miscIdentificationBox.style.left = Math.min(miscIdentificationStartX, currentX) + 'px';
+            miscIdentificationBox.style.top = Math.min(miscIdentificationStartY, currentY) + 'px';
+            miscIdentificationBox.style.width = width + 'px';
+            miscIdentificationBox.style.height = height + 'px';
+        }
+
+        function endMiscClipIdentification(event) {
+            if (!miscIdentificationDrawing || !miscIdentificationBox) return;
+
+            // Find overlapping revealed MISC clips in merged view
+            const miscClipElements = document.querySelectorAll('#merged .misc-clip-hidden');
+            const boxRect = miscIdentificationBox.getBoundingClientRect();
+
+            // Only process clips if there are revealed MISC clips
+            if (miscClipElements.length > 0) {
+                miscClipElements.forEach(clip => {
+                    // Only process revealed clips that are currently visible
+                    if (!revealedMiscClips.has(clip.dataset.clip) || clip.style.display !== 'flex') return;
+
+                    const clipRect = clip.getBoundingClientRect();
+
+                    // Check for overlap
+                    if (boxRect.left <= clipRect.right && boxRect.right >= clipRect.left &&
+                        boxRect.top <= clipRect.bottom && boxRect.bottom >= clipRect.top) {
+
+                        // Identify the clip - reveal its true name and make it editable
+                        identifyMiscClip(clip);
+                    }
+                });
+            }
+
+            // Clean up
+            if (miscIdentificationBox && miscIdentificationBox.parentNode) {
+                miscIdentificationBox.remove();
+            }
+            miscIdentificationBox = null;
+            miscIdentificationDrawing = false;
+        }
+
+        function identifyMiscClip(mergedClip) {
+            const clipId = mergedClip.dataset.clip;
+            const layerId = mergedClip.dataset.layer;
+
+            // Update the merged view clip
+            mergedClip.classList.remove('misc-clip-hidden');
+            mergedClip.classList.add('identified');
+            mergedClip.textContent = ''; // Clear the ??? text since we'll use ::after for the real name
+            mergedClip.title = clipId; // Update hover text to show real name
+            mergedClip.style.pointerEvents = 'auto';
+            mergedClip.style.cursor = 'pointer';
+
+            // Change click handler from showClipPopup to selectClip
+            mergedClip.removeEventListener('click', showClipPopup);
+            mergedClip.addEventListener('click', selectClip);
+
+            // Get the layer color and apply it
+            const clipColor = getClipColorByLayer(layerId);
+            mergedClip.style.background = clipColor;
+            mergedClip.style.color = '#fff';
+            mergedClip.style.border = `2px solid ${clipColor}`;
+
+            // Find and update the corresponding clip in the MISC layer
+            const miscLayerClip = document.querySelector(`.misc-layer .audio-clip[data-clip="${clipId}"]`);
+            if (miscLayerClip) {
+                miscLayerClip.classList.remove('hidden-small');
+                miscLayerClip.textContent = clipId; // Show the real name instead of ???
+                miscLayerClip.title = clipId; // Update hover text to show real name
+                miscLayerClip.style.background = clipColor;
+                miscLayerClip.style.color = '#fff';
+                miscLayerClip.style.border = `1px solid ${clipColor}`;
+                miscLayerClip.style.pointerEvents = 'auto';
+                miscLayerClip.style.cursor = 'pointer';
+
+                // Change click handler from showClipPopup to selectClip
+                miscLayerClip.removeAttribute('onclick');
+                miscLayerClip.onclick = selectClip;
+            }
+
+            // Add to discovered clips for tools access
+            if (typeof discoveredClips !== 'undefined') {
+                discoveredClips.add(clipId);
             }
         }
 
@@ -3775,6 +4122,7 @@
             if (!event.target.classList.contains('audio-clip')) return;
             if (!isAnalyzed) return; // Don't allow selection before analysis
             if (event.target.classList.contains('hidden-small')) return; // Don't allow selection of ??? clips
+            if (event.target.classList.contains('misc-clip-hidden') && !event.target.classList.contains('identified')) return; // Don't allow selection of unidentified MISC clips
 
             event.stopPropagation();
 
@@ -4021,6 +4369,10 @@
 
             // Clear clip position data
             originalClipData.clear();
+
+            // Reset MISC clip discovery
+            mergedMiscClips = [];
+            revealedMiscClips.clear();
 
             // Disable zoom and hide controls
             zoomEnabled = false;
