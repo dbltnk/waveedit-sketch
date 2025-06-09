@@ -2383,9 +2383,19 @@
         }
 
         .zoom-btn.disabled {
-            opacity: 0.4;
+            opacity: 0.3;
             cursor: not-allowed;
             pointer-events: none;
+            background: var(--bg-darker) !important;
+            color: var(--text-muted) !important;
+            border-color: var(--border-color) !important;
+            filter: grayscale(1);
+        }
+
+        .zoom-btn.disabled:hover {
+            background: var(--bg-darker) !important;
+            border-color: var(--border-color) !important;
+            transform: none !important;
         }
 
         .zoom-level-display {
@@ -2459,9 +2469,19 @@
         }
 
         .pan-btn.disabled {
-            opacity: 0.4;
+            opacity: 0.3;
             cursor: not-allowed;
             pointer-events: none;
+            background: var(--bg-darker) !important;
+            color: var(--text-muted) !important;
+            border-color: var(--border-color) !important;
+            filter: grayscale(1);
+        }
+
+        .pan-btn.disabled:hover {
+            background: var(--bg-darker) !important;
+            border-color: var(--border-color) !important;
+            transform: none !important;
         }
 
         /* Waveform canvas styles */
@@ -3895,10 +3915,14 @@
             const zoomOutBtn = document.querySelector('.zoom-btn[onclick*="zoomOut"]');
 
             if (zoomInBtn) {
-                zoomInBtn.classList.toggle('disabled', !zoomEnabled || currentZoom >= maxZoom);
+                // Disable zoom in if zoom is disabled or at/near max zoom
+                const atMaxZoom = currentZoom >= maxZoom || Math.abs(currentZoom - maxZoom) < 0.01;
+                zoomInBtn.classList.toggle('disabled', !zoomEnabled || atMaxZoom);
             }
             if (zoomOutBtn) {
-                zoomOutBtn.classList.toggle('disabled', !zoomEnabled || currentZoom <= minZoom);
+                // Disable zoom out if zoom is disabled or at/near min zoom
+                const atMinZoom = currentZoom <= minZoom || Math.abs(currentZoom - minZoom) < 0.01;
+                zoomOutBtn.classList.toggle('disabled', !zoomEnabled || atMinZoom);
             }
 
             // Also update pan buttons
@@ -3990,10 +4014,16 @@
             const maxOffset = 1 - (1 / currentZoom);
 
             if (panLeftBtn) {
-                panLeftBtn.classList.toggle('disabled', !zoomEnabled || currentZoom <= minZoom || waveformOffsetX <= 0);
+                // Disable pan left if zoom is disabled, at min zoom (no need to pan), or already at left edge
+                const atMinZoom = currentZoom <= minZoom || Math.abs(currentZoom - minZoom) < 0.01;
+                const atLeftEdge = waveformOffsetX <= 0 || Math.abs(waveformOffsetX) < 0.001;
+                panLeftBtn.classList.toggle('disabled', !zoomEnabled || atMinZoom || atLeftEdge);
             }
             if (panRightBtn) {
-                panRightBtn.classList.toggle('disabled', !zoomEnabled || currentZoom <= minZoom || waveformOffsetX >= maxOffset);
+                // Disable pan right if zoom is disabled, at min zoom (no need to pan), or already at right edge
+                const atMinZoom = currentZoom <= minZoom || Math.abs(currentZoom - minZoom) < 0.01;
+                const atRightEdge = waveformOffsetX >= maxOffset || Math.abs(waveformOffsetX - maxOffset) < 0.001;
+                panRightBtn.classList.toggle('disabled', !zoomEnabled || atMinZoom || atRightEdge);
             }
         }
 
