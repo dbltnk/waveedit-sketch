@@ -1153,6 +1153,13 @@
             color: var(--text-primary);
         }
 
+        /* Gradual reveal clip styling */
+        .audio-clip.gradual-reveal {
+            position: relative;
+            overflow: hidden;
+            transition: width 0.1s ease;
+        }
+
         /* Add styles for merged view clips */
         #merged .audio-clip {
             pointer-events: none !important;
@@ -5043,33 +5050,53 @@
             // Check regular clips for revelation
             regularClips.forEach(clipData => {
                 const clipLeft = parseFloat(clipData.left.replace('%', ''));
+                const clipWidth = parseFloat(clipData.width.replace('%', ''));
+                const clipRight = clipLeft + clipWidth;
 
-                // Reveal clip when playhead touches its left edge
+                // Gradual revelation: reveal clip when playhead touches its left edge
                 if (currentProgress >= clipLeft && !revealedClips.has(clipData.id)) {
-                    revealRegularClip(clipData);
+                    revealRegularClipGradually(clipData);
+                }
+
+                // Update gradual revelation progress for clips being revealed
+                if (revealedClips.has(clipData.id) && currentProgress >= clipLeft && currentProgress < clipRight) {
+                    updateClipGradualReveal(clipData, currentProgress, clipLeft, clipWidth);
+                }
+
+                // Name and show in other layers when fully passed
+                if (currentProgress >= clipRight && !revealedClips.has(clipData.id + '_completed')) {
+                    completeRegularClipRevelation(clipData);
                 }
             });
 
-            // Check MISC clips for revelation (only in MISC layers, not merged view)
+            // Check MISC clips for revelation (unchanged behavior - only in MISC layers, not merged view)
             miscClips.forEach(clipData => {
                 const clipLeft = parseFloat(clipData.left.replace('%', ''));
 
-                // Reveal MISC clip when playhead touches its left edge
+                // Reveal MISC clip when playhead touches its left edge (unchanged)
                 if (currentProgress >= clipLeft && !revealedClips.has(clipData.id)) {
                     revealMiscClipInSpecificLayer(clipData, miscLayers);
                 }
             });
         }
 
-        // Reveal a regular clip in both merged view and its layer
-        function revealRegularClip(clipData) {
+        // Gradually reveal a regular clip in merged view only (no name, no other layers yet)
+        function revealRegularClipGradually(clipData) {
             revealedClips.add(clipData.id);
+
+            // Add clip to merged view without name
+            addClipToMergedViewGradually(clipData);
+        }
+
+        // Complete revelation when playhead fully passes the clip
+        function completeRegularClipRevelation(clipData) {
+            revealedClips.add(clipData.id + '_completed');
+
+            // Add name to the clip in merged view
+            addNameToMergedClip(clipData);
 
             // Ensure layer exists and is visible
             ensureLayerVisible(clipData.layerId, clipData.layerConfig);
-
-            // Add clip to merged view
-            addClipToMergedView(clipData);
 
             // Add clip to its specific layer
             addClipToLayer(clipData);
@@ -5130,19 +5157,22 @@
             }
         }
 
-        // Add a clip to the merged view
-        function addClipToMergedView(clipData) {
+        // Add a clip to the merged view gradually (without name)
+        function addClipToMergedViewGradually(clipData) {
             const mergedTrack = document.querySelector('#merged .track-content');
             if (!mergedTrack) return;
 
-            // Create clip element
+            // Create clip element without name, starting with 0 width
             const clipElement = document.createElement('div');
-            clipElement.className = 'audio-clip revealed';
+            clipElement.className = 'audio-clip revealed gradual-reveal';
             clipElement.dataset.clip = clipData.id;
             clipElement.dataset.layer = clipData.layerId;
             clipElement.style.left = clipData.left;
-            clipElement.style.width = clipData.width;
-            clipElement.textContent = clipData.id;
+            clipElement.style.width = '0%'; // Start with 0 width
+            clipElement.textContent = ''; // No name initially
+
+            // Store the target width for progressive reveal
+            clipElement.dataset.targetWidth = clipData.width;
 
             // Position in merged view using layer config
             const clipHash = clipData.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -5163,6 +5193,49 @@
                 width: width,
                 element: clipElement
             });
+        }
+
+        // Update the gradual reveal progress of a clip
+        function updateClipGradualReveal(clipData, currentProgress, clipLeft, clipWidth) {
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (!mergedTrack) return;
+
+            const clipElement = mergedTrack.querySelector(`[data-clip="${clipData.id}"]`);
+            if (!clipElement) return;
+
+            // Calculate how much of the clip has been revealed (0-1)
+            const clipProgress = (currentProgress - clipLeft) / clipWidth;
+            const revealedPercent = Math.min(Math.max(clipProgress, 0), 1);
+
+            // Get the target width and calculate current revealed width
+            const targetWidth = parseFloat(clipElement.dataset.targetWidth.replace('%', ''));
+            const currentWidth = targetWidth * revealedPercent;
+
+            // Update clip width to show only the revealed portion
+            clipElement.style.width = `${currentWidth}%`;
+        }
+
+        // Add name to an existing clip in merged view
+        function addNameToMergedClip(clipData) {
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (!mergedTrack) return;
+
+            const clipElement = mergedTrack.querySelector(`[data-clip="${clipData.id}"]`);
+            if (clipElement) {
+                // Set the clip to its full target width since it's now fully revealed
+                clipElement.style.width = clipElement.dataset.targetWidth;
+
+                clipElement.textContent = clipData.id;
+                // Add a subtle animation when name appears
+                clipElement.style.transition = 'all 0.3s ease-out';
+                clipElement.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    clipElement.style.transform = 'scale(1)';
+                    setTimeout(() => {
+                        clipElement.style.transition = '';
+                    }, 300);
+                }, 100);
+            }
         }
 
         // Add a clip to its specific layer
