@@ -20,6 +20,69 @@
 
 const AUDIO_CONFIGS = {
     /**
+     * DEMO LEVEL - VIOLA'S FIRST TRACK CLEANUP
+     * Standalone level for feature testing - Vincent's early Viola restoration work
+     */
+
+    // Demo Level: Viola's First Track Restoration
+    '0_viola_first_track_demo.wav': {
+        name: '0_viola_first_track_demo.wav',
+        totalDuration: 45,
+        gradientClass: 'main-waveform-gradient',
+        availableTools: ['mute', 'volume', 'noise', 'reverse'],
+        layers: {
+            'viola-vocals': {
+                name: 'Viola\'s Vocals',
+                displayName: 'Layer 0',
+                color: '#e74c3c',
+                baseHeight: 40,
+                clips: [
+                    { id: 'viola_verse_1', left: '5%', width: '18%', title: 'First verse - experimental melody', type: 'large' },
+                    { id: 'viola_chorus_1', left: '28%', width: '15%', title: 'First chorus - ethereal harmonies', type: 'large' },
+                    { id: 'viola_verse_2', left: '48%', width: '20%', title: 'Second verse - deeper emotion', type: 'large' },
+                    { id: 'viola_chorus_2', left: '73%', width: '15%', title: 'Final chorus - climactic', type: 'large' },
+                    { id: 'viola_outro', left: '92%', width: '6%', title: 'Vocal outro whisper', type: 'large' }
+                ]
+            },
+            'acoustic-instrument': {
+                name: 'Acoustic Guitar',
+                displayName: 'Layer 1',
+                color: '#27ae60',
+                baseHeight: 80,
+                clips: [
+                    { id: 'guitar_foundation_full', left: '8%', width: '85%', title: 'Acoustic guitar - full song foundation', type: 'large' }
+                ]
+            },
+            'electronic-elements': {
+                name: 'Electronics',
+                displayName: 'Layer 2',
+                color: '#9b59b6',
+                baseHeight: 120,
+                clips: [
+                    { id: 'synth_pad_main', left: '10%', width: '45%', title: 'Analog synth pad - main section', type: 'large' },
+                    { id: 'electronic_bridge', left: '60%', width: '30%', title: 'Electronic bridge transition', type: 'large' }
+                ]
+            },
+            'misc-hidden-elements': {
+                name: 'Hidden_Elements',
+                displayName: 'MISC',
+                color: '#8e44ad',
+                baseHeight: 160,
+                clips: [
+                    { id: 'tape_hiss_burst_1', left: '7%', width: '3%', title: 'Tape hiss burst 1', type: 'small' },
+                    { id: 'tape_hiss_burst_2', left: '22%', width: '4%', title: 'Tape hiss burst 2', type: 'small' },
+                    { id: 'unintelligible_creepy', left: '29%', width: '18%', title: 'Reversed spooky voice message', type: 'small' },
+                    { id: 'electrical_pop', left: '62%', width: '2%', title: 'Second electrical pop', type: 'small' },
+                    { id: 'tape_warble', left: '68%', width: '3%', title: 'Tape warble section 1', type: 'small' },
+                    { id: 'microphone_handling', left: '75%', width: '2%', title: 'Microphone handling noise', type: 'small' },
+                    { id: 'electrical_interference', left: '89%', width: '3%', title: 'Electrical interference', type: 'small' },
+                    { id: 'final_noise_burst', left: '52%', width: '3%', title: 'Final noise burst', type: 'small' }
+                ]
+            }
+        }
+    },
+
+    /**
      * DAY 1 - DAILY LIFE
      * Vincent's normal professional routine helping friends and colleagues
      */

@@ -1093,6 +1093,23 @@
         }
 
         /* Layer-specific colors for merged view */
+        /* Demo Level: Viola's First Track */
+        #merged .audio-clip[data-layer="viola-vocals"] {
+            color: #e74c3c;
+        }
+
+        #merged .audio-clip[data-layer="acoustic-instrument"] {
+            color: #27ae60;
+        }
+
+        #merged .audio-clip[data-layer="electronic-elements"] {
+            color: #9b59b6;
+        }
+
+        #merged .audio-clip[data-layer="misc-hidden-elements"] {
+            color: #8e44ad;
+        }
+
         /* Day 1: Daily Life */
         #merged .audio-clip[data-layer="target-conversation"] {
             color: #e74c3c;
@@ -1284,6 +1301,23 @@
         }
 
         /* Layer-specific colors */
+        /* Demo Level: Viola's First Track */
+        #viola-vocals .audio-clip {
+            color: #e74c3c;
+        }
+
+        #acoustic-instrument .audio-clip {
+            color: #27ae60;
+        }
+
+        #electronic-elements .audio-clip {
+            color: #9b59b6;
+        }
+
+        #misc-hidden-elements .audio-clip {
+            color: #8e44ad;
+        }
+
         /* Day 1: Daily Life */
         #target-conversation .audio-clip {
             color: #e74c3c;
@@ -1452,6 +1486,23 @@
         }
 
         /* Layer background colors to match clip colors with good contrast */
+        /* Demo Level: Viola's First Track */
+        #viola-vocals {
+            background: linear-gradient(90deg, rgba(231, 76, 60, 0.15), rgba(231, 76, 60, 0.08));
+        }
+
+        #acoustic-instrument {
+            background: linear-gradient(90deg, rgba(39, 174, 96, 0.15), rgba(39, 174, 96, 0.08));
+        }
+
+        #electronic-elements {
+            background: linear-gradient(90deg, rgba(155, 89, 182, 0.15), rgba(155, 89, 182, 0.08));
+        }
+
+        #misc-hidden-elements {
+            background: linear-gradient(90deg, rgba(142, 68, 173, 0.15), rgba(142, 68, 173, 0.08));
+        }
+
         /* Day 1: Daily Life */
         #target-conversation {
             background: linear-gradient(90deg, rgba(231, 76, 60, 0.15), rgba(231, 76, 60, 0.08));
@@ -2454,6 +2505,10 @@
         <div class="menu-bar">
             <span class="menu-item load-menu" onclick="toggleLoadMenu(event)">Load ▼
                 <div class="load-dropdown" id="load-dropdown">
+                    <!-- Demo Level: Viola's First Track -->
+                    <div class="load-option" onclick="loadAudioFile('0_viola_first_track_demo.wav', event)">
+                        0_viola_first_track_demo.wav</div>
+
                     <!-- Day 1: Daily Life -->
                     <div class="load-option" onclick="loadAudioFile('1_police_surveillance.wav', event)">
                         1_police_surveillance.wav</div>
@@ -2537,7 +2592,7 @@
                     <div class="section-header">📁 File Status</div>
                     <div class="section-content">
                         <div class="file-info">
-                            <div class="current-file" id="current-file-name">1_police_surveillance.wav</div>
+                            <div class="current-file" id="current-file-name">0_viola_first_track_demo.wav</div>
                             <div class="file-stats" id="file-stats">Duration: 00:47.0 • 44.1kHz</div>
                             <div class="file-goal" id="file-goal">Police forensics: clean up surveillance audio from
                                 evening bust</div>
@@ -2884,6 +2939,14 @@
             const transients = new Array(length).fill(0);
 
             const transientPatterns = {
+                '0_viola_first_track_demo.wav': [
+                    { time: 0.15, type: 'breath_intake', intensity: 0.4 },
+                    { time: 0.32, type: 'electrical_pop', intensity: 0.5 },
+                    { time: 0.48, type: 'tape_warble', intensity: 0.6 },
+                    { time: 0.65, type: 'microphone_handling', intensity: 0.3 },
+                    { time: 0.78, type: 'analog_dropout', intensity: 0.4 },
+                    { time: 0.85, type: 'static_burst', intensity: 0.7 }
+                ],
                 '1_police_surveillance.wav': [
                     { time: 0.15, type: 'radio_pop', intensity: 0.6 },
                     { time: 0.35, type: 'static_burst', intensity: 0.4 },
@@ -2928,7 +2991,7 @@
                 ]
             };
 
-            const patterns = transientPatterns[filename] || transientPatterns['1_police_surveillance.wav'];
+            const patterns = transientPatterns[filename] || transientPatterns['0_viola_first_track_demo.wav'];
 
             patterns.forEach(transient => {
                 const startSample = Math.floor(transient.time * length);
@@ -2975,7 +3038,10 @@
                 'chair_squeak': 60,
                 'music_stand_bump': 45,
                 'heating_system': 180,
-                'wind_through_trees': 120
+                'wind_through_trees': 120,
+                'tape_warble': 90,
+                'microphone_handling': 40,
+                'analog_dropout': 60
             };
             return lengths[type] || 50;
         }
@@ -3009,7 +3075,10 @@
                 'chair_squeak': Math.sin(progress * Math.PI) * 0.6,
                 'music_stand_bump': Math.exp(-progress * 6),
                 'heating_system': Math.sin(progress * Math.PI) * (1 - progress * 0.2),
-                'wind_through_trees': Math.sin(progress * Math.PI) * 0.5
+                'wind_through_trees': Math.sin(progress * Math.PI) * 0.5,
+                'tape_warble': Math.sin(progress * Math.PI * 2) * (1 - progress * 0.3),
+                'microphone_handling': Math.exp(-progress * 8) * (1 - progress),
+                'analog_dropout': Math.exp(-progress * 10) * (1 - progress * 0.5)
             };
             return envelopes[type] || Math.exp(-progress * 5);
         }
@@ -3044,7 +3113,10 @@
                 'chair_squeak': baseAmplitude * (0.4 + 0.2 * Math.sin(progress * Math.PI * 8)),
                 'music_stand_bump': baseAmplitude * (0.6 + 0.3 * (random() - 0.5)),
                 'heating_system': baseAmplitude * (0.4 + 0.2 * Math.sin(progress * Math.PI * 3)),
-                'wind_through_trees': baseAmplitude * (0.3 + 0.3 * (random() - 0.5))
+                'wind_through_trees': baseAmplitude * (0.3 + 0.3 * (random() - 0.5)),
+                'tape_warble': baseAmplitude * (0.5 + 0.3 * Math.sin(progress * Math.PI * 6)),
+                'microphone_handling': baseAmplitude * (0.6 + 0.2 * (random() - 0.5)),
+                'analog_dropout': baseAmplitude * (0.7 + 0.3 * (random() - 0.5))
             };
             return patterns[type] || baseAmplitude * 0.5;
         }
@@ -3184,6 +3256,18 @@
         // Get spectral parameters for different file types
         function getSpectralParams(filename) {
             const params = {
+                '0_viola_first_track_demo.wav': {
+                    noiseFloor: 0.04,
+                    transientChance: 0.02,
+                    frequencyBands: [
+                        { freqRange: [80, 400], baseIntensity: 0.5, timeModulation: 2, freqModulation: 4, phase: 0, randomness: 0.1 }, // Vocal fundamentals
+                        { freqRange: [400, 2000], baseIntensity: 0.7, timeModulation: 4, freqModulation: 8, phase: 0.5, randomness: 0.12 }, // Vocal presence
+                        { freqRange: [2000, 6000], baseIntensity: 0.4, timeModulation: 12, freqModulation: 15, phase: 1.2, randomness: 0.15 }, // Vocal clarity
+                        { freqRange: [100, 800], baseIntensity: 0.6, timeModulation: 1, freqModulation: 2, phase: 2.1, randomness: 0.08 }, // Guitar fundamentals
+                        { freqRange: [200, 4000], baseIntensity: 0.3, timeModulation: 6, freqModulation: 10, phase: 0.7, randomness: 0.2 }, // Electronics
+                        { freqRange: [6000, 16000], baseIntensity: 0.25, timeModulation: 25, freqModulation: 30, phase: 1.8, randomness: 0.25 } // Tape hiss and brightness
+                    ]
+                },
                 '1_simple_getaway_analysis.wav': {
                     noiseFloor: 0.05,
                     transientChance: 0.02,
@@ -3258,12 +3342,33 @@
                 }
             };
 
-            return params[filename] || params['5_medium_find_the_murderer.wav']; // Default fallback
+            return params[filename] || params['0_viola_first_track_demo.wav']; // Default fallback
         }
 
         // Get waveform parameters for different file types
         function getWaveformParams(filename) {
             const params = {
+                '0_viola_first_track_demo.wav': {
+                    noiseLevel: 0.3,
+                    freqComponents: [
+                        { frequency: 1, amplitude: 0.4, phase: 0, modulation: 0.8 },
+                        { frequency: 6, amplitude: 0.35, phase: 0.5, modulation: 2 },
+                        { frequency: 20, amplitude: 0.3, phase: 1.2, modulation: 6 },
+                        { frequency: 80, amplitude: 0.25, phase: 2.1, modulation: 15 },
+                        { frequency: 320, amplitude: 0.2, phase: 0.7, modulation: 25 }
+                    ],
+                    spikes: true,
+                    spikeChance: 0.02,
+                    spikeIntensity: 0.5,
+                    envelope: (t) => {
+                        // Viola's demo track: Musical structure + vintage analog warmth
+                        const songStructure = t < 0.2 ? 0.6 : (t < 0.5 ? 0.8 : (t < 0.8 ? 0.9 : 0.7)); // Verse-Chorus-Verse-Chorus
+                        const analogWarmth = 0.7 + 0.2 * Math.sin(t * Math.PI * 1.3); // Tape warmth
+                        const voicePresence = 0.6 + 0.4 * Math.sin(t * Math.PI * 4.2); // Vocal prominence
+                        const noiseEvents = (t > 0.12 && t < 0.14) || (t > 0.58 && t < 0.6) ? 1.4 : 1; // Tape noise bursts
+                        return songStructure * analogWarmth * voicePresence * noiseEvents;
+                    }
+                },
                 '1_police_surveillance.wav': {
                     noiseLevel: 0.4,
                     freqComponents: [
@@ -3408,7 +3513,7 @@
                 }
             };
 
-            return params[filename] || params['5_medium_find_the_murderer.wav']; // Default fallback
+            return params[filename] || params['0_viola_first_track_demo.wav']; // Default fallback
         }
 
         // Map intensity value to RGB color (traditional spectrogram colors)
@@ -4205,6 +4310,12 @@
 
         // Task hints for each level - Vincent's complete journey
         const TASK_HINTS = {
+            // DEMO LEVEL: Viola's First Track
+            '0_viola_first_track_demo.wav': {
+                guidance: 'Vince: Clean up Viola\'s track and make the vocals pop for me! (Pavel)',
+                solution: 'Max vocals volume, de-noise electronics track, mute all MISC noise sounds. Can increase spooky voice volume and reverse it to hear a scary message.'
+            },
+
             // DAY 1: Daily Life
             '1_police_surveillance.wav': {
                 guidance: 'Police forensics: clean up surveillance audio from evening bust',
@@ -4301,8 +4412,8 @@
         // Get clip color by layer ID from current audio config
         function getClipColorByLayer(layerId) {
             // First try to get color from current loaded config
-            if (typeof currentConfig !== 'undefined' && currentConfig && currentConfig.layers) {
-                const layer = currentConfig.layers[layerId];
+            if (window.currentLayerConfig && window.currentLayerConfig[layerId]) {
+                const layer = window.currentLayerConfig[layerId];
                 if (layer && layer.color) {
                     return layer.color;
                 }
@@ -4310,6 +4421,12 @@
 
             // Fallback to hardcoded mapping for backwards compatibility
             const layerColors = {
+                // Demo Level: Viola's First Track
+                'viola-vocals': '#e74c3c',
+                'acoustic-instrument': '#27ae60',
+                'electronic-elements': '#9b59b6',
+                'misc-hidden-elements': '#8e44ad',
+
                 // Level 1: Police Surveillance
                 'target-conversation': '#e74c3c',
                 'environmental-noise': '#34495e',
@@ -5975,7 +6092,7 @@
             initializeWaveformCanvas();
 
             // Load default file configuration (simplest file)
-            const defaultConfig = AUDIO_CONFIGS['1_police_surveillance.wav'];
+            const defaultConfig = AUDIO_CONFIGS['0_viola_first_track_demo.wav'];
             if (defaultConfig) {
                 loadAudioConfiguration(defaultConfig);
             }
