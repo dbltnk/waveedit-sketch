@@ -5046,7 +5046,6 @@
 
                 // Reveal clip when playhead touches its left edge
                 if (currentProgress >= clipLeft && !revealedClips.has(clipData.id)) {
-                    console.log(`🎵 Revealing regular clip: ${clipData.id} at ${currentProgress.toFixed(1)}% (clip starts at ${clipLeft}%)`);
                     revealRegularClip(clipData);
                 }
             });
@@ -5057,7 +5056,6 @@
 
                 // Reveal MISC clip when playhead touches its left edge
                 if (currentProgress >= clipLeft && !revealedClips.has(clipData.id)) {
-                    console.log(`🔧 Revealing MISC clip: ${clipData.id} at ${currentProgress.toFixed(1)}% (clip starts at ${clipLeft}%)`);
                     revealMiscClipInSpecificLayer(clipData, miscLayers);
                 }
             });
@@ -5187,8 +5185,6 @@
                 return;
             }
 
-            console.log(`🎬 Adding clip to layer: ${clipData.id} -> ${clipData.layerId}`);
-
             // Create clip element for layer
             const clipElement = document.createElement('div');
             clipElement.className = 'audio-clip';
@@ -5244,6 +5240,8 @@
 
         // Complete the analysis process
         function completeAnalysis(miscClips) {
+            console.log('completeAnalysis called with miscClips:', miscClips.size);
+
             // Stop analysis playback
             clearInterval(analysisPlaybackInterval);
             analysisPlaybackInterval = null;
@@ -5253,6 +5251,7 @@
 
             // Exit analysis mode
             isAnalyzing = false;
+            console.log('completeAnalysis: analysis mode exited');
 
             // Remove analysis mode styling from playhead
             const playhead = document.getElementById('playback-marker');
@@ -5270,11 +5269,13 @@
             createMergedMiscClips(miscClipArray);
 
             // Enable all functionality
+            console.log('completeAnalysis: enabling all functionality');
             isAnalyzed = true;
             enablePlaybackControls();
             enableZoomControls();
             enableTools();
             setupSmallClipDiscovery();
+            console.log('completeAnalysis: all functionality enabled');
 
             // Re-enable controls that were disabled during analysis
             enableControlsAfterAnalysis();
@@ -5800,8 +5801,6 @@
 
         // Create MISC clips in merged view for zoom discovery
         function createMergedMiscClips(smallClips) {
-            console.log('🔍 createMergedMiscClips called with:', smallClips.length, 'clips');
-
             const mergedTrack = document.querySelector('#merged .track-content');
             if (!mergedTrack) return;
 
@@ -5829,16 +5828,9 @@
             const margin = 10; // Margin from top and bottom edges
             const availableHeight = trackHeight - (2 * margin) - clipHeight;
 
-            console.log('📊 Spec-only clips:', Array.from(specOnlyMiscClips));
 
             // Create ??? clips for each small clip
             smallClips.forEach((clip, index) => {
-                console.log(`🔧 Creating MISC clip ${index + 1}/${smallClips.length}:`, {
-                    id: clip.id,
-                    layerId: clip.layerId,
-                    left: clip.left,
-                    width: clip.width
-                });
                 // Create the ??? clip element
                 const miscClip = document.createElement('div');
                 miscClip.className = 'audio-clip misc-clip-hidden';
@@ -5895,8 +5887,6 @@
                     element: miscClip
                 });
             });
-
-            console.log('✅ Created', mergedMiscClips.length, 'MISC clips in merged view');
         }
 
         // Setup manual discovery for small clips in MISC layers
@@ -6196,9 +6186,11 @@
         });
 
         function enableTools() {
+            console.log('enableTools called');
             isAnalyzed = true;
             document.getElementById('tools-message').textContent = 'Select a clip in a layer to use available tools.';
             document.getElementById('tools-container').style.display = 'block';
+            console.log('enableTools: isAnalyzed set to true, tools container displayed');
 
             // Show view mode overlay
             const viewModeOverlay = document.getElementById('view-mode-overlay');
@@ -6406,11 +6398,31 @@
         }
 
         function selectClip(event) {
-            if (!event.target.classList.contains('audio-clip')) return;
-            if (!isAnalyzed) return; // Don't allow selection before analysis
-            if (event.target.classList.contains('hidden-small')) return; // Don't allow selection of ??? clips
-            if (event.target.classList.contains('misc-clip-hidden') && !event.target.classList.contains('identified')) return; // Don't allow selection of unidentified MISC clips
+            console.log('selectClip called:', {
+                target: event.target,
+                hasAudioClipClass: event.target.classList.contains('audio-clip'),
+                isAnalyzed: isAnalyzed,
+                targetClasses: event.target.className
+            });
 
+            if (!event.target.classList.contains('audio-clip')) {
+                console.log('selectClip: target is not audio-clip, returning');
+                return;
+            }
+            if (!isAnalyzed) {
+                console.log('selectClip: analysis not complete, returning');
+                return; // Don't allow selection before analysis
+            }
+            if (event.target.classList.contains('hidden-small')) {
+                console.log('selectClip: target is hidden-small, returning');
+                return; // Don't allow selection of ??? clips
+            }
+            if (event.target.classList.contains('misc-clip-hidden') && !event.target.classList.contains('identified')) {
+                console.log('selectClip: target is unidentified misc-clip, returning');
+                return; // Don't allow selection of unidentified MISC clips
+            }
+
+            console.log('selectClip: proceeding with selection');
             event.stopPropagation();
 
             // Exit previous clip focus mode if active
@@ -6468,8 +6480,24 @@
             const clipId = selectedClip.dataset.clip;
             const activeEffects = clipEffects.get(clipId) || new Set();
 
-            document.querySelectorAll('.plugin-section').forEach(section => {
+            console.log('selectClip: enabling tools for clip:', clipId, 'activeEffects:', activeEffects);
+
+            const pluginSections = document.querySelectorAll('.plugin-section');
+            console.log('selectClip: found', pluginSections.length, 'plugin sections');
+
+            // Check if tools container is visible
+            const toolsContainer = document.getElementById('tools-container');
+            console.log('selectClip: tools container display:', toolsContainer.style.display);
+            console.log('selectClip: tools container computed display:', getComputedStyle(toolsContainer).display);
+
+            pluginSections.forEach(section => {
+                console.log('selectClip: processing plugin section:', section.querySelector('.plugin-title')?.textContent);
                 section.classList.remove('disabled');
+
+                // Explicitly enable pointer events and reset opacity to override any CSS rules
+                section.style.pointerEvents = 'auto';
+                section.style.opacity = '1';
+
                 // Get the plugin name from the title, removing emoji and spaces
                 const pluginName = section.querySelector('.plugin-title').textContent
                     .replace(/[^\w\s]/g, '') // Remove emojis
@@ -6477,8 +6505,15 @@
                     .toLowerCase()
                     .replace(/\s+/g, ''); // Remove spaces
 
+                console.log('selectClip: plugin name processed as:', pluginName);
+
                 // Toggle active state based on whether this effect is in the clip's active effects
-                section.classList.toggle('active', activeEffects.has(pluginName));
+                const hasEffect = activeEffects.has(pluginName);
+                section.classList.toggle('active', hasEffect);
+
+                console.log('selectClip: plugin', pluginName, 'disabled class removed, active:', hasEffect);
+                console.log('selectClip: section classes after update:', section.className);
+                console.log('selectClip: section computed style pointer-events:', getComputedStyle(section).pointerEvents);
             });
         }
 
@@ -6499,9 +6534,12 @@
                 toolsMessage.textContent = 'Select a clip to use available tools';
 
                 // Disable tools and reset their appearance
+                console.log('deselectClip: disabling tools');
                 document.querySelectorAll('.plugin-section').forEach(section => {
                     section.classList.add('disabled');
                     section.classList.remove('active'); // Remove active state to reset color
+                    section.style.pointerEvents = 'none'; // Explicitly disable pointer events
+                    console.log('deselectClip: disabled plugin section:', section.querySelector('.plugin-title')?.textContent);
                 });
             }
         }
