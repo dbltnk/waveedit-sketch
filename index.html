@@ -5058,7 +5058,7 @@
                 // Reveal MISC clip when playhead touches its left edge
                 if (currentProgress >= clipLeft && !revealedClips.has(clipData.id)) {
                     console.log(`🔧 Revealing MISC clip: ${clipData.id} at ${currentProgress.toFixed(1)}% (clip starts at ${clipLeft}%)`);
-                    revealMiscClipInLayer(clipData, miscLayers);
+                    revealMiscClipInSpecificLayer(clipData, miscLayers);
                 }
             });
         }
@@ -5078,7 +5078,7 @@
         }
 
         // Reveal a MISC clip only in its MISC layer (not in merged view)
-        function revealMiscClipInLayer(clipData, miscLayers) {
+        function revealMiscClipInSpecificLayer(clipData, miscLayers) {
             revealedClips.add(clipData.id);
 
             // Find which MISC layer this clip belongs to
