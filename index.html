@@ -1129,29 +1129,7 @@
             margin-top: 4px;
         }
 
-        .mode-btn {
-            background: var(--bg-hover);
-            border: 1px solid var(--border-color);
-            color: var(--text-light);
-            padding: 2px 6px;
-            font-size: 0.65em;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            flex: 1;
-            text-align: center;
-        }
 
-        .mode-btn:hover {
-            background: var(--bg-hover-light);
-            border-color: var(--border-color-light);
-        }
-
-        .mode-btn.active {
-            background: var(--primary-brown);
-            border-color: var(--primary-brown-dark);
-            color: var(--text-primary);
-        }
 
         /* Gradual reveal clip styling */
         .audio-clip.gradual-reveal {
@@ -2296,6 +2274,71 @@
             pointer-events: auto;
         }
 
+        /* Opacity slider styles */
+        .opacity-slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 8px 12px;
+            min-width: 150px;
+        }
+
+        .slider-label {
+            font-size: 11px;
+            color: var(--text-light);
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        .opacity-slider {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #9b59b6 0%, #f39c12 100%);
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .opacity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            border: 2px solid var(--primary-brown);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .opacity-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .opacity-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            border: 2px solid var(--primary-brown);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .opacity-slider::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+        }
+
         /* Zoom controls styles */
         .zoom-controls {
             position: absolute;
@@ -2683,12 +2726,13 @@
                             <button class="analyze-btn" onclick="realTimeAnalysis(event)">Analyze Track</button>
                         </div>
 
-                        <!-- View mode toggle overlay (hidden initially) -->
+                        <!-- View mode opacity slider overlay (hidden initially) -->
                         <div class="view-mode-overlay" id="view-mode-overlay" style="display: none;">
-                            <button class="mode-btn active" data-mode="waveform" onclick="switchViewMode('waveform')">📊
-                                Wave</button>
-                            <button class="mode-btn" data-mode="spectrogram" onclick="switchViewMode('spectrogram')">🌈
-                                Spec</button>
+                            <div class="opacity-slider-container">
+                                <label for="opacity-slider" class="slider-label">🌈 Spec ↔ 📊 Wave</label>
+                                <input type="range" id="opacity-slider" class="opacity-slider" min="0" max="100"
+                                    value="50" oninput="updateViewOpacity(this.value)">
+                            </div>
                         </div>
                         <!-- Zoom controls -->
                         <div class="zoom-controls">
@@ -2865,8 +2909,10 @@
         let zoomEnabled = false; // Track if zoom functionality is enabled
 
         // View mode state
-        let currentViewMode = 'waveform'; // 'waveform', 'spectrogram', or 'combined'
-        let viewModePreferences = {}; // Store per-file view mode preferences
+        let currentViewMode = 'combined'; // Always combined mode with variable opacity
+        let waveformOpacity = 0.5; // 0.0 = invisible, 1.0 = fully visible (default 50/50)
+        let spectrogramOpacity = 0.5; // 0.0 = invisible, 1.0 = fully visible (default 50/50)
+        let viewModePreferences = {}; // Store per-file opacity preferences
 
         // Show popup for ??? clips
         function showClipPopup(event) {
@@ -3551,13 +3597,8 @@
             // Clear canvas
             waveformCtx.clearRect(0, 0, width, height);
 
-            if (currentViewMode === 'waveform') {
-                drawWaveformMode(width, height);
-            } else if (currentViewMode === 'spectrogram') {
-                drawSpectrogramMode(width, height);
-            } else if (currentViewMode === 'combined') {
-                drawCombinedMode(width, height);
-            }
+            // Always draw combined mode with variable opacity
+            drawCombinedModeWithOpacity(width, height);
         }
 
         // Draw waveform mode
@@ -3603,25 +3644,7 @@
 
             waveformCtx.stroke();
 
-            // Draw subtle alignment markers at key percentages (only in waveform mode)
-            if (currentViewMode === 'waveform') {
-                waveformCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-                waveformCtx.lineWidth = 1;
-
-                // 15% mark (where first clip often starts)
-                const mark15 = width * 0.15;
-                waveformCtx.beginPath();
-                waveformCtx.moveTo(mark15, 0);
-                waveformCtx.lineTo(mark15, height);
-                waveformCtx.stroke();
-
-                // 50% mark (center reference)
-                const mark50 = width * 0.5;
-                waveformCtx.beginPath();
-                waveformCtx.moveTo(mark50, 0);
-                waveformCtx.lineTo(mark50, height);
-                waveformCtx.stroke();
-            }
+            // Note: Alignment markers now handled in drawCombinedModeWithOpacity
         }
 
         // Draw spectrogram mode
@@ -3697,8 +3720,8 @@
             waveformCtx.stroke();
         }
 
-        // Draw combined mode (spectrogram on bottom, waveform overlay on top)
-        function drawCombinedMode(width, height) {
+        // Draw combined mode with variable opacity (spectrogram + waveform)
+        function drawCombinedModeWithOpacity(width, height) {
             // Calculate revelation limit during analysis mode
             let revealLimit = width; // Default: show full combined view
             if (isAnalyzing) {
@@ -3707,8 +3730,8 @@
                 revealLimit = width * currentProgress;
             }
 
-            // First draw the spectrogram as background
-            if (spectrogramData.length > 0) {
+            // Draw spectrogram as background if it has opacity
+            if (spectrogramData.length > 0 && spectrogramOpacity > 0) {
                 const imageData = waveformCtx.createImageData(width, height);
                 const data = imageData.data;
 
@@ -3721,7 +3744,7 @@
                 const startSample = Math.floor(waveformOffsetX * maxStartSample);
                 const endSample = Math.min(spectrogramWidth, startSample + visibleSamples);
 
-                // Render spectrogram pixels
+                // Render spectrogram pixels with opacity
                 for (let x = 0; x < width && x <= revealLimit; x++) {
                     const timeProgress = x / width;
                     const spectrogramX = Math.floor(startSample + timeProgress * (endSample - startSample));
@@ -3735,11 +3758,11 @@
                                 const [r, g, b] = intensityToColor(intensity);
 
                                 const pixelIndex = (y * width + x) * 4;
-                                // Dim the spectrogram colors slightly for background
-                                data[pixelIndex] = Math.floor(r * 0.7);
-                                data[pixelIndex + 1] = Math.floor(g * 0.7);
-                                data[pixelIndex + 2] = Math.floor(b * 0.7);
-                                data[pixelIndex + 3] = 255;
+                                // Apply spectrogram opacity
+                                data[pixelIndex] = Math.floor(r * spectrogramOpacity);
+                                data[pixelIndex + 1] = Math.floor(g * spectrogramOpacity);
+                                data[pixelIndex + 2] = Math.floor(b * spectrogramOpacity);
+                                data[pixelIndex + 3] = Math.floor(255 * spectrogramOpacity);
                             }
                         }
                     }
@@ -3748,54 +3771,68 @@
                 waveformCtx.putImageData(imageData, 0, 0);
             }
 
-            // Then draw waveform overlay in center third of canvas
-            const centerY = height / 2;
-            const waveformHeight = height * 0.4; // Use 40% of height for waveform
+            // Draw waveform overlay if it has opacity
+            if (waveformOpacity > 0) {
+                const centerY = height / 2;
+                const waveformHeight = height * 0.8; // Use 80% of height for waveform when overlaid
 
-            const waveformWidth = waveformData.length;
-            const visibleSamples = waveformWidth / currentZoom;
-            const maxStartSample = Math.max(0, waveformWidth - visibleSamples);
-            const startSample = Math.floor(waveformOffsetX * maxStartSample);
-            const endSample = Math.min(waveformWidth, startSample + visibleSamples);
+                const waveformWidth = waveformData.length;
+                const visibleSamples = waveformWidth / currentZoom;
+                const maxStartSample = Math.max(0, waveformWidth - visibleSamples);
+                const startSample = Math.floor(waveformOffsetX * maxStartSample);
+                const endSample = Math.min(waveformWidth, startSample + visibleSamples);
 
-            // Set waveform style with higher opacity for visibility over spectrogram
-            waveformCtx.strokeStyle = getCurrentWaveformColor();
-            waveformCtx.lineWidth = 3; // Thicker line for better visibility
-            waveformCtx.beginPath();
+                // Set waveform style with opacity
+                const waveformColor = getCurrentWaveformColor();
+                const colorMatch = waveformColor.match(/^#([0-9a-f]{6})$/i);
+                if (colorMatch) {
+                    const r = parseInt(colorMatch[1].substr(0, 2), 16);
+                    const g = parseInt(colorMatch[1].substr(2, 2), 16);
+                    const b = parseInt(colorMatch[1].substr(4, 2), 16);
+                    waveformCtx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${waveformOpacity})`;
+                } else {
+                    waveformCtx.strokeStyle = waveformColor;
+                }
 
-            for (let x = 0; x < width && x <= revealLimit; x++) {
-                const timeProgress = x / width;
-                const sampleIndex = Math.floor(startSample + timeProgress * (endSample - startSample));
+                waveformCtx.lineWidth = 3; // Thicker line for better visibility
+                waveformCtx.beginPath();
 
-                if (sampleIndex >= 0 && sampleIndex < waveformWidth) {
-                    const amplitude = waveformData[sampleIndex];
-                    const y = centerY + amplitude * (waveformHeight / 2);
+                for (let x = 0; x < width && x <= revealLimit; x++) {
+                    const timeProgress = x / width;
+                    const sampleIndex = Math.floor(startSample + timeProgress * (endSample - startSample));
 
-                    if (x === 0) {
-                        waveformCtx.moveTo(x, y);
-                    } else {
-                        waveformCtx.lineTo(x, y);
+                    if (sampleIndex >= 0 && sampleIndex < waveformWidth) {
+                        const amplitude = waveformData[sampleIndex];
+                        const y = centerY + amplitude * (waveformHeight / 2);
+
+                        if (x === 0) {
+                            waveformCtx.moveTo(x, y);
+                        } else {
+                            waveformCtx.lineTo(x, y);
+                        }
                     }
                 }
+
+                waveformCtx.stroke();
             }
 
-            waveformCtx.stroke();
+            // Draw alignment markers (visible if either layer has opacity)
+            if (waveformOpacity > 0 || spectrogramOpacity > 0) {
+                waveformCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                waveformCtx.lineWidth = 1;
 
-            // Draw alignment markers
-            waveformCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            waveformCtx.lineWidth = 1;
+                const mark15 = width * 0.15;
+                waveformCtx.beginPath();
+                waveformCtx.moveTo(mark15, 0);
+                waveformCtx.lineTo(mark15, height);
+                waveformCtx.stroke();
 
-            const mark15 = width * 0.15;
-            waveformCtx.beginPath();
-            waveformCtx.moveTo(mark15, 0);
-            waveformCtx.lineTo(mark15, height);
-            waveformCtx.stroke();
-
-            const mark50 = width * 0.5;
-            waveformCtx.beginPath();
-            waveformCtx.moveTo(mark50, 0);
-            waveformCtx.lineTo(mark50, height);
-            waveformCtx.stroke();
+                const mark50 = width * 0.5;
+                waveformCtx.beginPath();
+                waveformCtx.moveTo(mark50, 0);
+                waveformCtx.lineTo(mark50, height);
+                waveformCtx.stroke();
+            }
         }
 
         // Get current waveform color based on loaded file
@@ -3991,21 +4028,19 @@
             });
         }
 
-        // Switch between waveform and spectrogram view modes
-        function switchViewMode(mode) {
-            if (mode === currentViewMode) return;
+        // Update view opacity based on slider value
+        function updateViewOpacity(sliderValue) {
+            // Convert slider value (0-100) to opacity values
+            // 0 = full spectrogram, 100 = full waveform
+            const normalizedValue = sliderValue / 100;
 
-            currentViewMode = mode;
-
-            // Update button states
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.mode === mode);
-            });
+            waveformOpacity = normalizedValue;
+            spectrogramOpacity = 1.0 - normalizedValue;
 
             // Store preference for current file
             const currentFile = document.querySelector('#merged .track-info span:first-child')?.textContent;
             if (currentFile) {
-                viewModePreferences[currentFile] = mode;
+                viewModePreferences[currentFile] = sliderValue;
             }
 
             // Update MISC clip visibility for view mode change
@@ -4241,8 +4276,8 @@
             const clipLeft = parseFloat(miscClip.originalLeft.replace('%', ''));
             const clipId = miscClip.clipId;
 
-            // Check if this is a spec-only clip and we're in waveform view
-            if (specOnlyMiscClips.has(clipId) && currentViewMode === 'waveform') {
+            // Check if this is a spec-only clip and spectrogram is not visible
+            if (specOnlyMiscClips.has(clipId) && spectrogramOpacity <= 0) {
                 return false;
             }
 
@@ -4998,11 +5033,12 @@
             });
 
             // Disable view mode controls
-            document.querySelectorAll('.mode-btn').forEach(button => {
-                button.disabled = true;
-                button.style.pointerEvents = 'none';
-                button.style.opacity = '0.3';
-            });
+            const opacitySlider = document.getElementById('opacity-slider');
+            if (opacitySlider) {
+                opacitySlider.disabled = true;
+                opacitySlider.style.pointerEvents = 'none';
+                opacitySlider.style.opacity = '0.3';
+            }
 
             // Disable tools
             document.querySelectorAll('.plugin-section').forEach(section => {
@@ -5372,11 +5408,12 @@
             });
 
             // Re-enable view mode controls
-            document.querySelectorAll('.mode-btn').forEach(button => {
-                button.disabled = false;
-                button.style.pointerEvents = 'auto';
-                button.style.opacity = '1';
-            });
+            const opacitySlider = document.getElementById('opacity-slider');
+            if (opacitySlider) {
+                opacitySlider.disabled = false;
+                opacitySlider.style.pointerEvents = 'auto';
+                opacitySlider.style.opacity = '1';
+            }
 
             // Tools are enabled separately by enableTools()
         }
@@ -6632,7 +6669,7 @@
             }
 
             // Don't deselect if clicking on interactive elements like buttons or controls
-            if (event.target.closest('button, .zoom-controls, .pan-controls, .analyze-overlay, .view-mode-overlay, .slider-track, .slider-thumb')) {
+            if (event.target.closest('button, .zoom-controls, .pan-controls, .analyze-overlay, .view-mode-overlay, .opacity-slider, .slider-track, .slider-thumb')) {
                 return;
             }
 
@@ -7019,15 +7056,21 @@
             // Update global layer config for analysis game
             window.currentLayerConfig = config.layers;
 
-            // Restore view mode preference for this file
-            const savedViewMode = viewModePreferences[config.name];
-            if (savedViewMode && savedViewMode !== currentViewMode) {
-                switchViewMode(savedViewMode);
+            // Restore opacity preference for this file
+            const savedOpacity = viewModePreferences[config.name];
+            if (savedOpacity !== undefined) {
+                const opacitySlider = document.getElementById('opacity-slider');
+                if (opacitySlider) {
+                    opacitySlider.value = savedOpacity;
+                    updateViewOpacity(savedOpacity);
+                }
             } else {
-                // Update button states to reflect current mode
-                document.querySelectorAll('.mode-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.mode === currentViewMode);
-                });
+                // Default to 50/50 mix (50)
+                const opacitySlider = document.getElementById('opacity-slider');
+                if (opacitySlider) {
+                    opacitySlider.value = 50;
+                    updateViewOpacity(50);
+                }
             }
 
             // Generate both waveform and spectrogram data for the new file
