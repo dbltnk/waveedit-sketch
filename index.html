@@ -2053,12 +2053,14 @@
 
         .plugin-section.disabled .slider-track,
         .plugin-section.disabled .slider-thumb {
-            opacity: 0.3;
+            opacity: 0.2;
             pointer-events: none;
+            filter: grayscale(1);
         }
 
         .plugin-section.disabled .slider-labels {
             opacity: 0.3;
+            color: var(--text-muted) !important;
         }
 
         /* Plugin sections */
@@ -2083,10 +2085,20 @@
         }
 
         .plugin-section.disabled {
-            opacity: 0.5;
+            opacity: 0.3;
             cursor: not-allowed;
             pointer-events: none;
+            background: var(--bg-darker) !important;
+            border-color: var(--border-color) !important;
+            filter: grayscale(1);
         }
+
+        .plugin-section.disabled .plugin-title {
+            color: var(--text-muted) !important;
+            opacity: 0.4;
+        }
+
+
 
         .plugin-section.active {
             border-color: var(--primary-brown);
@@ -2114,8 +2126,10 @@
         }
 
         .plugin-section.disabled .checkbox {
-            opacity: 0.3;
+            opacity: 0.2;
             pointer-events: none;
+            background: var(--bg-darker) !important;
+            border-color: var(--text-muted) !important;
         }
 
         .plugin-title {
