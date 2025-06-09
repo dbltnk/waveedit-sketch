@@ -633,6 +633,72 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
+        /* Disabled states for main playback controls */
+        .main-buttons button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .main-loop-label:has(input:disabled) {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .main-loop-label:has(input:disabled):hover {
+            background: transparent;
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: none;
+        }
+
+        .playback-disabled-message {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* Clip Focus Mode Styles */
+        .audio-clip.clip-focused {
+            filter: brightness(1.3) saturate(1.2);
+            box-shadow: 0 0 8px rgba(243, 156, 18, 0.6);
+            z-index: 10;
+        }
+
+        .audio-clip.clip-lowlighted {
+            opacity: 0.3;
+            filter: brightness(0.7) saturate(0.5);
+        }
+
+        .clip-focus-overlay {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .clip-focus-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #f39c12;
+            pointer-events: none;
+            z-index: 15;
+            box-shadow: 0 0 4px rgba(243, 156, 18, 0.8);
+        }
+
+        .clip-focus-line.in-point {
+            border-left: 1px solid #fff;
+        }
+
+        .clip-focus-line.out-point {
+            border-right: 1px solid #fff;
+        }
+
         .main-time-display {
             display: flex;
             align-items: center;
@@ -836,6 +902,20 @@
             margin-left: 20px;
             position: relative;
             border-radius: 3px;
+        }
+
+        /* Playback marker styles */
+        #playback-marker {
+            transition: left 0.1s ease;
+            box-shadow: 0 0 8px rgba(243, 156, 18, 0.6);
+        }
+
+        /* Analysis mode playhead - distinctive appearance */
+        #playback-marker.analysis-mode {
+            width: 3px;
+            background: linear-gradient(to bottom, #00ff88 0%, #00cc66 100%);
+            box-shadow: 0 0 12px rgba(0, 255, 136, 0.8), 0 0 4px rgba(0, 255, 136, 0.4);
+            border-radius: 1px;
         }
 
         /* Analyze button overlay */
@@ -1894,86 +1974,7 @@
             white-space: nowrap;
         }
 
-        .selected-clip-controls {
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            margin-bottom: 8px;
-        }
 
-        .clip-buttons {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .clip-playback-info {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-        }
-
-        .clip-loop-label {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            color: var(--text-light);
-            font-size: 11px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .clip-loop-label input[type="checkbox"] {
-            margin: 0;
-            transform: scale(0.8);
-            cursor: pointer;
-        }
-
-        .selected-clip-play-btn,
-        .selected-clip-stop-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition-fast);
-            font-weight: bold;
-            font-size: 14px;
-            backdrop-filter: blur(5px);
-            line-height: 1;
-            text-align: center;
-        }
-
-        .selected-clip-play-btn:hover,
-        .selected-clip-stop-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .selected-clip-stop-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .selected-clip-stop-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .selected-clip-time {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
 
         .selected-clip-waveform {
             height: 20px;
@@ -2001,17 +2002,7 @@
             z-index: 0;
         }
 
-        .selected-clip-playhead {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #f39c12;
-            left: 0%;
-            pointer-events: none;
-            z-index: 10;
-            transition: left 0.1s ease;
-        }
+
 
         /* Add slider styles */
         .slider-container {
@@ -2613,18 +2604,23 @@
                             </div>
 
                             <div class="main-controls-section">
-                                <div class="main-buttons">
-                                    <button class="transport-btn" onclick="toggleMainPlayback(event)">▶</button>
-                                    <button class="transport-btn" onclick="stopMainPlayback(event)">⏹</button>
-                                    <button class="transport-btn" onclick="seekToStart(event)">⏮</button>
-                                    <button class="transport-btn" onclick="seekToEnd(event)">⏭</button>
+                                <div class="main-buttons" id="main-buttons">
+                                    <button class="transport-btn" onclick="toggleMainPlayback(event)"
+                                        disabled>▶</button>
+                                    <button class="transport-btn" onclick="stopMainPlayback(event)" disabled>⏹</button>
+                                    <button class="transport-btn" onclick="seekToStart(event)" disabled>⏮</button>
+                                    <button class="transport-btn" onclick="seekToEnd(event)" disabled>⏭</button>
                                 </div>
 
-                                <div class="main-loop-container">
+                                <div class="main-loop-container" id="main-loop-container">
                                     <label class="main-loop-label">
-                                        <input type="checkbox" id="main-loop-checkbox">
+                                        <input type="checkbox" id="main-loop-checkbox" disabled>
                                         <span class="loop-text">🔄 Loop</span>
                                     </label>
+                                </div>
+
+                                <div class="playback-disabled-message">
+                                    Analyze the track to enable playback
                                 </div>
                             </div>
                         </div>
@@ -2677,7 +2673,7 @@
                         </div>
                         <!-- Stem Isolation button overlay -->
                         <div class="analyze-overlay">
-                            <button class="analyze-btn" onclick="stemIsolation(event)">Isolate Audio Stems</button>
+                            <button class="analyze-btn" onclick="realTimeAnalysis(event)">Analyze Track</button>
                         </div>
 
                         <!-- View mode toggle overlay (hidden initially) -->
@@ -2788,26 +2784,12 @@
                 <div class="right-panel-section">
                     <div class="section-header">🎯 Current Clip</div>
                     <div class="section-content">
-                        <div id="tools-message" class="tools-message">Run Isolate Audio Stems to separate audio layers
+                        <div id="tools-message" class="tools-message">Run Analyze Track to separate audio layers
                             and unlock tools.</div>
                         <div id="selected-clip-display" class="selected-clip-display" style="display: none;">
                             <div class="selected-clip-title">Selected Clip:</div>
                             <div class="selected-clip-name"></div>
-                            <div class="selected-clip-controls">
-                                <div class="clip-buttons">
-                                    <button class="selected-clip-play-btn"
-                                        onclick="toggleClipPlayback(event)">▶</button>
-                                    <button class="selected-clip-stop-btn" onclick="stopClipPlayback(event)">⏹</button>
-                                </div>
-                                <div class="clip-playback-info">
-                                    <span class="selected-clip-time">0.0 / 0.0</span>
-                                    <label class="clip-loop-label">
-                                        <input type="checkbox" id="clip-loop-checkbox"> Loop
-                                    </label>
-                                </div>
-                            </div>
                             <div class="selected-clip-waveform">
-                                <div class="selected-clip-playhead"></div>
                             </div>
                         </div>
                     </div>
@@ -2835,15 +2817,22 @@
         let draggedClip = null;
         let discoveredClips = new Set();
         let isAnalyzed = false;
-        let clipPlaybackInterval = null;
         let mergedMiscClips = []; // Track ??? clips in merged view
         let revealedMiscClips = new Set(); // Once revealed, always visible
         let specOnlyMiscClips = new Set(); // MISC clips only visible in Spec view
-        let clipStartTime = 0;
-        let clipDuration = 0;
-        let clipElapsedTime = 0; // Track elapsed time when paused
-        let isClipPlaying = false;
         let currentPopup = null;
+
+        // Clip focus mode variables
+        let clipFocusMode = false;
+        let focusedClipStart = 0; // Absolute timeline position
+        let focusedClipEnd = 0; // Absolute timeline position
+
+        // Real-time analysis mode variables
+        let isAnalyzing = false; // Track if we're in analysis mode
+        let analysisStartTime = 0; // When analysis began
+        let revealedClips = new Set(); // Track which clips have been revealed
+        let revealedLayers = new Set(); // Track which layers are visible
+        let analysisPlaybackInterval = null; // Analysis playback timer
 
         // VU Meter animation
         let vuMeterInterval = null;
@@ -3407,7 +3396,7 @@
                     }
                 },
                 '3_medium_morse_code.wav': {
-                    noiseLevel: 0.35,
+                    noiseFloor: 0.35,
                     freqComponents: [
                         { frequency: 12, amplitude: 0.5, phase: 0, modulation: 0 },
                         { frequency: 24, amplitude: 0.3, phase: 0.5, modulation: 0 },
@@ -3426,7 +3415,7 @@
                     }
                 },
                 '4_medium_seasonal_birds.wav': {
-                    noiseLevel: 0.45,
+                    noiseFloor: 0.45,
                     freqComponents: [
                         { frequency: 3, amplitude: 0.2, phase: 0, modulation: 4 },
                         { frequency: 18, amplitude: 0.25, phase: 1.5, modulation: 8 },
@@ -3575,12 +3564,20 @@
             const startSample = Math.floor(waveformOffsetX * maxStartSample);
             const endSample = Math.min(waveformWidth, startSample + visibleSamples);
 
+            // Calculate revelation limit during analysis mode
+            let revealLimit = width; // Default: show full waveform
+            if (isAnalyzing) {
+                // During analysis, only show waveform up to current playhead position
+                const currentProgress = currentTime / totalDuration;
+                revealLimit = width * currentProgress;
+            }
+
             // Set waveform style
             waveformCtx.strokeStyle = getCurrentWaveformColor();
             waveformCtx.lineWidth = 2; // Increased from 1 for better visibility
             waveformCtx.beginPath();
 
-            for (let x = 0; x < width; x++) {
+            for (let x = 0; x < width && x <= revealLimit; x++) {
                 // Map canvas X to waveform position within visible range
                 const timeProgress = x / width;
                 const sampleIndex = Math.floor(startSample + timeProgress * (endSample - startSample));
@@ -3638,8 +3635,16 @@
             const startSample = Math.floor(waveformOffsetX * maxStartSample);
             const endSample = Math.min(spectrogramWidth, startSample + visibleSamples);
 
+            // Calculate revelation limit during analysis mode
+            let revealLimit = width; // Default: show full spectrogram
+            if (isAnalyzing) {
+                // During analysis, only show spectrogram up to current playhead position
+                const currentProgress = currentTime / totalDuration;
+                revealLimit = width * currentProgress;
+            }
+
             // Render each pixel
-            for (let x = 0; x < width; x++) {
+            for (let x = 0; x < width && x <= revealLimit; x++) {
                 // Map canvas X to spectrogram time position within visible range
                 const timeProgress = x / width;
                 const spectrogramX = Math.floor(startSample + timeProgress * (endSample - startSample));
@@ -3687,6 +3692,14 @@
 
         // Draw combined mode (spectrogram on bottom, waveform overlay on top)
         function drawCombinedMode(width, height) {
+            // Calculate revelation limit during analysis mode
+            let revealLimit = width; // Default: show full combined view
+            if (isAnalyzing) {
+                // During analysis, only show up to current playhead position
+                const currentProgress = currentTime / totalDuration;
+                revealLimit = width * currentProgress;
+            }
+
             // First draw the spectrogram as background
             if (spectrogramData.length > 0) {
                 const imageData = waveformCtx.createImageData(width, height);
@@ -3702,7 +3715,7 @@
                 const endSample = Math.min(spectrogramWidth, startSample + visibleSamples);
 
                 // Render spectrogram pixels
-                for (let x = 0; x < width; x++) {
+                for (let x = 0; x < width && x <= revealLimit; x++) {
                     const timeProgress = x / width;
                     const spectrogramX = Math.floor(startSample + timeProgress * (endSample - startSample));
 
@@ -3743,7 +3756,7 @@
             waveformCtx.lineWidth = 3; // Thicker line for better visibility
             waveformCtx.beginPath();
 
-            for (let x = 0; x < width; x++) {
+            for (let x = 0; x < width && x <= revealLimit; x++) {
                 const timeProgress = x / width;
                 const sampleIndex = Math.floor(startSample + timeProgress * (endSample - startSample));
 
@@ -3812,6 +3825,7 @@
             requestAnimationFrame(() => {
                 drawVisualization();
                 updateClipPositions();
+                updateClipFocusVisuals(); // Update clip focus overlays and lines after zoom
             });
 
             // Update zoom level display
@@ -3922,6 +3936,7 @@
             requestAnimationFrame(() => {
                 drawVisualization();
                 updateClipPositions();
+                updateClipFocusVisuals(); // Update clip focus overlays and lines after zoom/pan
             });
         }
 
@@ -3993,6 +4008,7 @@
             requestAnimationFrame(() => {
                 drawVisualization();
                 updateClipPositions();
+                updateClipFocusVisuals(); // Update clip focus overlays and lines after view mode change
             });
         }
 
@@ -4246,21 +4262,20 @@
 
                 // Check if should be revealed now (but don't show yet - let updateClipPositions handle viewport)
                 if (!revealedMiscClips.has(clipId) && shouldMiscClipBeVisible(miscClip)) {
-                    revealMiscClip(miscClip);
+                    revealMiscClipInLayer(miscClip);
                 }
             });
         }
 
         // Reveal a MISC clip with animation
-        function revealMiscClip(miscClip) {
+        function revealMiscClipInLayer(miscClip) {
             const element = miscClip.element;
             const clipId = miscClip.clipId;
 
             // Mark as revealed (permanent)
             revealedMiscClips.add(clipId);
 
-            // Note: Don't set display here - let updateClipPositions handle viewport visibility
-            // But only animate if the element will be visible
+            // Check if in viewport for animation
             const originalLeft = parseFloat(miscClip.originalLeft);
             const originalRight = originalLeft + parseFloat(miscClip.originalWidth);
             const visibleStart = waveformOffsetX * 100;
@@ -4268,7 +4283,7 @@
             const isInViewport = !(originalRight < visibleStart || originalLeft > visibleEnd);
 
             if (isInViewport) {
-                // Show the element for animation
+                // Force show the element for animation (updateClipPositions will manage it after)
                 element.style.display = 'flex';
 
                 // Start animation from small scale and transparent
@@ -4769,10 +4784,7 @@
         function toggleMainPlayback(event) {
             event.stopPropagation();
 
-            // If starting main playback, pause any clip playback first
-            if (!isPlaying && isClipPlaying) {
-                pauseClipPlayback();
-            }
+
 
             isPlaying = !isPlaying;
             isMainPlaying = isPlaying;
@@ -4788,20 +4800,24 @@
                 // Start playback
                 playbackInterval = setInterval(() => {
                     currentTime += 0.1 * playbackSpeed;
-                    if (currentTime >= totalDuration) {
+
+                    // Check boundaries - either clip focus mode or full track
+                    const maxTime = clipFocusMode ? focusedClipEnd : totalDuration;
+
+                    if (currentTime >= maxTime) {
                         // Check current loop state dynamically
                         const loopCheckbox = document.getElementById('main-loop-checkbox');
                         const currentLoopState = loopCheckbox ? loopCheckbox.checked : false;
 
                         if (currentLoopState) {
-                            // Loop: reset to start and continue playing
-                            currentTime = 0;
+                            // Loop: reset to start (either clip start or track start)
+                            currentTime = clipFocusMode ? focusedClipStart : 0;
                         } else {
                             // No loop: stop playback and update button
                             isPlaying = false;
                             isMainPlaying = false;
                             clearInterval(playbackInterval);
-                            currentTime = 0;
+                            currentTime = clipFocusMode ? focusedClipStart : 0;
                             updateTimeDisplay();
                             updatePlaybackMarker();
 
@@ -4840,7 +4856,7 @@
             isPlaying = false;
             isMainPlaying = false;
             clearInterval(playbackInterval);
-            currentTime = 0;
+            currentTime = clipFocusMode ? focusedClipStart : 0;
             updateTimeDisplay();
             updatePlaybackMarker();
 
@@ -4855,7 +4871,7 @@
         // Seek to start
         function seekToStart(event) {
             event.stopPropagation();
-            currentTime = 0;
+            currentTime = clipFocusMode ? focusedClipStart : 0;
             updateTimeDisplay();
             updatePlaybackMarker();
         }
@@ -4863,13 +4879,13 @@
         // Seek to end
         function seekToEnd(event) {
             event.stopPropagation();
-            currentTime = totalDuration;
+            currentTime = clipFocusMode ? focusedClipEnd : totalDuration;
             updateTimeDisplay();
             updatePlaybackMarker();
         }
 
-        // Stem Isolation function - the new main analysis method
-        async function stemIsolation(event) {
+        // Real-time Analysis function - progressive revelation during playback
+        async function realTimeAnalysis(event) {
             event.stopPropagation();
 
             if (!window.currentLayerConfig) {
@@ -4883,69 +4899,412 @@
                 analyzeOverlay.remove();
             }
 
-            // Create loading overlay (only covers merged track)
-            const loadingOverlay = document.createElement('div');
-            loadingOverlay.className = 'stem-isolation-overlay';
-            loadingOverlay.innerHTML = `
-                <div class="isolation-progress-container">
-                    <div class="isolation-title">🎵 STEM ISOLATION</div>
-                    <div class="isolation-status">Initializing AI audio separation...</div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill"></div>
-                    </div>
-                    <div class="layer-status">Preparing multi-band frequency analysis...</div>
-                </div>
-            `;
+            // Enter analysis mode
+            isAnalyzing = true;
+            analysisStartTime = Date.now();
 
-            // Add to merged track only so layers can be seen appearing below
-            const mergedTrack = document.getElementById('merged');
-            mergedTrack.appendChild(loadingOverlay);
+            // Reset revelation tracking
+            revealedClips.clear();
+            revealedLayers.clear();
 
-            // Hide all existing layers to prevent duplication
-            Object.keys(window.currentLayerConfig).forEach(layerId => {
-                const layer = document.getElementById(layerId);
-                if (layer) {
-                    layer.style.display = 'none';
-                }
+            // IMPORTANT: Remove all existing layers completely to ensure clean slate
+            const trackLayers = document.querySelectorAll('.track-layer:not(#merged)');
+            trackLayers.forEach(layer => {
+                layer.remove();
             });
 
             // Clear merged track of existing clips
+            const mergedTrack = document.getElementById('merged');
             const existingClips = mergedTrack.querySelectorAll('.audio-clip');
             existingClips.forEach(clip => clip.remove());
 
-            // Separate large and small clips
-            const largeClips = [];
-            const smallClips = [];
+            // Clear any existing MISC clips data
+            mergedMiscClips.length = 0;
+            revealedMiscClips.clear();
+            specOnlyMiscClips.clear();
+
+            // Clear original clip data
+            originalClipData.clear();
+
+            // Disable all controls during analysis
+            disableControlsDuringAnalysis();
+
+            // Apply analysis mode styling to playhead
+            const playhead = document.getElementById('playback-marker');
+            if (playhead) {
+                playhead.classList.add('analysis-mode');
+            }
+
+            // Separate clips by type for processing
+            const regularClips = [];
+            const miscClips = [];
 
             Object.entries(window.currentLayerConfig).forEach(([layerId, layerConfig]) => {
                 layerConfig.clips.forEach(clip => {
                     const clipData = { ...clip, layerId, layerConfig };
                     if (clip.type === 'large') {
-                        largeClips.push(clipData);
+                        regularClips.push(clipData);
                     } else if (clip.type === 'small') {
-                        smallClips.push(clipData);
-                    } else {
-                        // This should never happen if all clips have type defined
-                        console.warn('Clip without type property:', clip);
+                        miscClips.push(clipData);
                     }
                 });
             });
 
-            // Create MISC layers for small clips
-            const miscLayers = createMiscLayers(smallClips);
+            // Create MISC layers (but keep them hidden) - these won't have clips in merged view
+            const miscLayers = createMiscLayers(miscClips);
+            miscLayers.forEach(miscLayer => {
+                createMiscLayerHidden(miscLayer);
+            });
 
-            // Start the loading animation
-            await performStemIsolation(largeClips, smallClips, miscLayers, loadingOverlay);
+            // Start analysis playback
+            startAnalysisPlayback(regularClips, miscClips, miscLayers);
         }
 
         // Auto-analysis function (for menu)
         function autoAnalyzeAll() {
-            // Use the same stem isolation process
+            // Use the same real-time analysis process
             const fakeEvent = {
                 stopPropagation: () => { },
                 target: { closest: () => document.querySelector('.analyze-overlay') }
             };
-            stemIsolation(fakeEvent);
+            realTimeAnalysis(fakeEvent);
+        }
+
+        // Disable controls during analysis to prevent interruption
+        function disableControlsDuringAnalysis() {
+            // Disable all transport buttons
+            document.querySelectorAll('#main-buttons button').forEach(button => {
+                button.disabled = true;
+            });
+
+            // Disable loop checkbox
+            const loopCheckbox = document.getElementById('main-loop-checkbox');
+            if (loopCheckbox) {
+                loopCheckbox.disabled = true;
+            }
+
+            // Disable zoom and pan controls
+            document.querySelectorAll('.zoom-btn, .pan-btn').forEach(button => {
+                button.disabled = true;
+                button.style.pointerEvents = 'none';
+                button.style.opacity = '0.3';
+            });
+
+            // Disable view mode controls
+            document.querySelectorAll('.mode-btn').forEach(button => {
+                button.disabled = true;
+                button.style.pointerEvents = 'none';
+                button.style.opacity = '0.3';
+            });
+
+            // Disable tools
+            document.querySelectorAll('.plugin-section').forEach(section => {
+                section.classList.add('disabled');
+                section.style.pointerEvents = 'none';
+                section.style.opacity = '0.3';
+            });
+        }
+
+        // Start the analysis playback that reveals clips progressively
+        function startAnalysisPlayback(regularClips, miscClips, miscLayers) {
+            // Reset playback state
+            currentTime = 0;
+            updateTimeDisplay();
+            updatePlaybackMarker();
+
+            // Start VU meter animation for visual feedback
+            startVUMeterAnimation();
+
+            // Create analysis playback loop - uninterruptible, normal speed
+            analysisPlaybackInterval = setInterval(() => {
+                currentTime += 0.1; // Increment by 100ms (normal speed)
+
+                // Update display and marker
+                updateTimeDisplay();
+                updatePlaybackMarker();
+
+                // Redraw waveform with progressive revelation
+                drawVisualization();
+
+                // Check for clip revelation
+                checkClipRevelation(regularClips, miscClips, miscLayers);
+
+                // Check if analysis is complete
+                if (currentTime >= totalDuration) {
+                    completeAnalysis(miscClips);
+                }
+            }, 100); // 100ms intervals for smooth playback
+        }
+
+        // Check which clips should be revealed at current playhead position
+        function checkClipRevelation(regularClips, miscClips, miscLayers) {
+            const currentProgress = (currentTime / totalDuration) * 100; // Current position as percentage
+
+            // Check regular clips for revelation
+            regularClips.forEach(clipData => {
+                const clipLeft = parseFloat(clipData.left.replace('%', ''));
+
+                // Reveal clip when playhead touches its left edge
+                if (currentProgress >= clipLeft && !revealedClips.has(clipData.id)) {
+                    console.log(`🎵 Revealing regular clip: ${clipData.id} at ${currentProgress.toFixed(1)}% (clip starts at ${clipLeft}%)`);
+                    revealRegularClip(clipData);
+                }
+            });
+
+            // Check MISC clips for revelation (only in MISC layers, not merged view)
+            miscClips.forEach(clipData => {
+                const clipLeft = parseFloat(clipData.left.replace('%', ''));
+
+                // Reveal MISC clip when playhead touches its left edge
+                if (currentProgress >= clipLeft && !revealedClips.has(clipData.id)) {
+                    console.log(`🔧 Revealing MISC clip: ${clipData.id} at ${currentProgress.toFixed(1)}% (clip starts at ${clipLeft}%)`);
+                    revealMiscClipInLayer(clipData, miscLayers);
+                }
+            });
+        }
+
+        // Reveal a regular clip in both merged view and its layer
+        function revealRegularClip(clipData) {
+            revealedClips.add(clipData.id);
+
+            // Ensure layer exists and is visible
+            ensureLayerVisible(clipData.layerId, clipData.layerConfig);
+
+            // Add clip to merged view
+            addClipToMergedView(clipData);
+
+            // Add clip to its specific layer
+            addClipToLayer(clipData);
+        }
+
+        // Reveal a MISC clip only in its MISC layer (not in merged view)
+        function revealMiscClipInLayer(clipData, miscLayers) {
+            revealedClips.add(clipData.id);
+
+            // Find which MISC layer this clip belongs to
+            const miscLayer = miscLayers.find(layer =>
+                layer.clips.some(clip => clip.id === clipData.id)
+            );
+
+            if (miscLayer) {
+                // Ensure MISC layer is visible
+                ensureMiscLayerVisible(miscLayer.id);
+
+                // Show the clip in the MISC layer
+                const layerElement = document.getElementById(miscLayer.id);
+                if (layerElement) {
+                    const clipElement = layerElement.querySelector(`[data-clip="${clipData.id}"]`);
+                    if (clipElement) {
+                        clipElement.style.display = 'flex';
+                        animateClipReveal(clipElement);
+                    }
+                }
+            }
+        }
+
+        // Ensure a regular layer is visible, create if needed
+        function ensureLayerVisible(layerId, layerConfig) {
+            if (revealedLayers.has(layerId)) return; // Already visible
+
+            revealedLayers.add(layerId);
+
+            let layerElement = document.getElementById(layerId);
+            if (!layerElement) {
+                // Create the layer if it doesn't exist
+                layerElement = createRegularLayerHidden(layerId, []);
+            }
+
+            // Make layer visible with animation
+            layerElement.style.display = 'flex';
+            animateLayerReveal(layerElement);
+        }
+
+        // Ensure a MISC layer is visible
+        function ensureMiscLayerVisible(miscLayerId) {
+            if (revealedLayers.has(miscLayerId)) return; // Already visible
+
+            revealedLayers.add(miscLayerId);
+
+            const layerElement = document.getElementById(miscLayerId);
+            if (layerElement) {
+                layerElement.style.display = 'flex';
+                animateLayerReveal(layerElement);
+            }
+        }
+
+        // Add a clip to the merged view
+        function addClipToMergedView(clipData) {
+            const mergedTrack = document.querySelector('#merged .track-content');
+            if (!mergedTrack) return;
+
+            // Create clip element
+            const clipElement = document.createElement('div');
+            clipElement.className = 'audio-clip revealed';
+            clipElement.dataset.clip = clipData.id;
+            clipElement.dataset.layer = clipData.layerId;
+            clipElement.style.left = clipData.left;
+            clipElement.style.width = clipData.width;
+            clipElement.textContent = clipData.id;
+
+            // Position in merged view using layer config
+            const clipHash = clipData.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const verticalVariation = (clipHash % 30) - 15;
+            clipElement.style.top = `${clipData.layerConfig.baseHeight + verticalVariation}px`;
+
+            mergedTrack.appendChild(clipElement);
+
+            // Apply waveform and animate reveal
+            applyWaveformToClip(clipElement);
+            animateClipReveal(clipElement);
+
+            // Store for zoom functionality
+            const left = parseFloat(clipData.left.replace('%', ''));
+            const width = parseFloat(clipData.width.replace('%', ''));
+            originalClipData.set(clipData.id, {
+                left: left,
+                width: width,
+                element: clipElement
+            });
+        }
+
+        // Add a clip to its specific layer
+        function addClipToLayer(clipData) {
+            const layerElement = document.getElementById(clipData.layerId);
+            if (!layerElement) {
+                console.warn(`❌ Layer not found: ${clipData.layerId}`);
+                return;
+            }
+
+            const trackContent = layerElement.querySelector('.track-content');
+            if (!trackContent) {
+                console.warn(`❌ Track content not found in layer: ${clipData.layerId}`);
+                return;
+            }
+
+            // Check if clip already exists in layer
+            if (trackContent.querySelector(`[data-clip="${clipData.id}"]`)) {
+                console.warn(`⚠️  Clip already exists in layer: ${clipData.id}`);
+                return;
+            }
+
+            console.log(`🎬 Adding clip to layer: ${clipData.id} -> ${clipData.layerId}`);
+
+            // Create clip element for layer
+            const clipElement = document.createElement('div');
+            clipElement.className = 'audio-clip';
+            clipElement.dataset.clip = clipData.id;
+            clipElement.style.left = clipData.left;
+            clipElement.style.width = clipData.width;
+            clipElement.style.height = '18px';
+            clipElement.style.top = '6px';
+            clipElement.title = clipData.title || clipData.id;
+            clipElement.textContent = clipData.id;
+
+            trackContent.appendChild(clipElement);
+
+            // Apply waveform and animate reveal
+            applyWaveformToClip(clipElement);
+            animateClipReveal(clipElement);
+
+            // Mark as discovered for tools
+            discoveredClips.add(clipData.id);
+        }
+
+        // Animate clip reveal with subtle effect
+        function animateClipReveal(clipElement) {
+            clipElement.style.transform = 'scale(0.8)';
+            clipElement.style.opacity = '0';
+
+            requestAnimationFrame(() => {
+                clipElement.style.transition = 'all 0.3s ease-out';
+                clipElement.style.transform = 'scale(1)';
+                clipElement.style.opacity = '1';
+
+                setTimeout(() => {
+                    clipElement.style.transition = '';
+                }, 300);
+            });
+        }
+
+        // Animate layer reveal
+        function animateLayerReveal(layerElement) {
+            layerElement.style.opacity = '0';
+            layerElement.style.transform = 'translateY(-10px)';
+
+            requestAnimationFrame(() => {
+                layerElement.style.transition = 'all 0.4s ease-out';
+                layerElement.style.opacity = '1';
+                layerElement.style.transform = 'translateY(0)';
+
+                setTimeout(() => {
+                    layerElement.style.transition = '';
+                }, 400);
+            });
+        }
+
+        // Complete the analysis process
+        function completeAnalysis(miscClips) {
+            // Stop analysis playback
+            clearInterval(analysisPlaybackInterval);
+            analysisPlaybackInterval = null;
+
+            // Stop VU meter
+            stopVUMeterAnimation();
+
+            // Exit analysis mode
+            isAnalyzing = false;
+
+            // Remove analysis mode styling from playhead
+            const playhead = document.getElementById('playback-marker');
+            if (playhead) {
+                playhead.classList.remove('analysis-mode');
+            }
+
+            // Reset playhead to start
+            currentTime = 0;
+            updateTimeDisplay();
+            updatePlaybackMarker();
+
+            // Create MISC clips in merged view for zoom discovery
+            const miscClipArray = Array.from(miscClips.values());
+            createMergedMiscClips(miscClipArray);
+
+            // Enable all functionality
+            isAnalyzed = true;
+            enablePlaybackControls();
+            enableZoomControls();
+            enableTools();
+            setupSmallClipDiscovery();
+
+            // Re-enable controls that were disabled during analysis
+            enableControlsAfterAnalysis();
+
+            // Store original clip data for zoom functionality
+            storeOriginalClipData();
+
+            // Apply waveforms to all clips
+            setTimeout(() => {
+                applyWaveformsToAllClips();
+            }, 100);
+        }
+
+        // Re-enable controls after analysis
+        function enableControlsAfterAnalysis() {
+            // Re-enable zoom and pan controls
+            document.querySelectorAll('.zoom-btn, .pan-btn').forEach(button => {
+                button.disabled = false;
+                button.style.pointerEvents = 'auto';
+                button.style.opacity = '1';
+            });
+
+            // Re-enable view mode controls
+            document.querySelectorAll('.mode-btn').forEach(button => {
+                button.disabled = false;
+                button.style.pointerEvents = 'auto';
+                button.style.opacity = '1';
+            });
+
+            // Tools are enabled separately by enableTools()
         }
 
         function selectPlugin(pluginName) {
@@ -5441,6 +5800,8 @@
 
         // Create MISC clips in merged view for zoom discovery
         function createMergedMiscClips(smallClips) {
+            console.log('🔍 createMergedMiscClips called with:', smallClips.length, 'clips');
+
             const mergedTrack = document.querySelector('#merged .track-content');
             if (!mergedTrack) return;
 
@@ -5468,8 +5829,16 @@
             const margin = 10; // Margin from top and bottom edges
             const availableHeight = trackHeight - (2 * margin) - clipHeight;
 
+            console.log('📊 Spec-only clips:', Array.from(specOnlyMiscClips));
+
             // Create ??? clips for each small clip
             smallClips.forEach((clip, index) => {
+                console.log(`🔧 Creating MISC clip ${index + 1}/${smallClips.length}:`, {
+                    id: clip.id,
+                    layerId: clip.layerId,
+                    left: clip.left,
+                    width: clip.width
+                });
                 // Create the ??? clip element
                 const miscClip = document.createElement('div');
                 miscClip.className = 'audio-clip misc-clip-hidden';
@@ -5526,6 +5895,8 @@
                     element: miscClip
                 });
             });
+
+            console.log('✅ Created', mergedMiscClips.length, 'MISC clips in merged view');
         }
 
         // Setup manual discovery for small clips in MISC layers
@@ -5533,9 +5904,9 @@
             const trackContent = document.querySelector('#merged .track-content');
             if (trackContent && !trackContent.hasAttribute('data-discovery-setup')) {
                 trackContent.setAttribute('data-discovery-setup', 'true');
-                trackContent.addEventListener('mousedown', startSmallClipSelection);
-                trackContent.addEventListener('mousemove', updateSmallClipSelection);
-                trackContent.addEventListener('mouseup', endSmallClipSelection);
+                trackContent.addEventListener('mousedown', startMiscClipIdentification);
+                trackContent.addEventListener('mousemove', updateMiscClipIdentification);
+                trackContent.addEventListener('mouseup', endMiscClipIdentification);
             }
         }
 
@@ -5840,6 +6211,198 @@
                 clip.style.pointerEvents = 'auto';
                 clip.style.cursor = 'pointer';
             });
+
+            // Enable main playback controls
+            enablePlaybackControls();
+        }
+
+        function enablePlaybackControls() {
+            // Enable all transport buttons
+            document.querySelectorAll('#main-buttons button').forEach(button => {
+                button.disabled = false;
+            });
+
+            // Enable loop checkbox
+            const loopCheckbox = document.getElementById('main-loop-checkbox');
+            if (loopCheckbox) {
+                loopCheckbox.disabled = false;
+            }
+
+            // Hide the disabled message
+            const disabledMessage = document.querySelector('.playback-disabled-message');
+            if (disabledMessage) {
+                disabledMessage.style.display = 'none';
+            }
+        }
+
+        // Clip Focus Mode Functions
+        function enterClipFocusMode(clip) {
+            clipFocusMode = true;
+
+            // Calculate clip boundaries in absolute timeline position
+            const clipLeft = parseFloat(clip.style.left.replace('%', ''));
+            const clipWidth = parseFloat(clip.style.width.replace('%', ''));
+
+            focusedClipStart = (clipLeft / 100) * totalDuration;
+            focusedClipEnd = ((clipLeft + clipWidth) / 100) * totalDuration;
+
+            // Apply visual effects
+            applyClipFocusVisuals(clip, clipLeft, clipWidth);
+
+            // Move playhead to clip start
+            currentTime = focusedClipStart;
+            updateTimeDisplay();
+            updatePlaybackMarker();
+        }
+
+        function exitClipFocusMode() {
+            clipFocusMode = false;
+            focusedClipStart = 0;
+            focusedClipEnd = 0;
+
+            // Remove visual effects
+            removeClipFocusVisuals();
+        }
+
+        function applyClipFocusVisuals(focusedClip, clipLeft, clipWidth) {
+            const rootLayer = document.getElementById('merged');
+            const trackContent = rootLayer.querySelector('.track-content');
+
+            // Highlight focused clip and lowlight others in root layer
+            rootLayer.querySelectorAll('.audio-clip').forEach(clip => {
+                if (clip === focusedClip) {
+                    clip.classList.add('clip-focused');
+                    clip.classList.remove('clip-lowlighted');
+                } else {
+                    clip.classList.add('clip-lowlighted');
+                    clip.classList.remove('clip-focused');
+                }
+            });
+
+            // Create darkening overlays
+            // Left side overlay
+            if (clipLeft > 0) {
+                const leftOverlay = document.createElement('div');
+                leftOverlay.className = 'clip-focus-overlay left-overlay';
+                leftOverlay.style.left = '0%';
+                leftOverlay.style.width = `${clipLeft}%`;
+                trackContent.appendChild(leftOverlay);
+            }
+
+            // Right side overlay
+            const rightStart = clipLeft + clipWidth;
+            if (rightStart < 100) {
+                const rightOverlay = document.createElement('div');
+                rightOverlay.className = 'clip-focus-overlay right-overlay';
+                rightOverlay.style.left = `${rightStart}%`;
+                rightOverlay.style.width = `${100 - rightStart}%`;
+                trackContent.appendChild(rightOverlay);
+            }
+
+            // Create loop point lines
+            const inPoint = document.createElement('div');
+            inPoint.className = 'clip-focus-line in-point';
+            inPoint.style.left = `${clipLeft}%`;
+            trackContent.appendChild(inPoint);
+
+            const outPoint = document.createElement('div');
+            outPoint.className = 'clip-focus-line out-point';
+            outPoint.style.left = `${clipLeft + clipWidth}%`;
+            trackContent.appendChild(outPoint);
+        }
+
+        function removeClipFocusVisuals() {
+            // Remove all clip highlighting/lowlighting
+            document.querySelectorAll('.audio-clip').forEach(clip => {
+                clip.classList.remove('clip-focused', 'clip-lowlighted');
+            });
+
+            // Remove overlays and loop lines
+            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(element => {
+                element.remove();
+            });
+        }
+
+        function updateClipFocusVisuals() {
+            if (!clipFocusMode || !selectedClip) return;
+
+            // Remove existing overlays and lines
+            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(element => {
+                element.remove();
+            });
+
+            // Find the focused clip in the root layer (might be different from selectedClip if selected from another layer)
+            const rootLayer = document.getElementById('merged');
+            const clipId = selectedClip.dataset.clip;
+            const rootClip = rootLayer.querySelector(`[data-clip="${clipId}"]`);
+
+            if (!rootClip) return;
+
+            // Get original clip data for comparison
+            const originalData = originalClipData.get(clipId);
+
+            // Get current displayed position and width of the focused clip (after zoom/pan transformations)
+            const currentLeft = parseFloat(rootClip.style.left.replace('%', ''));
+            const currentWidth = parseFloat(rootClip.style.width.replace('%', ''));
+
+            const trackContent = rootLayer.querySelector('.track-content');
+
+            // Enhanced visibility check using ORIGINAL coordinates vs VISIBLE RANGE
+            const originalLeft = originalData.left;
+            const originalRight = originalData.left + originalData.width;
+            const visibleStart = waveformOffsetX * 100;
+            const visibleEnd = visibleStart + (100 / currentZoom);
+
+            // Check if clip intersects with visible range in ORIGINAL coordinates
+            const isInVisibleRange = !(originalRight <= visibleStart || originalLeft >= visibleEnd);
+
+            // Only create overlays and lines if the clip is visible
+            if (isInVisibleRange && rootClip.style.display !== 'none') {
+                // Create darkening overlays
+                // Left side overlay
+                if (currentLeft > 0) {
+                    const leftOverlayWidth = Math.max(0, currentLeft);
+                    const leftOverlay = document.createElement('div');
+                    leftOverlay.className = 'clip-focus-overlay left-overlay';
+                    leftOverlay.style.left = '0%';
+                    leftOverlay.style.width = `${leftOverlayWidth}%`;
+                    trackContent.appendChild(leftOverlay);
+                }
+
+                // Right side overlay
+                const rightStart = currentLeft + currentWidth;
+                if (rightStart < 100) {
+                    const rightOverlayLeft = Math.min(100, rightStart);
+                    const rightOverlayWidth = Math.max(0, 100 - rightStart);
+                    const rightOverlay = document.createElement('div');
+                    rightOverlay.className = 'clip-focus-overlay right-overlay';
+                    rightOverlay.style.left = `${rightOverlayLeft}%`;
+                    rightOverlay.style.width = `${rightOverlayWidth}%`;
+                    trackContent.appendChild(rightOverlay);
+                }
+
+                // Create loop point lines
+                const inPointLeft = Math.max(0, Math.min(100, currentLeft));
+                const outPointLeft = Math.max(0, Math.min(100, currentLeft + currentWidth));
+
+                const inPoint = document.createElement('div');
+                inPoint.className = 'clip-focus-line in-point';
+                inPoint.style.left = `${inPointLeft}%`;
+                trackContent.appendChild(inPoint);
+
+                const outPoint = document.createElement('div');
+                outPoint.className = 'clip-focus-line out-point';
+                outPoint.style.left = `${outPointLeft}%`;
+                trackContent.appendChild(outPoint);
+
+            } else if (!isInVisibleRange) {
+                // Clip is completely outside viewport - darken the entire timeline
+                const fullOverlay = document.createElement('div');
+                fullOverlay.className = 'clip-focus-overlay full-overlay';
+                fullOverlay.style.left = '0%';
+                fullOverlay.style.width = '100%';
+                trackContent.appendChild(fullOverlay);
+            }
         }
 
         function selectClip(event) {
@@ -5850,6 +6413,11 @@
 
             event.stopPropagation();
 
+            // Exit previous clip focus mode if active
+            if (clipFocusMode) {
+                exitClipFocusMode();
+            }
+
             // Remove selection from all clips
             document.querySelectorAll('.audio-clip').forEach(clip => {
                 clip.classList.remove('selected');
@@ -5859,21 +6427,29 @@
             event.target.classList.add('selected');
             selectedClip = event.target;
 
+            // Find corresponding clip in root layer for focus mode
+            const rootLayer = document.getElementById('merged');
+            const isInRootLayer = rootLayer.contains(event.target);
+
+            if (isInRootLayer) {
+                // Selected clip is in root layer, use it directly
+                enterClipFocusMode(event.target);
+            } else {
+                // Selected clip is in another layer, find corresponding clip in root layer
+                const clipId = event.target.dataset.clip;
+                const rootClip = rootLayer.querySelector(`[data-clip="${clipId}"]`);
+                if (rootClip) {
+                    enterClipFocusMode(rootClip);
+                }
+            }
+
             // Update selected clip display
             const selectedClipDisplay = document.getElementById('selected-clip-display');
             const selectedClipName = selectedClipDisplay.querySelector('.selected-clip-name');
             const selectedClipWaveform = selectedClipDisplay.querySelector('.selected-clip-waveform');
-            const selectedClipTime = selectedClipDisplay.querySelector('.selected-clip-time');
 
             // Set clip name and correct waveform color
             selectedClipName.textContent = selectedClip.dataset.clip;
-
-            // Calculate and display clip duration in time format
-            const clipWidthPercent = parseFloat(selectedClip.style.width.replace('%', ''));
-            const calculatedDuration = (clipWidthPercent / 100) * totalDuration;
-            if (selectedClipTime) {
-                selectedClipTime.textContent = `0.0 / ${formatClipTime(calculatedDuration)}`;
-            }
 
             // Get the correct color based on the clip's layer
             const clipLayerId = selectedClip.closest('.track-layer').id;
@@ -5883,12 +6459,6 @@
 
             // Apply waveform to selected clip display
             applyWaveformToClip(selectedClipWaveform);
-
-            // Reset playhead position
-            const playhead = selectedClipWaveform.querySelector('.selected-clip-playhead');
-            if (playhead) {
-                playhead.style.left = '0%';
-            }
 
             // Show the display and hide the tools message
             selectedClipDisplay.style.display = 'block';
@@ -5917,23 +6487,9 @@
                 selectedClip.classList.remove('selected');
                 selectedClip = null;
 
-                // Stop any playing clip
-                if (clipPlaybackInterval) {
-                    clearInterval(clipPlaybackInterval);
-                    clipPlaybackInterval = null;
-                }
-                isClipPlaying = false;
-
-                // Reset playhead position and time display
-                const playhead = document.querySelector('.selected-clip-playhead');
-                if (playhead) {
-                    playhead.style.left = '0%';
-                }
-
-                // Reset time display
-                const timeDisplay = document.querySelector('.selected-clip-time');
-                if (timeDisplay) {
-                    timeDisplay.textContent = '0.0 / 0.0';
+                // Exit clip focus mode
+                if (clipFocusMode) {
+                    exitClipFocusMode();
                 }
 
                 // Hide selected clip display and show tools message
@@ -6218,12 +6774,7 @@
             if (isPlaying) {
                 stopMainPlayback({ stopPropagation: () => { } });
             }
-            if (clipPlaybackInterval) {
-                clearInterval(clipPlaybackInterval);
-                clipPlaybackInterval = null;
-            }
-            isClipPlaying = false;
-            clipElapsedTime = 0; // Reset clip elapsed time
+
 
             // Reset time
             currentTime = 0;
@@ -6236,11 +6787,8 @@
 
             // Reset loop states and checkboxes
             mainLoopEnabled = false;
-            clipLoopEnabled = false;
             const mainLoopCheckbox = document.getElementById('main-loop-checkbox');
-            const clipLoopCheckbox = document.getElementById('clip-loop-checkbox');
             if (mainLoopCheckbox) mainLoopCheckbox.checked = false;
-            if (clipLoopCheckbox) clipLoopCheckbox.checked = false;
 
             // Note: Don't reset view mode here - let loadAudioConfiguration handle it
             // Reset canvas visualization if it exists
@@ -6270,13 +6818,18 @@
                 if (!mergedTrack.querySelector('.analyze-overlay')) {
                     const analyzeOverlay = document.createElement('div');
                     analyzeOverlay.className = 'analyze-overlay';
-                    analyzeOverlay.innerHTML = '<button class="analyze-btn" onclick="stemIsolation(event)">Isolate Audio Stems</button>';
+                    analyzeOverlay.innerHTML = '<button class="analyze-btn" onclick="realTimeAnalysis(event)">Analyze Track</button>';
                     mergedTrack.appendChild(analyzeOverlay);
                 }
             }
 
+            // Exit clip focus mode
+            if (clipFocusMode) {
+                exitClipFocusMode();
+            }
+
             // Reset tools panel
-            document.getElementById('tools-message').textContent = 'Run Isolate Audio Stems to separate audio layers and unlock tools.';
+            document.getElementById('tools-message').textContent = 'Run Analyze Track to separate audio layers and unlock tools.';
             document.getElementById('tools-message').style.display = 'block';
             document.getElementById('tools-container').style.display = 'none';
             document.getElementById('selected-clip-display').style.display = 'none';
@@ -6421,155 +6974,7 @@
             return trackLayer;
         }
 
-        // Pause clip playback (without resetting time)
-        function pauseClipPlayback() {
-            // Calculate and store elapsed time before stopping
-            if (isClipPlaying && clipStartTime > 0) {
-                clipElapsedTime += Date.now() - clipStartTime;
-            }
 
-            // Stop playback interval but don't reset time/position
-            if (clipPlaybackInterval) {
-                clearInterval(clipPlaybackInterval);
-                clipPlaybackInterval = null;
-            }
-
-            // Update UI state
-            isClipPlaying = false;
-
-            // Stop VU meter animation when clip is paused
-            stopVUMeterAnimation();
-
-            // Update play button icon
-            const playBtn = document.querySelector('.selected-clip-play-btn');
-            if (playBtn) {
-                playBtn.textContent = '▶';
-            }
-        }
-
-        function stopClipPlayback(event) {
-            event.stopPropagation();
-            const playBtn = event.target.parentElement.querySelector('.selected-clip-play-btn');
-            const timeDisplay = event.target.parentElement.querySelector('.selected-clip-time');
-            const playhead = document.querySelector('.selected-clip-playhead');
-
-            // Stop playback
-            if (clipPlaybackInterval) {
-                clearInterval(clipPlaybackInterval);
-                clipPlaybackInterval = null;
-            }
-
-            // Reset UI and elapsed time
-            playBtn.textContent = '▶';
-            isClipPlaying = false;
-            clipElapsedTime = 0; // Reset elapsed time on stop
-
-            // Stop VU meter animation
-            stopVUMeterAnimation();
-
-            // Reset time display to show 0 / total duration
-            if (selectedClip) {
-                const clipWidthPercent = parseFloat(selectedClip.style.width.replace('%', ''));
-                const calculatedDuration = (clipWidthPercent / 100) * totalDuration;
-                timeDisplay.textContent = `0.0 / ${formatClipTime(calculatedDuration)}`;
-            } else {
-                timeDisplay.textContent = '0.0 / 0.0';
-            }
-
-            // Reset playhead position
-            if (playhead) {
-                playhead.style.left = '0%';
-            }
-        }
-
-        function toggleClipPlayback(event) {
-            event.stopPropagation();
-            const playBtn = event.target;
-            const timeDisplay = document.querySelector('.selected-clip-time');
-            const playhead = document.querySelector('.selected-clip-playhead');
-
-            if (isClipPlaying) {
-                // Stop playback
-                clearInterval(clipPlaybackInterval);
-                playBtn.textContent = '▶';
-                isClipPlaying = false;
-
-                // Stop VU meter animation if no audio is playing
-                stopVUMeterAnimation();
-            } else {
-                // If starting clip playback, pause main playback first
-                if (isPlaying) {
-                    pauseMainPlayback();
-                }
-
-                // Calculate clip duration based on clip width percentage and total duration
-                if (selectedClip) {
-                    const clipWidthPercent = parseFloat(selectedClip.style.width.replace('%', ''));
-                    clipDuration = (clipWidthPercent / 100) * totalDuration * 1000; // Convert to milliseconds
-                } else {
-                    clipDuration = 5000; // Fallback to 5 seconds
-                }
-
-                // Start playback (account for any previously elapsed time)
-                clipStartTime = Date.now() - clipElapsedTime;
-                playBtn.textContent = '⏸';
-                isClipPlaying = true;
-
-                // Start VU meter animation for clip playback
-                startVUMeterAnimation();
-
-                // Update time display and playhead every 50ms
-                clipPlaybackInterval = setInterval(() => {
-                    const elapsed = Date.now() - clipStartTime;
-                    if (elapsed >= clipDuration) {
-                        // Check current loop state dynamically
-                        const clipLoopCheckbox = document.getElementById('clip-loop-checkbox');
-                        const currentLoopState = clipLoopCheckbox ? clipLoopCheckbox.checked : false;
-
-                        if (currentLoopState) {
-                            // Loop: reset to start and continue playing
-                            clipStartTime = Date.now();
-                            clipElapsedTime = 0; // Reset elapsed time on loop
-                            if (playhead) {
-                                playhead.style.left = '0%';
-                            }
-                            return;
-                        } else {
-                            // No loop: stop at end of clip
-                            clearInterval(clipPlaybackInterval);
-                            playBtn.textContent = '▶';
-                            isClipPlaying = false;
-                            clipElapsedTime = 0; // Reset elapsed time when finished
-
-                            // Stop VU meter animation when clip finishes
-                            stopVUMeterAnimation();
-
-                            // Reset time display to show 0 / total duration
-                            const totalTimeInSeconds = clipDuration / 1000;
-                            timeDisplay.textContent = `0.0 / ${formatClipTime(totalTimeInSeconds)}`;
-
-                            if (playhead) {
-                                playhead.style.left = '100%';
-                            }
-                            return;
-                        }
-                    }
-
-                    // Calculate progress percentage
-                    const progress = (elapsed / clipDuration) * 100;
-
-                    // Update playhead position
-                    if (playhead) {
-                        playhead.style.left = `${progress}%`;
-                    }
-
-                    // Format time as seconds.decimal / seconds.decimal (current / total)
-                    const currentTimeInSeconds = elapsed / 1000;
-                    const totalTimeInSeconds = clipDuration / 1000;
-                    timeDisplay.textContent = `${formatClipTime(currentTimeInSeconds)} / ${formatClipTime(totalTimeInSeconds)}`;
-                }, 50);
-            }
-        }
     </script>
 </body>
 
