@@ -2787,6 +2787,10 @@
                     </div>
                 </div>
 
+                <div class="timeline-header">
+                    <div class="section-header">🎵 Separated Layers</div>
+                </div>
+
                 <div class="track-layer" id="evidence-recording">
                     <div class="track-info">
                         <span style="font-size: 0.8em; color: #95a5a6;">Layer 1</span><br>
@@ -5882,7 +5886,8 @@
 
             // Find the last layer to insert after (to maintain order)
             const existingLayers = centerPanel.querySelectorAll('.track-layer:not(#merged)');
-            let insertAfter = document.getElementById('merged');
+            const layersHeader = centerPanel.querySelector('.timeline-header:last-of-type');
+            let insertAfter = layersHeader || document.getElementById('merged');
 
             // If there are existing layers, insert after the last one
             if (existingLayers.length > 0) {
@@ -5950,7 +5955,8 @@
 
             // Find the last layer to insert after (to maintain order)
             const existingLayers = centerPanel.querySelectorAll('.track-layer:not(#merged)');
-            let insertAfter = document.getElementById('merged');
+            const layersHeader = centerPanel.querySelector('.timeline-header:last-of-type');
+            let insertAfter = layersHeader || document.getElementById('merged');
 
             // If there are existing layers, insert after the last one
             if (existingLayers.length > 0) {
