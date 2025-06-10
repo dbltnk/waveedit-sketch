@@ -2700,7 +2700,7 @@
         </div>
 
         <div class="menu-bar">
-            <span class="menu-item load-menu" onclick="toggleLoadMenu(event)">Load ▼
+            <span class="menu-item inactive load-menu" onclick="toggleLoadMenu(event)">Load ▼
                 <div class="load-dropdown" id="load-dropdown">
                     <!-- Demo Level: Viola's First Track -->
                     <div class="load-option" onclick="loadAudioFile('0_viola_first_track_demo.wav', event)">
@@ -2767,7 +2767,7 @@
             <span class="menu-item inactive">Analyze</span>
             <span class="menu-item inactive">Details</span>
             <span class="menu-item inactive">Plugins</span>
-            <span class="menu-item settings-menu" onclick="toggleSettingsMenu(event)">Settings ▼
+            <span class="menu-item inactive settings-menu" onclick="toggleSettingsMenu(event)">Settings ▼
                 <div class="settings-dropdown" id="settings-dropdown">
                     <div class="settings-option" onclick="removeBaseOverlay(); event.stopPropagation()">
                         <span>Remove base layers overlay</span>
@@ -2785,7 +2785,7 @@
             <!-- Left Control Panel -->
             <div class="left-panel">
                 <!-- File Status Section -->
-                <div class="left-panel-section">
+                <!-- <div class="left-panel-section">
                     <div class="section-header">📁 File Status</div>
                     <div class="section-content">
                         <div class="file-info">
@@ -2795,11 +2795,11 @@
                                 evening bust</div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Main Playback Section -->
                 <div class="left-panel-section">
-                    <div class="section-header">🎵 Main Playback</div>
+                    <div class="section-header">🎵 Playback</div>
                     <div class="section-content">
                         <div class="main-playback-simple">
                             <div class="main-time-section">
@@ -2863,14 +2863,7 @@
 
             <div class="center-panel">
                 <div class="timeline-header">
-                    <div class="section-header">📈 Timeline View</div>
-                    <div class="timeline-instructions">
-                        <span class="instruction-item">▶️ <strong>Play/pause:</strong> Space bar</span>
-                        <span class="instruction-item">↔️ <strong>Jump to clip:</strong> Arrow keys</span>
-                        <span class="instruction-item">🔍 <strong>Zoom:</strong> Mouse wheel</span>
-                        <span class="instruction-item">🖐️ <strong>Pan:</strong> Middle mouse</span>
-                        <span class="instruction-item">🎯 <strong>Analyze:</strong> Drag box w/ left mouse</span>
-                    </div>
+                    <div class="section-header">📈 Timeline </div>
                 </div>
 
                 <div class="track-layer" id="merged">
@@ -2913,6 +2906,17 @@
                         <!-- Zoom level display -->
                         <div class="zoom-level-display" id="zoom-level-display">100%</div>
                     </div>
+                </div>
+
+                <div class="timeline-instructions">
+                    <span class="instruction-item">▶️ <strong>Play/pause:</strong> Space bar</span>
+                    <span class="instruction-item">↔️ <strong>Jump to clip:</strong> Arrow keys</span>
+                    <span class="instruction-item">🔍 <strong>Zoom:</strong> Mouse wheel</span>
+                    <span class="instruction-item">🖐️ <strong>Pan:</strong> Middle mouse</span>
+                    <span class="instruction-item">🎯 <strong>Analyze:</strong> Drag box w/ left mouse</span>
+                </div>
+
+                <div class="timeline-spacer" style="height: 30px">
                 </div>
 
                 <div class="timeline-header">
@@ -3016,7 +3020,7 @@
 
                 <!-- Tools Section -->
                 <div class="right-panel-section">
-                    <div class="section-header">🛠️ Audio Tools</div>
+                    <div class="section-header">🛠️ Tools</div>
                     <div class="section-content">
                         <div id="tools-container" class="tools-container" style="display: none;">
                             <!-- Plugins will be generated dynamically -->
@@ -7555,10 +7559,10 @@
                 if (taskHint) {
                     fileGoal.innerHTML = `
                         <div style="margin-bottom: 8px;">
-                            <strong>Player Guidance:</strong> ${taskHint.guidance}
+                            <!-- <strong>Player Guidance:</strong> ${taskHint.guidance} -->
                         </div>
                         <div>
-                            <strong>Intended Solution:</strong> ${taskHint.solution}
+                            <!-- <strong>Intended Solution:</strong> ${taskHint.solution} -->
                         </div>
                     `;
                 } else {
