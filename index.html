@@ -1160,6 +1160,119 @@
             box-shadow: none;
         }
 
+        /* Analysis animation overlay for ??? clips being analyzed */
+        .audio-clip.analyzing {
+            position: relative;
+            overflow: visible !important;
+            border: 2px solid rgba(243, 156, 18, 0.8) !important;
+            box-shadow: 0 0 10px rgba(243, 156, 18, 0.6) !important;
+        }
+
+        /* Loading bar background for analysis */
+        .audio-clip.analyzing::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 2px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Loading bar progress for analysis */
+        .audio-clip.analyzing::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 0%;
+            background: linear-gradient(90deg,
+                    rgba(243, 156, 18, 0.9) 0%,
+                    rgba(255, 193, 7, 0.9) 50%,
+                    rgba(243, 156, 18, 0.9) 100%);
+            border-radius: 2px;
+            animation: analyzing-loading-bar 2.5s ease-out forwards;
+            z-index: 11;
+            pointer-events: none;
+        }
+
+        /* Analysis text label */
+        .analyzing-label {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(243, 156, 18, 0.95);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            z-index: 15;
+            box-shadow: 0 2px 8px rgba(243, 156, 18, 0.4);
+            animation: analyzing-pulse 1.5s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes analyzing-loading-bar {
+            0% {
+                width: 0%;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+
+        @keyframes analyzing-pulse {
+            0% {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 2px 8px rgba(243, 156, 18, 0.4);
+            }
+
+            100% {
+                transform: translateX(-50%) scale(1.02);
+                box-shadow: 0 4px 12px rgba(243, 156, 18, 0.7);
+            }
+        }
+
+        /* Enhanced first reveal animation for MISC ??? clips */
+        .misc-clip-hidden.first-reveal {
+            animation: misc-clip-dramatic-reveal 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes misc-clip-dramatic-reveal {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+                filter: brightness(2);
+            }
+
+            40% {
+                transform: scale(1.15);
+                opacity: 0.8;
+                filter: brightness(1.5);
+            }
+
+            70% {
+                transform: scale(0.95);
+                opacity: 1;
+                filter: brightness(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                filter: brightness(1);
+            }
+        }
+
         #merged .audio-clip.revealed {
             opacity: 1.0;
             z-index: 2;
@@ -4622,25 +4735,29 @@
             const isInViewport = !(originalRight < visibleStart || originalLeft > visibleEnd);
 
             if (isInViewport) {
-                // Force show the element for animation (updateClipPositions will manage it after)
+                // Force show the element for dramatic animation
                 element.style.display = 'flex';
-
-                // Start animation from small scale and transparent
-                element.style.transform = 'scale(0.5)';
-                element.style.opacity = '0';
-                element.style.transition = 'all 0.5s ease-out';
                 element.style.zIndex = '50'; // Above regular clips
 
-                // Animate to full size and opacity
-                requestAnimationFrame(() => {
-                    element.style.transform = 'scale(1.0)';
-                    element.style.opacity = '1';
+                // Add dramatic first-reveal animation class to merged view clip
+                element.classList.add('first-reveal');
 
-                    // Clean up transition after animation
+                // Also animate corresponding MISC layer clip if it exists
+                const miscLayerClip = document.querySelector(`.misc-layer .audio-clip[data-clip="${clipId}"]`);
+                if (miscLayerClip && miscLayerClip.classList.contains('hidden-small')) {
+                    miscLayerClip.style.display = 'flex';
+                    miscLayerClip.classList.add('first-reveal');
+
+                    // Clean up MISC layer animation
                     setTimeout(() => {
-                        element.style.transition = '';
-                    }, 500);
-                });
+                        miscLayerClip.classList.remove('first-reveal');
+                    }, 1200);
+                }
+
+                // Clean up merged view animation class after animation completes
+                setTimeout(() => {
+                    element.classList.remove('first-reveal');
+                }, 1200); // Match animation duration
             }
         }
 
@@ -6375,8 +6492,9 @@
             // Find overlapping revealed MISC clips in merged view
             const miscClipElements = document.querySelectorAll('#merged .misc-clip-hidden');
             const boxRect = miscIdentificationBox.getBoundingClientRect();
+            const overlappingClips = [];
 
-            // Only process clips if there are revealed MISC clips
+            // First, find all overlapping clips
             if (miscClipElements.length > 0) {
                 miscClipElements.forEach(clip => {
                     // Only process revealed clips that are currently visible
@@ -6387,11 +6505,14 @@
                     // Check for overlap
                     if (boxRect.left <= clipRect.right && boxRect.right >= clipRect.left &&
                         boxRect.top <= clipRect.bottom && boxRect.bottom >= clipRect.top) {
-
-                        // Identify the clip - reveal its true name and make it editable
-                        identifyMiscClip(clip);
+                        overlappingClips.push(clip);
                     }
                 });
+            }
+
+            // If we found overlapping clips, start analysis animation
+            if (overlappingClips.length > 0) {
+                startAnalysisAnimation(overlappingClips);
             }
 
             // Clean up
@@ -6402,43 +6523,139 @@
             miscIdentificationDrawing = false;
         }
 
+        // Start analysis animation for selected ??? clips
+        function startAnalysisAnimation(clips) {
+            // Add analyzing class to all overlapping clips (both Root and MISC layers)
+            clips.forEach(clip => {
+                // Add analyzing animation to the merged view clip
+                clip.classList.add('analyzing');
+
+                // Create and add text label for analysis
+                const label = document.createElement('div');
+                label.className = 'analyzing-label';
+                label.textContent = '⚡ ANALYZING AUDIO...';
+                clip.parentNode.appendChild(label);
+
+                // Position the label relative to the clip
+                const clipRect = clip.getBoundingClientRect();
+                const containerRect = clip.parentNode.getBoundingClientRect();
+                label.style.left = `${clip.offsetLeft + (clip.offsetWidth / 2)}px`;
+                label.style.top = `${clip.offsetTop - 28}px`;
+
+                // Store label reference for cleanup
+                clip.dataset.analysisLabel = 'analyzing-label-' + clip.dataset.clip;
+                label.setAttribute('data-label-id', 'analyzing-label-' + clip.dataset.clip);
+
+                // Also add to corresponding MISC layer clip if it exists
+                const clipId = clip.dataset.clip;
+                const miscLayerClip = document.querySelector(`.misc-layer .audio-clip[data-clip="${clipId}"]`);
+                if (miscLayerClip) {
+                    miscLayerClip.classList.add('analyzing');
+
+                    // Create label for MISC layer clip too
+                    const miscLabel = document.createElement('div');
+                    miscLabel.className = 'analyzing-label';
+                    miscLabel.textContent = '⚡ ANALYZING AUDIO...';
+                    miscLayerClip.parentNode.appendChild(miscLabel);
+                    miscLabel.style.left = `${miscLayerClip.offsetLeft + (miscLayerClip.offsetWidth / 2)}px`;
+                    miscLabel.style.top = `${miscLayerClip.offsetTop - 28}px`;
+                    miscLayerClip.dataset.analysisLabel = 'analyzing-misc-label-' + clipId;
+                    miscLabel.setAttribute('data-label-id', 'analyzing-misc-label-' + clipId);
+                }
+            });
+
+            // Run analysis for the duration of the animation, then reveal the clips
+            setTimeout(() => {
+                clips.forEach(clip => {
+                    // Remove analyzing animation
+                    clip.classList.remove('analyzing');
+
+                    // Remove analysis label
+                    const label = document.querySelector(`[data-label-id="analyzing-label-${clip.dataset.clip}"]`);
+                    if (label && label.parentNode) {
+                        label.parentNode.removeChild(label);
+                    }
+                    delete clip.dataset.analysisLabel;
+
+                    const clipId = clip.dataset.clip;
+                    const miscLayerClip = document.querySelector(`.misc-layer .audio-clip[data-clip="${clipId}"]`);
+                    if (miscLayerClip) {
+                        miscLayerClip.classList.remove('analyzing');
+
+                        // Remove MISC layer label
+                        const miscLabel = document.querySelector(`[data-label-id="analyzing-misc-label-${clipId}"]`);
+                        if (miscLabel && miscLabel.parentNode) {
+                            miscLabel.parentNode.removeChild(miscLabel);
+                        }
+                        delete miscLayerClip.dataset.analysisLabel;
+                    }
+                });
+
+                // Small delay before identification to ensure clean transition
+                setTimeout(() => {
+                    clips.forEach(clip => {
+                        // Identify the clip - reveal its true name and make it editable
+                        identifyMiscClip(clip);
+                    });
+                }, 100);
+            }, 2500); // Match the animation duration
+        }
+
         function identifyMiscClip(mergedClip) {
             const clipId = mergedClip.dataset.clip;
             const layerId = mergedClip.dataset.layer;
 
-            // Update the merged view clip
+            // Update the merged view clip to match normal merged view styling
             mergedClip.classList.remove('misc-clip-hidden');
-            mergedClip.classList.add('identified');
-            mergedClip.textContent = ''; // Clear the ??? text since we'll use ::after for the real name
+            mergedClip.classList.add('identified', 'revealed');
             mergedClip.title = clipId; // Update hover text to show real name
             mergedClip.style.pointerEvents = 'auto';
             mergedClip.style.cursor = 'pointer';
+
+            // Reset any custom styling and let CSS handle appearance
+            mergedClip.style.background = '';
+            mergedClip.style.color = '';
+            mergedClip.style.border = '';
+            mergedClip.style.boxShadow = '';
+            mergedClip.style.zIndex = '';
+
+            // Set the clip content for display
+            mergedClip.textContent = clipId;
 
             // Change click handler from showClipPopup to selectClip
             mergedClip.removeEventListener('click', showClipPopup);
             mergedClip.addEventListener('click', selectClip);
 
-            // Get the layer color and apply it
-            const clipColor = getClipColorByLayer(layerId);
-            mergedClip.style.background = clipColor;
-            mergedClip.style.color = '#fff';
-            mergedClip.style.border = `2px solid ${clipColor}`;
+            // Apply waveform styling like other clips
+            if (typeof applyWaveformToClip === 'function') {
+                applyWaveformToClip(mergedClip);
+            }
 
             // Find and update the corresponding clip in the MISC layer
             const miscLayerClip = document.querySelector(`.misc-layer .audio-clip[data-clip="${clipId}"]`);
             if (miscLayerClip) {
                 miscLayerClip.classList.remove('hidden-small');
+                miscLayerClip.classList.add('identified');
                 miscLayerClip.textContent = clipId; // Show the real name instead of ???
                 miscLayerClip.title = clipId; // Update hover text to show real name
-                miscLayerClip.style.background = clipColor;
-                miscLayerClip.style.color = '#fff';
-                miscLayerClip.style.border = `1px solid ${clipColor}`;
                 miscLayerClip.style.pointerEvents = 'auto';
                 miscLayerClip.style.cursor = 'pointer';
+
+                // Reset custom styling to use normal layer clip appearance
+                miscLayerClip.style.background = '';
+                miscLayerClip.style.color = '';
+                miscLayerClip.style.border = '';
+                miscLayerClip.style.boxShadow = '';
+                miscLayerClip.style.zIndex = '';
 
                 // Change click handler from showClipPopup to selectClip
                 miscLayerClip.removeAttribute('onclick');
                 miscLayerClip.onclick = selectClip;
+
+                // Apply waveform styling like other clips
+                if (typeof applyWaveformToClip === 'function') {
+                    applyWaveformToClip(miscLayerClip);
+                }
             }
 
             // Add to discovered clips for tools access
