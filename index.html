@@ -2737,9 +2737,11 @@
                 <div class="timeline-header">
                     <div class="section-header">📈 Timeline View</div>
                     <div class="timeline-instructions">
-                        <span class="instruction-item">🖱️ <strong>Zoom:</strong> Mouse wheel up/down</span>
-                        <span class="instruction-item">🎯 <strong>Pan:</strong> Middle mouse or arrow keys</span>
-                        <span class="instruction-item">📦 <strong>Analyze:</strong> Drag w/ left mouse button</span>
+                        <span class="instruction-item">▶️ <strong>Play/pause:</strong> Space bar</span>
+                        <span class="instruction-item">↔️ <strong>Jump to clip:</strong> Arrow keys</span>
+                        <span class="instruction-item">🔍 <strong>Zoom:</strong> Mouse wheel</span>
+                        <span class="instruction-item">🖐️ <strong>Pan:</strong> Middle mouse</span>
+                        <span class="instruction-item">🎯 <strong>Analyze:</strong> Drag box w/ left mouse</span>
                     </div>
                 </div>
 
@@ -4256,16 +4258,157 @@
         let dragStartX = 0;
         let dragStartOffset = 0;
 
-        // Keyboard panning with arrow keys
+        // Keyboard controls for playback and clip navigation
         function handleKeyboardPanning(event) {
-            if (!zoomEnabled || currentZoom <= minZoom) return;
+            // Don't allow any keyboard controls during analysis
+            if (isAnalyzing) {
+                return;
+            }
 
+            // Handle spacebar for play/pause
+            if (event.key === ' ' || event.key === 'Space') {
+                event.preventDefault();
+                // Find the play button and simulate click
+                const playBtn = document.querySelector('#main-buttons .transport-btn:first-child');
+                if (playBtn && !playBtn.disabled) {
+                    toggleMainPlayback({ target: playBtn, stopPropagation: () => { } });
+                }
+                return;
+            }
+
+            // Handle left/right arrows for clip navigation
             if (event.key === 'ArrowLeft') {
                 event.preventDefault();
-                panLeft(event);
+                jumpToClip('left');
             } else if (event.key === 'ArrowRight') {
                 event.preventDefault();
-                panRight(event);
+                jumpToClip('right');
+            }
+        }
+
+        // Jump to the beginning of the next selectable clip in the specified direction
+        function jumpToClip(direction) {
+            // Get all selectable clips from the merged track (excluding ??? and unidentified clips)
+            const clips = Array.from(document.querySelectorAll('#merged .audio-clip')).filter(clip => {
+                // Exclude hidden-small clips (???)
+                if (clip.classList.contains('hidden-small')) return false;
+
+                // Exclude unidentified MISC clips
+                if (clip.classList.contains('misc-clip-hidden') && !clip.classList.contains('identified')) return false;
+
+                return true;
+            });
+
+            if (clips.length === 0) return;
+
+            // Get clip positions as percentages and sort them
+            const clipPositions = clips.map(clip => {
+                const left = parseFloat(clip.style.left.replace('%', ''));
+                return {
+                    element: clip,
+                    left: left,
+                    timePosition: (left / 100) * totalDuration
+                };
+            }).sort((a, b) => a.left - b.left);
+
+            let targetClip = null;
+            let referenceTimePosition = currentTime;
+
+            // If a clip is selected, use its position as reference
+            if (selectedClip) {
+                const currentClipLeft = parseFloat(selectedClip.style.left.replace('%', ''));
+                referenceTimePosition = (currentClipLeft / 100) * totalDuration;
+            }
+
+            if (direction === 'left') {
+                // Find the closest selectable clip to the left of reference position
+                for (let i = clipPositions.length - 1; i >= 0; i--) {
+                    if (clipPositions[i].timePosition < referenceTimePosition - 0.1) { // Small tolerance
+                        targetClip = clipPositions[i];
+                        break;
+                    }
+                }
+                // If no clip found to the left, go to the beginning (0:00) or leftmost clip
+                if (targetClip === null) {
+                    if (selectedClip) {
+                        // If clip is selected, select the leftmost clip
+                        if (clipPositions.length > 0) {
+                            targetClip = clipPositions[0];
+                        }
+                    } else {
+                        // If no clip selected, just go to beginning
+                        currentTime = 0;
+                        updateTimeDisplay();
+                        updatePlaybackMarker();
+                        return;
+                    }
+                }
+            } else if (direction === 'right') {
+                // Find the closest selectable clip to the right of reference position
+                for (let i = 0; i < clipPositions.length; i++) {
+                    if (clipPositions[i].timePosition > referenceTimePosition + 0.1) { // Small tolerance
+                        targetClip = clipPositions[i];
+                        break;
+                    }
+                }
+                // If no clip found to the right, don't move
+                if (targetClip === null) {
+                    return;
+                }
+            }
+
+            // Update time position to beginning of target clip
+            if (targetClip !== null) {
+                currentTime = targetClip.timePosition;
+                updateTimeDisplay();
+                updatePlaybackMarker();
+
+                // If a clip was selected, update the selection to the target clip
+                if (selectedClip) {
+                    // Remove selection from current clip
+                    selectedClip.classList.remove('selected');
+
+                    // Select the target clip
+                    targetClip.element.classList.add('selected');
+                    selectedClip = targetClip.element;
+
+                    // Update selected clip display
+                    const selectedClipDisplay = document.getElementById('selected-clip-display');
+                    const selectedClipName = selectedClipDisplay.querySelector('.selected-clip-name');
+                    const selectedClipWaveform = selectedClipDisplay.querySelector('.selected-clip-waveform');
+
+                    selectedClipName.textContent = selectedClip.dataset.clip;
+
+                    // Get the correct color based on the clip's layer
+                    const clipLayerId = selectedClip.closest('.track-layer').id;
+                    const clipColor = getClipColorByLayer(clipLayerId);
+                    selectedClipWaveform.style.background = `linear-gradient(90deg, ${clipColor}22 0%, ${clipColor}11 100%)`;
+                    selectedClipWaveform.style.color = clipColor;
+
+                    // Apply waveform to selected clip display
+                    applyWaveformToClip(selectedClipWaveform);
+
+                    // Update clip focus mode if active
+                    if (clipFocusMode) {
+                        exitClipFocusMode();
+                        enterClipFocusMode(selectedClip);
+                    }
+
+                    // Update tools for the new selection
+                    const clipId = selectedClip.dataset.clip;
+                    const activeEffects = clipEffects.get(clipId) || new Set();
+
+                    document.querySelectorAll('.plugin-section').forEach(section => {
+                        const pluginName = section.querySelector('.plugin-title').textContent
+                            .replace(/[^\w\s]/g, '') // Remove emojis
+                            .trim()
+                            .toLowerCase()
+                            .replace(/\s+/g, ''); // Remove spaces
+
+                        const hasEffect = activeEffects.has(pluginName);
+                        section.classList.toggle('active', hasEffect);
+                    });
+                }
             }
         }
 
@@ -4932,7 +5075,7 @@
             clearInterval(playbackInterval);
 
             // Update play button icon
-            const playBtn = document.querySelector('.transport-controls .transport-btn:first-child');
+            const playBtn = document.querySelector('#main-buttons .transport-btn:first-child');
             playBtn.textContent = '▶';
         }
 
@@ -4950,7 +5093,7 @@
             stopVUMeterAnimation();
 
             // Reset play button icon
-            const playBtn = document.querySelector('.transport-controls .transport-btn:first-child');
+            const playBtn = document.querySelector('#main-buttons .transport-btn:first-child');
             playBtn.textContent = '▶';
         }
 
@@ -5149,12 +5292,14 @@
                 }
             });
 
-            // Check MISC clips for revelation (unchanged behavior - only in MISC layers, not merged view)
+            // Check MISC clips for revelation - show when playhead passes their END
             miscClips.forEach(clipData => {
                 const clipLeft = parseFloat(clipData.left.replace('%', ''));
+                const clipWidth = parseFloat(clipData.width.replace('%', ''));
+                const clipRight = clipLeft + clipWidth;
 
-                // Reveal MISC clip when playhead touches its left edge (unchanged)
-                if (currentProgress >= clipLeft && !revealedClips.has(clipData.id)) {
+                // Reveal MISC clip when playhead passes its right edge (end)
+                if (currentProgress >= clipRight && !revealedClips.has(clipData.id)) {
                     revealMiscClipInSpecificLayer(clipData, miscLayers);
                 }
             });
