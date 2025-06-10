@@ -2908,6 +2908,12 @@
         let draggedClip = null;
         let discoveredClips = new Set();
         let isAnalyzed = false;
+
+        // Loop preferences tracking
+        let userLoopPreferences = {
+            withClipSelected: null,    // null = no choice made, true/false = user choice
+            withoutClipSelected: null  // null = no choice made, true/false = user choice
+        };
         let mergedMiscClips = []; // Track ??? clips in merged view
         let revealedMiscClips = new Set(); // Once revealed, always visible
         let specOnlyMiscClips = new Set(); // MISC clips only visible in Spec view
@@ -2953,6 +2959,45 @@
         let waveformOpacity = 0.5; // 0.0 = invisible, 1.0 = fully visible (default 50/50)
         let spectrogramOpacity = 0.5; // 0.0 = invisible, 1.0 = fully visible (default 50/50)
         let viewModePreferences = {}; // Store per-file opacity preferences
+
+        // Manage loop state based on selection and user preferences
+        function updateLoopState() {
+            const loopCheckbox = document.getElementById('main-loop-checkbox');
+            if (!loopCheckbox || loopCheckbox.disabled) return;
+
+            const hasSelection = selectedClip !== null;
+            const currentPreference = hasSelection ?
+                userLoopPreferences.withClipSelected :
+                userLoopPreferences.withoutClipSelected;
+
+            // If user has made a choice for this mode, use it
+            if (currentPreference !== null) {
+                loopCheckbox.checked = currentPreference;
+            } else {
+                // No user choice yet, use automatic behavior
+                loopCheckbox.checked = hasSelection; // Loop when clip selected, no loop otherwise
+            }
+        }
+
+        // Track when user manually changes loop checkbox
+        function setupLoopPreferenceTracking() {
+            const loopCheckbox = document.getElementById('main-loop-checkbox');
+            if (!loopCheckbox) return;
+
+            loopCheckbox.addEventListener('change', function () {
+                if (this.disabled) return; // Don't track when disabled
+
+                const hasSelection = selectedClip !== null;
+                const newState = this.checked;
+
+                // Store user preference for current mode
+                if (hasSelection) {
+                    userLoopPreferences.withClipSelected = newState;
+                } else {
+                    userLoopPreferences.withoutClipSelected = newState;
+                }
+            });
+        }
 
         // Show popup for ??? clips
         function showClipPopup(event) {
@@ -4412,6 +4457,9 @@
                         const hasEffect = activeEffects.has(pluginName);
                         section.classList.toggle('active', hasEffect);
                     });
+
+                    // Update loop state when selection changes via arrow keys
+                    updateLoopState();
                 }
             }
         }
@@ -5542,7 +5590,7 @@
 
         // Complete the analysis process
         function completeAnalysis(miscClips) {
-            console.log('completeAnalysis called with miscClips:', miscClips.size);
+
 
             // Stop analysis playback
             clearInterval(analysisPlaybackInterval);
@@ -5553,7 +5601,7 @@
 
             // Exit analysis mode
             isAnalyzing = false;
-            console.log('completeAnalysis: analysis mode exited');
+
 
             // Remove analysis mode styling from playhead
             const playhead = document.getElementById('playback-marker');
@@ -5571,13 +5619,11 @@
             createMergedMiscClips(miscClipArray);
 
             // Enable all functionality
-            console.log('completeAnalysis: enabling all functionality');
             isAnalyzed = true;
             enablePlaybackControls();
             enableZoomControls();
             enableTools();
             setupSmallClipDiscovery();
-            console.log('completeAnalysis: all functionality enabled');
 
             // Re-enable controls that were disabled during analysis
             enableControlsAfterAnalysis();
@@ -6491,11 +6537,9 @@
         });
 
         function enableTools() {
-            console.log('enableTools called');
             isAnalyzed = true;
             document.getElementById('tools-message').textContent = 'Select a clip in a layer to use available tools.';
             document.getElementById('tools-container').style.display = 'block';
-            console.log('enableTools: isAnalyzed set to true, tools container displayed');
 
             // Show view mode overlay
             const viewModeOverlay = document.getElementById('view-mode-overlay');
@@ -6703,31 +6747,19 @@
         }
 
         function selectClip(event) {
-            console.log('selectClip called:', {
-                target: event.target,
-                hasAudioClipClass: event.target.classList.contains('audio-clip'),
-                isAnalyzed: isAnalyzed,
-                targetClasses: event.target.className
-            });
-
             if (!event.target.classList.contains('audio-clip')) {
-                console.log('selectClip: target is not audio-clip, returning');
                 return;
             }
             if (!isAnalyzed) {
-                console.log('selectClip: analysis not complete, returning');
                 return; // Don't allow selection before analysis
             }
             if (event.target.classList.contains('hidden-small')) {
-                console.log('selectClip: target is hidden-small, returning');
                 return; // Don't allow selection of ??? clips
             }
             if (event.target.classList.contains('misc-clip-hidden') && !event.target.classList.contains('identified')) {
-                console.log('selectClip: target is unidentified misc-clip, returning');
                 return; // Don't allow selection of unidentified MISC clips
             }
 
-            console.log('selectClip: proceeding with selection');
             event.stopPropagation();
 
             // Exit previous clip focus mode if active
@@ -6785,18 +6817,13 @@
             const clipId = selectedClip.dataset.clip;
             const activeEffects = clipEffects.get(clipId) || new Set();
 
-            console.log('selectClip: enabling tools for clip:', clipId, 'activeEffects:', activeEffects);
 
             const pluginSections = document.querySelectorAll('.plugin-section');
-            console.log('selectClip: found', pluginSections.length, 'plugin sections');
 
             // Check if tools container is visible
             const toolsContainer = document.getElementById('tools-container');
-            console.log('selectClip: tools container display:', toolsContainer.style.display);
-            console.log('selectClip: tools container computed display:', getComputedStyle(toolsContainer).display);
 
             pluginSections.forEach(section => {
-                console.log('selectClip: processing plugin section:', section.querySelector('.plugin-title')?.textContent);
                 section.classList.remove('disabled');
 
                 // Explicitly enable pointer events and reset opacity to override any CSS rules
@@ -6810,16 +6837,14 @@
                     .toLowerCase()
                     .replace(/\s+/g, ''); // Remove spaces
 
-                console.log('selectClip: plugin name processed as:', pluginName);
 
                 // Toggle active state based on whether this effect is in the clip's active effects
                 const hasEffect = activeEffects.has(pluginName);
                 section.classList.toggle('active', hasEffect);
-
-                console.log('selectClip: plugin', pluginName, 'disabled class removed, active:', hasEffect);
-                console.log('selectClip: section classes after update:', section.className);
-                console.log('selectClip: section computed style pointer-events:', getComputedStyle(section).pointerEvents);
             });
+
+            // Update loop state based on new selection
+            updateLoopState();
         }
 
         function deselectClip() {
@@ -6839,13 +6864,14 @@
                 toolsMessage.textContent = 'Select a clip to use available tools';
 
                 // Disable tools and reset their appearance
-                console.log('deselectClip: disabling tools');
                 document.querySelectorAll('.plugin-section').forEach(section => {
                     section.classList.add('disabled');
                     section.classList.remove('active'); // Remove active state to reset color
                     section.style.pointerEvents = 'none'; // Explicitly disable pointer events
-                    console.log('deselectClip: disabled plugin section:', section.querySelector('.plugin-title')?.textContent);
                 });
+
+                // Update loop state based on deselection
+                updateLoopState();
             }
         }
 
@@ -6989,6 +7015,9 @@
 
             // Initialize waveform canvas
             initializeWaveformCanvas();
+
+            // Setup loop preference tracking
+            setupLoopPreferenceTracking();
 
             // Load default file configuration (simplest file)
             const defaultConfig = AUDIO_CONFIGS['0_viola_first_track_demo.wav'];
