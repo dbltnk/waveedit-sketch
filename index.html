@@ -600,7 +600,8 @@
             justify-content: center;
         }
 
-        .main-loop-label {
+        .main-loop-label,
+        .main-solo-label {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -614,19 +615,22 @@
             backdrop-filter: blur(5px);
         }
 
-        .main-loop-label:hover {
+        .main-loop-label:hover,
+        .main-solo-label:hover {
             background: rgba(255, 255, 255, 0.25);
             border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-1px);
         }
 
-        .main-loop-label input[type="checkbox"] {
+        .main-loop-label input[type="checkbox"],
+        .main-solo-label input[type="checkbox"] {
             margin: 0;
             cursor: pointer;
             accent-color: var(--primary-orange);
         }
 
-        .loop-text {
+        .loop-text,
+        .solo-text {
             color: var(--text-primary);
             font-size: 12px;
             font-weight: 500;
@@ -640,12 +644,14 @@
             pointer-events: none;
         }
 
-        .main-loop-label:has(input:disabled) {
+        .main-loop-label:has(input:disabled),
+        .main-solo-label:has(input:disabled) {
             opacity: 0.4;
             cursor: not-allowed;
         }
 
-        .main-loop-label:has(input:disabled):hover {
+        .main-loop-label:has(input:disabled):hover,
+        .main-solo-label:has(input:disabled):hover {
             background: transparent;
             border-color: rgba(255, 255, 255, 0.2);
             transform: none;
@@ -2312,7 +2318,7 @@
             width: 100%;
             height: 4px;
             border-radius: 2px;
-            background: linear-gradient(90deg, #9b59b6 0%, #f39c12 100%);
+            background: linear-gradient(90deg, #f39c12 0%, #9b59b6 100%);
             outline: none;
             cursor: pointer;
             -webkit-appearance: none;
@@ -2692,14 +2698,20 @@
                                     <button class="transport-btn" onclick="toggleMainPlayback(event)"
                                         disabled>▶</button>
                                     <button class="transport-btn" onclick="stopMainPlayback(event)" disabled>⏹</button>
-                                    <button class="transport-btn" onclick="seekToStart(event)" disabled>⏮</button>
-                                    <button class="transport-btn" onclick="seekToEnd(event)" disabled>⏭</button>
+                                    <button class="transport-btn" onclick="seekToStart(event)" disabled
+                                        title="Previous clip (Left arrow)">⏮</button>
+                                    <button class="transport-btn" onclick="seekToEnd(event)" disabled
+                                        title="Next clip (Right arrow)">⏭</button>
                                 </div>
 
                                 <div class="main-loop-container" id="main-loop-container">
                                     <label class="main-loop-label">
                                         <input type="checkbox" id="main-loop-checkbox" disabled>
                                         <span class="loop-text">🔄 Loop</span>
+                                    </label>
+                                    <label class="main-solo-label">
+                                        <input type="checkbox" id="main-solo-checkbox" disabled>
+                                        <span class="solo-text">🎯 Clip solo</span>
                                     </label>
                                 </div>
 
@@ -2914,6 +2926,9 @@
             withClipSelected: null,    // null = no choice made, true/false = user choice
             withoutClipSelected: null  // null = no choice made, true/false = user choice
         };
+
+        // Solo preferences tracking - per clip basis
+        let userSoloPreferences = new Map(); // clipId -> boolean (user preference)
         let mergedMiscClips = []; // Track ??? clips in merged view
         let revealedMiscClips = new Set(); // Once revealed, always visible
         let specOnlyMiscClips = new Set(); // MISC clips only visible in Spec view
@@ -2979,6 +2994,30 @@
             }
         }
 
+        // Manage solo state based on selection and user preferences
+        function updateSoloState() {
+            const soloCheckbox = document.getElementById('main-solo-checkbox');
+            if (!soloCheckbox) return;
+
+            const hasSelection = selectedClip !== null;
+
+            if (hasSelection) {
+                // Enable checkbox when clip is selected
+                soloCheckbox.disabled = false;
+
+                // Get clip ID and check for user preference
+                const clipId = selectedClip.dataset.clip;
+                const userPreference = userSoloPreferences.get(clipId);
+
+                // If user has made a choice for this clip, use it; otherwise default to true
+                soloCheckbox.checked = userPreference !== undefined ? userPreference : true;
+            } else {
+                // Disable and uncheck when no clip selected
+                soloCheckbox.disabled = true;
+                soloCheckbox.checked = false;
+            }
+        }
+
         // Track when user manually changes loop checkbox
         function setupLoopPreferenceTracking() {
             const loopCheckbox = document.getElementById('main-loop-checkbox');
@@ -2996,6 +3035,22 @@
                 } else {
                     userLoopPreferences.withoutClipSelected = newState;
                 }
+            });
+        }
+
+        // Track when user manually changes solo checkbox
+        function setupSoloPreferenceTracking() {
+            const soloCheckbox = document.getElementById('main-solo-checkbox');
+            if (!soloCheckbox) return;
+
+            soloCheckbox.addEventListener('change', function () {
+                if (this.disabled || !selectedClip) return; // Don't track when disabled or no selection
+
+                const clipId = selectedClip.dataset.clip;
+                const newState = this.checked;
+
+                // Store user preference for this specific clip
+                userSoloPreferences.set(clipId, newState);
             });
         }
 
@@ -5149,20 +5204,16 @@
             playBtn.textContent = '▶';
         }
 
-        // Seek to start
+        // Seek to start - jump to previous clip like left arrow key
         function seekToStart(event) {
             event.stopPropagation();
-            currentTime = clipFocusMode ? focusedClipStart : 0;
-            updateTimeDisplay();
-            updatePlaybackMarker();
+            jumpToClip('left');
         }
 
-        // Seek to end
+        // Seek to end - jump to next clip like right arrow key  
         function seekToEnd(event) {
             event.stopPropagation();
-            currentTime = clipFocusMode ? focusedClipEnd : totalDuration;
-            updateTimeDisplay();
-            updatePlaybackMarker();
+            jumpToClip('right');
         }
 
         // Real-time Analysis function - progressive revelation during playback
@@ -5262,6 +5313,12 @@
             const loopCheckbox = document.getElementById('main-loop-checkbox');
             if (loopCheckbox) {
                 loopCheckbox.disabled = true;
+            }
+
+            // Disable solo checkbox
+            const soloCheckbox = document.getElementById('main-solo-checkbox');
+            if (soloCheckbox) {
+                soloCheckbox.disabled = true;
             }
 
             // Disable zoom and pan controls
@@ -6569,6 +6626,12 @@
                 loopCheckbox.disabled = false;
             }
 
+            // Enable solo checkbox
+            const soloCheckbox = document.getElementById('main-solo-checkbox');
+            if (soloCheckbox) {
+                soloCheckbox.disabled = false;
+            }
+
             // Hide the disabled message
             const disabledMessage = document.querySelector('.playback-disabled-message');
             if (disabledMessage) {
@@ -6845,6 +6908,9 @@
 
             // Update loop state based on new selection
             updateLoopState();
+
+            // Update solo state based on new selection
+            updateSoloState();
         }
 
         function deselectClip() {
@@ -6872,6 +6938,9 @@
 
                 // Update loop state based on deselection
                 updateLoopState();
+
+                // Update solo state based on deselection
+                updateSoloState();
             }
         }
 
@@ -7019,6 +7088,13 @@
             // Setup loop preference tracking
             setupLoopPreferenceTracking();
 
+            // Setup solo preference tracking
+            setupSoloPreferenceTracking();
+
+            // Ensure initial loop and solo states are correct
+            updateLoopState();
+            updateSoloState();
+
             // Load default file configuration (simplest file)
             const defaultConfig = AUDIO_CONFIGS['0_viola_first_track_demo.wav'];
             if (defaultConfig) {
@@ -7119,6 +7195,9 @@
             // Clear all clip effects
             clipEffects.clear();
 
+            // Clear solo preferences
+            userSoloPreferences.clear();
+
             // Clear clip position data
             originalClipData.clear();
 
@@ -7161,6 +7240,13 @@
             mainLoopEnabled = false;
             const mainLoopCheckbox = document.getElementById('main-loop-checkbox');
             if (mainLoopCheckbox) mainLoopCheckbox.checked = false;
+
+            // Reset solo checkbox
+            const mainSoloCheckbox = document.getElementById('main-solo-checkbox');
+            if (mainSoloCheckbox) {
+                mainSoloCheckbox.checked = false;
+                mainSoloCheckbox.disabled = true; // Ensure it's disabled when no clip selected
+            }
 
             // Note: Don't reset view mode here - let loadAudioConfiguration handle it
             // Reset canvas visualization if it exists
