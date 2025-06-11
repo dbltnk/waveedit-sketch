@@ -2893,11 +2893,12 @@
                 <div class="track-layer" id="merged">
                     <div class="track-info">
                         <span style="font-weight: bold; color: #ecf0f1;">Spectrogram</span><br>
-                        <span style="font-size: 0.8em; color: #95a5a6;">5_medium_find_the_murderer.wav</span>
+                        <span style="font-size: 0.6em; color: #95a5a6;">5_medium_find_the_murderer.wav</span>
                     </div>
                     <div class="track-content"
                         style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative;"
-                        onclick="selectClip(event)">
+                        onmousedown="handleTrackMouseDown(event, this)" onmousemove="handleTrackMouseMove(event, this)"
+                        onclick="seekToPosition(event, this)">
                         <!-- Canvas-based waveform visualization -->
                         <!-- Playback marker -->
                         <div id="playback-marker"
@@ -2931,7 +2932,9 @@
                         <span style="font-weight: bold; color: #ecf0f1;">Waveform</span>
                     </div>
                     <div class="track-content"
-                        style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative; height: 20px;">
+                        style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative; height: 20px;"
+                        onmousedown="handleTrackMouseDown(event, this)" onmousemove="handleTrackMouseMove(event, this)"
+                        onclick="seekToPosition(event, this)">
                         <!-- Playback marker for waveform track -->
                         <div class="playback-marker-waveform"
                             style="position: absolute; top: 0; bottom: 0; width: 2px; background: #f39c12; left: 0%; pointer-events: none; z-index: 100;">
@@ -2945,7 +2948,6 @@
 
                 <div class="track-layer" id="evidence-recording">
                     <div class="track-info">
-                        <span style="font-size: 0.8em; color: #95a5a6;">Layer 1</span><br>
                         <span style="font-weight: bold; color: #ecf0f1;">Evidence_Recording</span>
                     </div>
                     <div class="track-content"
@@ -2965,7 +2967,6 @@
 
                 <div class="track-layer" id="ghost-voices">
                     <div class="track-info">
-                        <span style="font-size: 0.8em; color: #95a5a6;">Layer 2</span><br>
                         <span style="font-weight: bold; color: #ecf0f1;">Ghost_Voices</span>
                     </div>
                     <div class="track-content"
@@ -2986,7 +2987,6 @@
 
                 <div class="track-layer" id="investigation">
                     <div class="track-info">
-                        <span style="font-size: 0.8em; color: #95a5a6;">Layer 3</span><br>
                         <span style="font-weight: bold; color: #ecf0f1;">Investigation_Notes</span>
                     </div>
                     <div class="track-content"
@@ -3004,7 +3004,6 @@
 
                 <div class="track-layer" id="ambient-static-wave">
                     <div class="track-info">
-                        <span style="font-size: 0.8em; color: #95a5a6;">Layer 4</span><br>
                         <span style="font-weight: bold; color: #ecf0f1;">Ambient_Static</span>
                     </div>
                     <div class="track-content"
@@ -4263,7 +4262,7 @@
 
         function zoomIn(event) {
             event.stopPropagation();
-            if (!zoomEnabled || currentZoom >= maxZoom) return;
+            if (!zoomEnabled || currentZoom >= maxZoom || isAnalyzing) return;
 
             currentZoom = Math.min(maxZoom, currentZoom * 1.25);
             // Zoom to center for button clicks
@@ -4274,7 +4273,7 @@
 
         function zoomOut(event) {
             event.stopPropagation();
-            if (!zoomEnabled || currentZoom <= minZoom) return;
+            if (!zoomEnabled || currentZoom <= minZoom || isAnalyzing) return;
 
             currentZoom = Math.max(minZoom, currentZoom / 1.25);
             // Zoom to center for button clicks
@@ -4286,7 +4285,7 @@
         // Pan functionality
         function panLeft(event) {
             event.stopPropagation();
-            if (!zoomEnabled || currentZoom <= minZoom) return;
+            if (!zoomEnabled || currentZoom <= minZoom || isAnalyzing) return;
 
             const panAmount = 0.1 / currentZoom; // Smaller steps when more zoomed in
             const maxOffset = 1 - (1 / currentZoom);
@@ -4298,7 +4297,7 @@
 
         function panRight(event) {
             event.stopPropagation();
-            if (!zoomEnabled || currentZoom <= minZoom) return;
+            if (!zoomEnabled || currentZoom <= minZoom || isAnalyzing) return;
 
             const panAmount = 0.1 / currentZoom; // Smaller steps when more zoomed in
             const maxOffset = 1 - (1 / currentZoom);
@@ -4315,6 +4314,7 @@
                 drawWaveformTrack();
                 updateClipPositions();
                 updateClipFocusVisuals(); // Update clip focus overlays and lines after zoom/pan
+                updatePlaybackMarker(); // Ensure playheads stay properly positioned after zoom/pan
             });
         }
 
@@ -4414,7 +4414,7 @@
 
                 // Calculate original clip boundaries
                 const originalLeft = originalData.left;
-                const originalRight = originalData.left + originalData.width;
+                const originalRight = originalLeft + originalData.width;
 
                 // Check if clip is visible in current zoom view
                 const isInViewport = !(originalRight < visibleStart || originalLeft > visibleEnd);
@@ -4920,6 +4920,7 @@
                 drawVisualization();
                 updateClipPositions();
                 updatePanButtons();
+                updatePlaybackMarker(); // Update playhead position after panning
             });
         }
 
@@ -4978,8 +4979,8 @@
             revealedMiscClips.add(clipId);
 
             // Check if in viewport for animation
-            const originalLeft = parseFloat(miscClip.originalLeft);
-            const originalRight = originalLeft + parseFloat(miscClip.originalWidth);
+            const originalLeft = parseFloat(miscClip.originalLeft.replace('%', ''));
+            const originalRight = originalLeft + parseFloat(miscClip.originalWidth.replace('%', ''));
             const visibleStart = waveformOffsetX * 100;
             const visibleEnd = visibleStart + (100 / currentZoom);
             const isInViewport = !(originalRight < visibleStart || originalLeft > visibleEnd);
@@ -5008,6 +5009,66 @@
                 setTimeout(() => {
                     element.classList.remove('first-reveal');
                 }, 1200); // Match animation duration
+            }
+        }
+
+        // Update playback marker position (accounting for zoom and pan)
+        function updatePlaybackMarker() {
+            const marker = document.getElementById('playback-marker');
+            const waveformMarker = document.querySelector('.playback-marker-waveform');
+
+            // Calculate playhead position as percentage of total timeline (0-100%)
+            const globalPercentage = (currentTime / totalDuration) * 100;
+
+            // WAVEFORM TRACK: Always show global position (not affected by zoom/pan)
+            if (waveformMarker) {
+                waveformMarker.style.left = `${globalPercentage}%`;
+                waveformMarker.style.display = 'block';
+            }
+
+            // SPECTROGRAM TRACK: Handle zoom/pan behavior
+            // Calculate visible range in global coordinates
+            const visibleStart = waveformOffsetX * 100; // Global start of visible area
+            const visibleEnd = visibleStart + (100 / currentZoom); // Global end of visible area
+
+            // Check if playhead is in visible range
+            const isInViewport = globalPercentage >= visibleStart && globalPercentage <= visibleEnd;
+
+            // Auto-pan to follow playhead during playback (but not during seeking)
+            if (!isInViewport && isPlaying && currentZoom > minZoom) {
+                // Calculate new pan position to center the playhead
+                const maxOffset = 1 - (1 / currentZoom);
+                const targetOffset = (globalPercentage / 100) - (0.5 / currentZoom); // Center the playhead
+                waveformOffsetX = Math.max(0, Math.min(maxOffset, targetOffset));
+
+                // Update visualization immediately to show new pan position
+                updateVisualizationAndClips();
+                updatePanButtons();
+
+                // Recalculate viewport after panning
+                const newVisibleStart = waveformOffsetX * 100;
+                const newVisibleEnd = newVisibleStart + (100 / currentZoom);
+                const newIsInViewport = globalPercentage >= newVisibleStart && globalPercentage <= newVisibleEnd;
+
+                // Update spectrogram marker with new viewport
+                if (marker && newIsInViewport) {
+                    const localPercentage = ((globalPercentage - newVisibleStart) / (100 / currentZoom)) * 100;
+                    marker.style.left = `${localPercentage}%`;
+                    marker.style.display = 'block';
+                }
+            } else {
+                // Normal positioning for spectrogram when no auto-pan needed
+                if (marker) {
+                    if (isInViewport) {
+                        // Convert global position to local viewport position
+                        const localPercentage = ((globalPercentage - visibleStart) / (100 / currentZoom)) * 100;
+                        marker.style.left = `${localPercentage}%`;
+                        marker.style.display = 'block';
+                    } else {
+                        // Hide marker when outside visible range
+                        marker.style.display = 'none';
+                    }
+                }
             }
         }
 
@@ -5309,18 +5370,155 @@
             timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(totalDuration)}`;
         }
 
-        // Update playback marker position
+        // Update playback marker position (accounting for zoom and pan)
         function updatePlaybackMarker() {
             const marker = document.getElementById('playback-marker');
             const waveformMarker = document.querySelector('.playback-marker-waveform');
-            const percentage = (currentTime / totalDuration) * 100;
 
-            if (marker) {
-                marker.style.left = `${percentage}%`;
-            }
+            // Calculate playhead position as percentage of total timeline (0-100%)
+            const globalPercentage = (currentTime / totalDuration) * 100;
+
+            // WAVEFORM TRACK: Always show global position (not affected by zoom/pan)
             if (waveformMarker) {
-                waveformMarker.style.left = `${percentage}%`;
+                waveformMarker.style.left = `${globalPercentage}%`;
+                waveformMarker.style.display = 'block';
             }
+
+            // SPECTROGRAM TRACK: Handle zoom/pan behavior
+            // Calculate visible range in global coordinates
+            const visibleStart = waveformOffsetX * 100; // Global start of visible area
+            const visibleEnd = visibleStart + (100 / currentZoom); // Global end of visible area
+
+            // Check if playhead is in visible range
+            const isInViewport = globalPercentage >= visibleStart && globalPercentage <= visibleEnd;
+
+            // Auto-pan to follow playhead during playback (but not during seeking)
+            if (!isInViewport && isPlaying && currentZoom > minZoom) {
+                // Calculate new pan position to center the playhead
+                const maxOffset = 1 - (1 / currentZoom);
+                const targetOffset = (globalPercentage / 100) - (0.5 / currentZoom); // Center the playhead
+                waveformOffsetX = Math.max(0, Math.min(maxOffset, targetOffset));
+
+                // Update visualization immediately to show new pan position
+                updateVisualizationAndClips();
+                updatePanButtons();
+
+                // Recalculate viewport after panning
+                const newVisibleStart = waveformOffsetX * 100;
+                const newVisibleEnd = newVisibleStart + (100 / currentZoom);
+                const newIsInViewport = globalPercentage >= newVisibleStart && globalPercentage <= newVisibleEnd;
+
+                // Update spectrogram marker with new viewport
+                if (marker && newIsInViewport) {
+                    const localPercentage = ((globalPercentage - newVisibleStart) / (100 / currentZoom)) * 100;
+                    marker.style.left = `${localPercentage}%`;
+                    marker.style.display = 'block';
+                }
+            } else {
+                // Normal positioning for spectrogram when no auto-pan needed
+                if (marker) {
+                    if (isInViewport) {
+                        // Convert global position to local viewport position
+                        const localPercentage = ((globalPercentage - visibleStart) / (100 / currentZoom)) * 100;
+                        marker.style.left = `${localPercentage}%`;
+                        marker.style.display = 'block';
+                    } else {
+                        // Hide marker when outside visible range
+                        marker.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // Variables to track if we're dragging (for analysis box)
+        let trackDragStartTime = 0;
+        let trackDragStarted = false;
+
+        // Handle track mousedown for drag detection
+        function handleTrackMouseDown(event, trackElement) {
+            trackDragStartTime = Date.now();
+            trackDragStarted = false;
+        }
+
+        // Handle track mousemove for drag detection
+        function handleTrackMouseMove(event, trackElement) {
+            if (Date.now() - trackDragStartTime > 100) { // 100ms threshold
+                trackDragStarted = true;
+            }
+        }
+
+        // Seek to position based on click location (accounting for zoom and pan)
+        function seekToPosition(event, trackElement) {
+            // Don't allow seeking during analysis
+            if (isAnalyzing) {
+                return;
+            }
+
+            // Don't seek if we've been dragging (analysis box drawing)
+            if (trackDragStarted) {
+                trackDragStarted = false;
+                return;
+            }
+
+            // Don't seek if clicking on controls or clips
+            if (event.target.closest('.zoom-controls, .pan-controls, .analyze-overlay, .audio-clip')) {
+                return;
+            }
+
+            const rect = trackElement.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const localPercentage = (clickX / trackWidth) * 100; // 0-100% within visible area
+
+            // Determine which track was clicked for different seek behavior
+            const isWaveformTrack = trackElement.closest('#waveform-track');
+            const isSpectrogramTrack = trackElement.closest('#merged');
+
+            let globalPercentage;
+
+            if (isWaveformTrack) {
+                // WAVEFORM TRACK: Direct global timeline position (not affected by zoom/pan)
+                globalPercentage = localPercentage;
+            } else {
+                // SPECTROGRAM TRACK: Account for zoom and pan
+                const visibleStart = waveformOffsetX * 100; // Global start of visible area  
+                const visibleRange = 100 / currentZoom; // Width of visible area in global coordinates
+                globalPercentage = visibleStart + (localPercentage * visibleRange / 100);
+            }
+
+            // Calculate new time position
+            const newTime = (globalPercentage / 100) * totalDuration;
+
+            // Clamp to valid range
+            currentTime = Math.max(0, Math.min(totalDuration, newTime));
+
+            // Pan spectrogram to show target position if it's not visible when zoomed in
+            if (currentZoom > minZoom) {
+                const targetGlobalPercentage = (currentTime / totalDuration) * 100;
+                const currentVisibleStart = waveformOffsetX * 100;
+                const currentVisibleEnd = currentVisibleStart + (100 / currentZoom);
+
+                // Check if target position is outside current visible range
+                if (targetGlobalPercentage < currentVisibleStart || targetGlobalPercentage > currentVisibleEnd) {
+                    // Pan to center the target position
+                    const maxOffset = 1 - (1 / currentZoom);
+                    const targetOffset = (targetGlobalPercentage / 100) - (0.5 / currentZoom); // Center the position
+                    waveformOffsetX = Math.max(0, Math.min(maxOffset, targetOffset));
+
+                    // Update visualization and controls for both tracks
+                    updateVisualizationAndClips();
+                    updatePanButtons();
+                }
+            }
+
+            // Update both playback markers to jump to the clicked position
+            updatePlaybackMarker();
+
+            // Update time display
+            updateTimeDisplay();
+
+            // Reset drag tracking
+            trackDragStarted = false;
         }
 
         // Clip waveform generation
@@ -6427,7 +6625,6 @@
 
             trackLayer.innerHTML = `
                 <div class="track-info">
-                    <span style="font-size: 0.8em; color: #95a5a6;">${miscLayer.displayName}</span><br>
                     <span style="font-weight: bold; color: #ecf0f1;">${miscLayer.name}</span>
                 </div>
                 <div class="track-content" 
@@ -6758,603 +6955,78 @@
             miscIdentificationDrawing = false;
         }
 
-        // Start analysis animation for selected ??? clips
-        function startAnalysisAnimation(clips) {
-            // Add analyzing class to all overlapping clips (both Root and MISC layers)
-            clips.forEach(clip => {
-                // Add analyzing animation to the merged view clip
-                clip.classList.add('analyzing');
-
-                // Create and add text label for analysis
-                const label = document.createElement('div');
-                label.className = 'analyzing-label';
-                label.textContent = '⚡ ANALYZING AUDIO...';
-                clip.parentNode.appendChild(label);
-
-                // Position the label relative to the clip
-                const clipRect = clip.getBoundingClientRect();
-                const containerRect = clip.parentNode.getBoundingClientRect();
-                label.style.left = `${clip.offsetLeft + (clip.offsetWidth / 2)}px`;
-                label.style.top = `${clip.offsetTop - 28}px`;
-
-                // Store label reference for cleanup
-                clip.dataset.analysisLabel = 'analyzing-label-' + clip.dataset.clip;
-                label.setAttribute('data-label-id', 'analyzing-label-' + clip.dataset.clip);
-
-                // Also add to corresponding MISC layer clip if it exists
-                const clipId = clip.dataset.clip;
-                const miscLayerClip = document.querySelector(`.misc-layer .audio-clip[data-clip="${clipId}"]`);
-                if (miscLayerClip) {
-                    miscLayerClip.classList.add('analyzing');
-
-                    // Create label for MISC layer clip too
-                    const miscLabel = document.createElement('div');
-                    miscLabel.className = 'analyzing-label';
-                    miscLabel.textContent = '⚡ ANALYZING AUDIO...';
-                    miscLayerClip.parentNode.appendChild(miscLabel);
-                    miscLabel.style.left = `${miscLayerClip.offsetLeft + (miscLayerClip.offsetWidth / 2)}px`;
-                    miscLabel.style.top = `${miscLayerClip.offsetTop - 28}px`;
-                    miscLayerClip.dataset.analysisLabel = 'analyzing-misc-label-' + clipId;
-                    miscLabel.setAttribute('data-label-id', 'analyzing-misc-label-' + clipId);
-                }
-            });
-
-            // Run analysis for the duration of the animation, then reveal the clips
-            setTimeout(() => {
-                clips.forEach(clip => {
-                    // Remove analyzing animation
-                    clip.classList.remove('analyzing');
-
-                    // Remove analysis label
-                    const label = document.querySelector(`[data-label-id="analyzing-label-${clip.dataset.clip}"]`);
-                    if (label && label.parentNode) {
-                        label.parentNode.removeChild(label);
-                    }
-                    delete clip.dataset.analysisLabel;
-
-                    const clipId = clip.dataset.clip;
-                    const miscLayerClip = document.querySelector(`.misc-layer .audio-clip[data-clip="${clipId}"]`);
-                    if (miscLayerClip) {
-                        miscLayerClip.classList.remove('analyzing');
-
-                        // Remove MISC layer label
-                        const miscLabel = document.querySelector(`[data-label-id="analyzing-misc-label-${clipId}"]`);
-                        if (miscLabel && miscLabel.parentNode) {
-                            miscLabel.parentNode.removeChild(miscLabel);
-                        }
-                        delete miscLayerClip.dataset.analysisLabel;
-                    }
-                });
-
-                // Small delay before identification to ensure clean transition
-                setTimeout(() => {
-                    clips.forEach(clip => {
-                        // Identify the clip - reveal its true name and make it editable
-                        identifyMiscClip(clip);
-                    });
-                }, 100);
-            }, 2500); // Match the animation duration
-        }
-
-        function identifyMiscClip(mergedClip) {
-            const clipId = mergedClip.dataset.clip;
-            const layerId = mergedClip.dataset.layer;
-
-            // Update the merged view clip to match normal merged view styling
-            mergedClip.classList.remove('misc-clip-hidden');
-            mergedClip.classList.add('identified', 'revealed');
-            mergedClip.title = clipId; // Update hover text to show real name
-            mergedClip.style.pointerEvents = 'auto';
-            mergedClip.style.cursor = 'pointer';
-
-            // Reset any custom styling and let CSS handle appearance
-            mergedClip.style.background = '';
-            mergedClip.style.color = '';
-            mergedClip.style.border = '';
-            mergedClip.style.boxShadow = '';
-            mergedClip.style.zIndex = '';
-
-            // Set the clip content for display
-            mergedClip.textContent = clipId;
-
-            // Change click handler from showClipPopup to selectClip
-            mergedClip.removeEventListener('click', showClipPopup);
-            mergedClip.addEventListener('click', selectClip);
-
-            // Apply waveform styling like other clips
-            if (typeof applyWaveformToClip === 'function') {
-                applyWaveformToClip(mergedClip);
+        // Seek to position based on click location (accounting for zoom and pan)
+        function seekToPosition(event, trackElement) {
+            // Don't allow seeking during analysis
+            if (isAnalyzing) {
+                return;
             }
 
-            // Find and update the corresponding clip in the MISC layer
-            const miscLayerClip = document.querySelector(`.misc-layer .audio-clip[data-clip="${clipId}"]`);
-            if (miscLayerClip) {
-                miscLayerClip.classList.remove('hidden-small');
-                miscLayerClip.classList.add('identified');
-                miscLayerClip.textContent = clipId; // Show the real name instead of ???
-                miscLayerClip.title = clipId; // Update hover text to show real name
-                miscLayerClip.style.pointerEvents = 'auto';
-                miscLayerClip.style.cursor = 'pointer';
+            // Don't seek if we've been dragging (analysis box drawing)
+            if (trackDragStarted) {
+                trackDragStarted = false;
+                return;
+            }
 
-                // Reset custom styling to use normal layer clip appearance
-                miscLayerClip.style.background = '';
-                miscLayerClip.style.color = '';
-                miscLayerClip.style.border = '';
-                miscLayerClip.style.boxShadow = '';
-                miscLayerClip.style.zIndex = '';
+            // Don't seek if clicking on controls or clips
+            if (event.target.closest('.zoom-controls, .pan-controls, .analyze-overlay, .audio-clip')) {
+                return;
+            }
 
-                // Change click handler from showClipPopup to selectClip
-                miscLayerClip.removeAttribute('onclick');
-                miscLayerClip.onclick = selectClip;
+            const rect = trackElement.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const trackWidth = rect.width;
+            const localPercentage = (clickX / trackWidth) * 100; // 0-100% within visible area
 
-                // Apply waveform styling like other clips
-                if (typeof applyWaveformToClip === 'function') {
-                    applyWaveformToClip(miscLayerClip);
+            // Determine which track was clicked for different seek behavior
+            const isWaveformTrack = trackElement.closest('#waveform-track');
+            const isSpectrogramTrack = trackElement.closest('#merged');
+
+            let globalPercentage;
+
+            if (isWaveformTrack) {
+                // WAVEFORM TRACK: Direct global timeline position (not affected by zoom/pan)
+                globalPercentage = localPercentage;
+            } else {
+                // SPECTROGRAM TRACK: Account for zoom and pan
+                const visibleStart = waveformOffsetX * 100; // Global start of visible area  
+                const visibleRange = 100 / currentZoom; // Width of visible area in global coordinates
+                globalPercentage = visibleStart + (localPercentage * visibleRange / 100);
+            }
+
+            // Calculate new time position
+            const newTime = (globalPercentage / 100) * totalDuration;
+
+            // Clamp to valid range
+            currentTime = Math.max(0, Math.min(totalDuration, newTime));
+
+            // Pan spectrogram to show target position if it's not visible when zoomed in
+            if (currentZoom > minZoom) {
+                const targetGlobalPercentage = (currentTime / totalDuration) * 100;
+                const currentVisibleStart = waveformOffsetX * 100;
+                const currentVisibleEnd = currentVisibleStart + (100 / currentZoom);
+
+                // Check if target position is outside current visible range
+                if (targetGlobalPercentage < currentVisibleStart || targetGlobalPercentage > currentVisibleEnd) {
+                    // Pan to center the target position
+                    const maxOffset = 1 - (1 / currentZoom);
+                    const targetOffset = (targetGlobalPercentage / 100) - (0.5 / currentZoom); // Center the position
+                    waveformOffsetX = Math.max(0, Math.min(maxOffset, targetOffset));
+
+                    // Update visualization and controls for both tracks
+                    updateVisualizationAndClips();
+                    updatePanButtons();
                 }
             }
 
-            // Add to discovered clips for tools access
-            if (typeof discoveredClips !== 'undefined') {
-                discoveredClips.add(clipId);
-            }
-        }
-
-        // Small clip discovery system
-        let discoveryDrawing = false;
-        let discoveryBox = null;
-        let discoveryStartX = 0;
-        let discoveryStartY = 0;
-
-        function startSmallClipSelection(event) {
-            // Only respond to left mouse button (button 0)
-            if (event.button !== 0) return;
-
-            const hiddenClips = document.querySelectorAll('.audio-clip.hidden-small');
-            if (hiddenClips.length === 0) return;
-
-            discoveryDrawing = true;
-            const trackContent = event.target;
-            const rect = trackContent.getBoundingClientRect();
-
-            discoveryStartX = event.clientX - rect.left;
-            discoveryStartY = event.clientY - rect.top;
-
-            // Clean up existing boxes
-            const existingBoxes = event.target.querySelectorAll('.selection-box');
-            existingBoxes.forEach(box => box.remove());
-
-            // Create selection box
-            discoveryBox = document.createElement('div');
-            discoveryBox.className = 'selection-box';
-            trackContent.appendChild(discoveryBox);
-        }
-
-        function updateSmallClipSelection(event) {
-            if (!discoveryDrawing || !discoveryBox) return;
-
-            const trackContent = event.target;
-            const rect = trackContent.getBoundingClientRect();
-
-            const currentX = event.clientX - rect.left;
-            const currentY = event.clientY - rect.top;
-
-            const width = Math.abs(currentX - discoveryStartX);
-            const height = Math.abs(currentY - discoveryStartY);
-
-            discoveryBox.style.left = Math.min(discoveryStartX, currentX) + 'px';
-            discoveryBox.style.top = Math.min(discoveryStartY, currentY) + 'px';
-            discoveryBox.style.width = width + 'px';
-            discoveryBox.style.height = height + 'px';
-        }
-
-        function endSmallClipSelection(event) {
-            if (!discoveryDrawing || !discoveryBox) return;
-
-            // Find overlapping hidden clips
-            const hiddenClips = document.querySelectorAll('.misc-layer .audio-clip.hidden-small');
-            const boxRect = discoveryBox.getBoundingClientRect();
-
-            hiddenClips.forEach(clip => {
-                const clipRect = clip.getBoundingClientRect();
-
-                // Check for overlap
-                if (boxRect.left <= clipRect.right && boxRect.right >= clipRect.left &&
-                    boxRect.top <= clipRect.bottom && boxRect.bottom >= clipRect.top) {
-
-                    // Reveal the clip
-                    clip.classList.remove('hidden-small');
-                    clip.textContent = clip.dataset.clip;
-                    clip.style.pointerEvents = 'auto';
-                    clip.style.background = '';
-                    clip.style.color = '';
-                    clip.style.border = '';
-
-                    discoveredClips.add(clip.dataset.clip);
-                }
-            });
-
-            // Clean up
-            if (discoveryBox && discoveryBox.parentNode) {
-                discoveryBox.remove();
-            }
-            discoveryBox = null;
-            discoveryDrawing = false;
-        }
-
-
-
-        // AUDIO CONTROL FUNCTIONS
-        function toggleTrackMute(trackId) {
-            const track = document.getElementById(trackId);
-            if (!track) return;
-
-            track.classList.toggle('track-muted');
-
-            // Update mute button
-            const muteBtn = track.querySelector('.audio-control[onclick*="toggleTrackMute"]');
-            if (muteBtn) {
-                if (track.classList.contains('track-muted')) {
-                    muteBtn.textContent = '🔇';
-                    muteBtn.classList.add('muted');
-                } else {
-                    muteBtn.textContent = '🔊';
-                    muteBtn.classList.remove('muted');
-                }
-            }
-        }
-
-        function toggleTrackSolo(trackId) {
-            const track = document.getElementById(trackId);
-            if (!track) return;
-
-            track.classList.toggle('track-soloed');
-
-            // Update solo button
-            const soloBtn = track.querySelector('.audio-control[onclick*="toggleTrackSolo"]');
-            if (soloBtn) {
-                if (track.classList.contains('track-soloed')) {
-                    soloBtn.textContent = '🎯';
-                    soloBtn.classList.add('soloed');
-                } else {
-                    soloBtn.textContent = 'S';
-                    soloBtn.classList.remove('soloed');
-                }
-            }
-        }
-
-        function toggleTrackExpansion(trackId) {
-            const track = document.getElementById(trackId);
-            if (!track) return;
-
-            track.classList.toggle('track-stereo');
-
-            // Update expansion button
-            const expandBtn = track.querySelector('.audio-control[onclick*="toggleTrackExpansion"]');
-            if (expandBtn) {
-                if (track.classList.contains('track-stereo')) {
-                    expandBtn.textContent = '▼';
-                } else {
-                    expandBtn.textContent = '►';
-                }
-            }
-        }
-
-        // Prevent default drag behavior on document
-        document.addEventListener('dragover', function (e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('drop', function (e) {
-            e.preventDefault();
-        });
-
-        function enableTools() {
-            isAnalyzed = true;
-            // Tools container is always visible now, no need to show/hide
-
-            // Show view mode overlay
-            const viewModeOverlay = document.getElementById('view-mode-overlay');
-            if (viewModeOverlay) {
-                viewModeOverlay.style.display = 'flex';
-            }
-
-            // Make all clips clickable
-            document.querySelectorAll('.audio-clip').forEach(clip => {
-                clip.style.pointerEvents = 'auto';
-                clip.style.cursor = 'pointer';
-            });
-
-            // Update tool states - analysis is done but still need clip selection
-            updateToolStates();
-
-            // Enable main playback controls
-            enablePlaybackControls();
-        }
-
-        function enablePlaybackControls() {
-            // Enable all transport buttons
-            document.querySelectorAll('#main-buttons button').forEach(button => {
-                button.disabled = false;
-            });
-
-            // Enable loop checkbox
-            const loopCheckbox = document.getElementById('main-loop-checkbox');
-            if (loopCheckbox) {
-                loopCheckbox.disabled = false;
-            }
-
-            // Enable solo checkbox
-            const soloCheckbox = document.getElementById('main-solo-checkbox');
-            if (soloCheckbox) {
-                soloCheckbox.disabled = false;
-            }
-
-            // Hide the disabled message
-            const disabledMessage = document.querySelector('.playback-disabled-message');
-            if (disabledMessage) {
-                disabledMessage.style.display = 'none';
-            }
-        }
-
-        function updateToolStates() {
-            const hasClipSelected = selectedClip !== null;
-            const isAnalysisComplete = isAnalyzed;
-
-            document.querySelectorAll('.plugin-section').forEach(section => {
-                const pluginTitle = section.querySelector('.plugin-title');
-                if (!pluginTitle) return;
-
-                // Get the plugin name from the title, removing emoji and spaces
-                const pluginName = pluginTitle.textContent
-                    .replace(/[^\w\s]/g, '') // Remove emojis
-                    .trim()
-                    .toLowerCase()
-                    .replace(/\s+/g, ''); // Remove spaces
-
-                // Check if this tool is available in the current level
-                const isAvailableInLevel = currentAvailableTools.length === 0 || currentAvailableTools.includes(pluginName);
-
-                // Tool should be enabled only if:
-                // 1. Analysis is complete AND
-                // 2. A clip is selected AND  
-                // 3. Tool is available in this level
-                const shouldEnable = isAnalysisComplete && hasClipSelected && isAvailableInLevel;
-
-                if (shouldEnable) {
-                    section.classList.remove('disabled');
-                    section.style.pointerEvents = 'auto';
-                    section.style.opacity = '1';
-                } else {
-                    section.classList.add('disabled');
-                    section.style.pointerEvents = 'none';
-                    section.style.opacity = '0.3';
-                }
-            });
-        }
-
-        // Clip Focus Mode Functions
-        function enterClipFocusMode(clip) {
-            clipFocusMode = true;
-
-            // Calculate clip boundaries in absolute timeline position
-            const clipLeft = parseFloat(clip.style.left.replace('%', ''));
-            const clipWidth = parseFloat(clip.style.width.replace('%', ''));
-
-            focusedClipStart = (clipLeft / 100) * totalDuration;
-            focusedClipEnd = ((clipLeft + clipWidth) / 100) * totalDuration;
-
-            // Apply visual effects
-            applyClipFocusVisuals(clip, clipLeft, clipWidth);
-
-            // Move playhead to clip start
-            currentTime = focusedClipStart;
-            updateTimeDisplay();
+            // Update both playback markers to jump to the clicked position
             updatePlaybackMarker();
-        }
 
-        function exitClipFocusMode() {
-            clipFocusMode = false;
-            focusedClipStart = 0;
-            focusedClipEnd = 0;
+            // Update time display
+            updateTimeDisplay();
 
-            // Remove visual effects
-            removeClipFocusVisuals();
-        }
-
-        function applyClipFocusVisuals(focusedClip, clipLeft, clipWidth) {
-            const rootLayer = document.getElementById('merged');
-            const trackContent = rootLayer.querySelector('.track-content');
-
-            // Highlight focused clip and lowlight others in root layer
-            rootLayer.querySelectorAll('.audio-clip').forEach(clip => {
-                if (clip === focusedClip) {
-                    clip.classList.add('clip-focused');
-                    clip.classList.remove('clip-lowlighted');
-                } else {
-                    clip.classList.add('clip-lowlighted');
-                    clip.classList.remove('clip-focused');
-                }
-            });
-
-            // Create darkening overlays
-            // Left side overlay
-            if (clipLeft > 0) {
-                const leftOverlay = document.createElement('div');
-                leftOverlay.className = 'clip-focus-overlay left-overlay';
-                leftOverlay.style.left = '0%';
-                leftOverlay.style.width = `${clipLeft}%`;
-                trackContent.appendChild(leftOverlay);
-            }
-
-            // Right side overlay
-            const rightStart = clipLeft + clipWidth;
-            if (rightStart < 100) {
-                const rightOverlay = document.createElement('div');
-                rightOverlay.className = 'clip-focus-overlay right-overlay';
-                rightOverlay.style.left = `${rightStart}%`;
-                rightOverlay.style.width = `${100 - rightStart}%`;
-                trackContent.appendChild(rightOverlay);
-            }
-
-            // Create loop point lines
-            const inPoint = document.createElement('div');
-            inPoint.className = 'clip-focus-line in-point';
-            inPoint.style.left = `${clipLeft}%`;
-            trackContent.appendChild(inPoint);
-
-            const outPoint = document.createElement('div');
-            outPoint.className = 'clip-focus-line out-point';
-            outPoint.style.left = `${clipLeft + clipWidth}%`;
-            trackContent.appendChild(outPoint);
-        }
-
-        function removeClipFocusVisuals() {
-            // Remove all clip highlighting/lowlighting
-            document.querySelectorAll('.audio-clip').forEach(clip => {
-                clip.classList.remove('clip-focused', 'clip-lowlighted');
-            });
-
-            // Remove overlays and loop lines
-            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(element => {
-                element.remove();
-            });
-        }
-
-        function updateClipFocusVisuals() {
-            if (!clipFocusMode || !selectedClip) return;
-
-            // Remove existing overlays and lines
-            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(element => {
-                element.remove();
-            });
-
-            // Find the focused clip in the root layer (might be different from selectedClip if selected from another layer)
-            const rootLayer = document.getElementById('merged');
-            const clipId = selectedClip.dataset.clip;
-            const rootClip = rootLayer.querySelector(`[data-clip="${clipId}"]`);
-
-            if (!rootClip) return;
-
-            // Get original clip data for comparison
-            const originalData = originalClipData.get(clipId);
-
-            // Get current displayed position and width of the focused clip (after zoom/pan transformations)
-            const currentLeft = parseFloat(rootClip.style.left.replace('%', ''));
-            const currentWidth = parseFloat(rootClip.style.width.replace('%', ''));
-
-            const trackContent = rootLayer.querySelector('.track-content');
-
-            // Enhanced visibility check using ORIGINAL coordinates vs VISIBLE RANGE
-            const originalLeft = originalData.left;
-            const originalRight = originalData.left + originalData.width;
-            const visibleStart = waveformOffsetX * 100;
-            const visibleEnd = visibleStart + (100 / currentZoom);
-
-            // Check if clip intersects with visible range in ORIGINAL coordinates
-            const isInVisibleRange = !(originalRight <= visibleStart || originalLeft >= visibleEnd);
-
-            // Only create overlays and lines if the clip is visible
-            if (isInVisibleRange && rootClip.style.display !== 'none') {
-                // Check if solo mode is active
-                const soloCheckbox = document.getElementById('main-solo-checkbox');
-                const isSoloActive = soloCheckbox && soloCheckbox.checked;
-
-                // Create darkening overlays
-                // Left side overlay
-                if (currentLeft > 0) {
-                    const leftOverlayWidth = Math.max(0, currentLeft);
-                    const leftOverlay = document.createElement('div');
-                    leftOverlay.className = 'clip-focus-overlay left-overlay';
-                    leftOverlay.style.left = '0%';
-                    leftOverlay.style.width = `${leftOverlayWidth}%`;
-                    if (isSoloActive) {
-                        leftOverlay.style.top = '0%';
-                        leftOverlay.style.height = '100%';
-                    }
-                    trackContent.appendChild(leftOverlay);
-                }
-
-                // Right side overlay
-                const rightStart = currentLeft + currentWidth;
-                if (rightStart < 100) {
-                    const rightOverlayLeft = Math.min(100, rightStart);
-                    const rightOverlayWidth = Math.max(0, 100 - rightStart);
-                    const rightOverlay = document.createElement('div');
-                    rightOverlay.className = 'clip-focus-overlay right-overlay';
-                    rightOverlay.style.left = `${rightOverlayLeft}%`;
-                    rightOverlay.style.width = `${rightOverlayWidth}%`;
-                    if (isSoloActive) {
-                        rightOverlay.style.top = '0%';
-                        rightOverlay.style.height = '100%';
-                    }
-                    trackContent.appendChild(rightOverlay);
-                }
-
-                // Add top and bottom overlays when solo is active
-                if (isSoloActive) {
-                    // Get clip's vertical position and height
-                    const clipTop = parseFloat(rootClip.style.top.replace('px', '')) || 0;
-                    const clipHeight = 18; // Standard clip height
-                    const trackHeight = trackContent.offsetHeight;
-
-                    // Top overlay (above the clip)
-                    if (clipTop > 0) {
-                        const topOverlay = document.createElement('div');
-                        topOverlay.className = 'clip-focus-overlay top-overlay';
-                        topOverlay.style.cssText = `
-                            position: absolute;
-                            top: 0px;
-                            left: ${currentLeft}%;
-                            width: ${currentWidth}%;
-                            height: ${clipTop}px;
-                            background: rgba(0, 0, 0, 0.7);
-                            pointer-events: none;
-                            z-index: 50;
-                        `;
-                        trackContent.appendChild(topOverlay);
-                    }
-
-                    // Bottom overlay (below the clip)
-                    const clipBottom = clipTop + clipHeight;
-                    if (clipBottom < trackHeight) {
-                        const bottomOverlay = document.createElement('div');
-                        bottomOverlay.className = 'clip-focus-overlay bottom-overlay';
-                        bottomOverlay.style.cssText = `
-                            position: absolute;
-                            top: ${clipBottom}px;
-                            left: ${currentLeft}%;
-                            width: ${currentWidth}%;
-                            height: ${trackHeight - clipBottom}px;
-                            background: rgba(0, 0, 0, 0.7);
-                            pointer-events: none;
-                            z-index: 50;
-                        `;
-                        trackContent.appendChild(bottomOverlay);
-                    }
-                }
-
-                // Create loop point lines
-                const inPointLeft = Math.max(0, Math.min(100, currentLeft));
-                const outPointLeft = Math.max(0, Math.min(100, currentLeft + currentWidth));
-
-                const inPoint = document.createElement('div');
-                inPoint.className = 'clip-focus-line in-point';
-                inPoint.style.left = `${inPointLeft}%`;
-                trackContent.appendChild(inPoint);
-
-                const outPoint = document.createElement('div');
-                outPoint.className = 'clip-focus-line out-point';
-                outPoint.style.left = `${outPointLeft}%`;
-                trackContent.appendChild(outPoint);
-
-            } else if (!isInVisibleRange) {
-                // Clip is completely outside viewport - darken the entire timeline
-                const fullOverlay = document.createElement('div');
-                fullOverlay.className = 'clip-focus-overlay full-overlay';
-                fullOverlay.style.left = '0%';
-                fullOverlay.style.width = '100%';
-                trackContent.appendChild(fullOverlay);
-            }
+            // Reset drag tracking
+            trackDragStarted = false;
         }
 
         function selectClip(event) {
@@ -7458,7 +7130,10 @@
                 }
 
                 // Hide selected clip display
-                document.getElementById('selected-clip-display').style.display = 'none';
+                const selectedClipDisplay = document.getElementById('selected-clip-display');
+                if (selectedClipDisplay) {
+                    selectedClipDisplay.style.display = 'none';
+                }
 
                 // Update tool states (will disable them since no clip selected)
                 updateToolStates();
@@ -7480,23 +7155,28 @@
 
         // Add click handler to document to deselect when clicking outside or in empty space
         document.addEventListener('click', function (event) {
-            // Don't deselect if clicking on tools panel or its buttons
-            if (event.target.closest('.right-panel')) {
+            // Don't deselect if clicking on UI panels or controls
+            if (event.target.closest('.right-panel, .left-panel')) {
                 return;
             }
 
-            // Don't deselect if clicking on left panel controls or VU meters
-            if (event.target.closest('.left-panel')) {
+            // Don't deselect if clicking on menu bar or dropdowns
+            if (event.target.closest('.menu-bar, .load-dropdown, .settings-dropdown')) {
                 return;
             }
 
-            // Don't deselect if clicking on interactive elements like buttons or controls
-            if (event.target.closest('button, .zoom-controls, .pan-controls, .analyze-overlay, .view-mode-overlay, .opacity-slider, .slider-track, .slider-thumb')) {
+            // Don't deselect if clicking on timeline header or instructions
+            if (event.target.closest('.timeline-header, .timeline-instructions')) {
                 return;
             }
 
             // Don't deselect if clicking directly on an audio clip
             if (event.target.classList.contains('audio-clip')) {
+                return;
+            }
+
+            // Don't deselect if clicking on track info sections
+            if (event.target.closest('.track-info')) {
                 return;
             }
 
@@ -7821,7 +7501,10 @@
             }
 
             // Reset tools panel
-            document.getElementById('selected-clip-display').style.display = 'none';
+            const selectedClipDisplay = document.getElementById('selected-clip-display');
+            if (selectedClipDisplay) {
+                selectedClipDisplay.style.display = 'none';
+            }
 
             // Disable all plugins and reset their state
             document.querySelectorAll('.plugin-section').forEach(section => {
@@ -7939,7 +7622,6 @@
 
             trackLayer.innerHTML = `
                 <div class="track-info">
-                    <span style="font-size: 0.8em; color: #95a5a6;">${layerConfig.displayName}</span><br>
                     <span style="font-weight: bold; color: #ecf0f1;">${layerConfig.name}</span>
                 </div>
                 <div class="track-content" 
@@ -7971,6 +7653,136 @@
             return trackLayer;
         }
 
+        // Update tool states based on current application state
+        function updateToolStates() {
+            const pluginSections = document.querySelectorAll('.plugin-section');
+
+            // Enable tools only if analysis is complete and a clip is selected
+            const shouldEnable = isAnalyzed && selectedClip;
+
+            pluginSections.forEach(section => {
+                if (shouldEnable) {
+                    section.classList.remove('disabled');
+                    section.style.pointerEvents = 'auto';
+                    section.style.opacity = '1';
+                } else {
+                    section.classList.add('disabled');
+                    section.style.pointerEvents = 'none';
+                    section.style.opacity = '0.3';
+                }
+            });
+        }
+
+        // Update tool states based on current application state
+        function enableTools() {
+            updateToolStates();
+        }
+
+        // Update clip focus visuals and overlays
+        function updateClipFocusVisuals() {
+            // If no clip focus mode, just return
+            if (!clipFocusMode || !selectedClip) {
+                // Remove any existing focus visuals
+                document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(el => el.remove());
+                return;
+            }
+
+            // Remove existing focus visuals
+            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(el => el.remove());
+
+            // Get the focused clip's position and dimensions
+            const clipRect = selectedClip.getBoundingClientRect();
+            const trackRect = selectedClip.closest('.track-content').getBoundingClientRect();
+
+            // Create focus overlay if solo mode is enabled
+            const soloCheckbox = document.getElementById('main-solo-checkbox');
+            const showOverlay = soloCheckbox && soloCheckbox.checked;
+
+            if (showOverlay) {
+                // Create dimming overlays for areas outside the focused clip
+                const leftOverlay = document.createElement('div');
+                leftOverlay.className = 'clip-focus-overlay';
+                leftOverlay.style.left = '0';
+                leftOverlay.style.width = selectedClip.style.left;
+                leftOverlay.style.top = '0';
+                leftOverlay.style.height = '100%';
+                selectedClip.closest('.track-content').appendChild(leftOverlay);
+
+                const rightOverlay = document.createElement('div');
+                rightOverlay.className = 'clip-focus-overlay';
+                const clipLeft = parseFloat(selectedClip.style.left.replace('%', ''));
+                const clipWidth = parseFloat(selectedClip.style.width.replace('%', ''));
+                rightOverlay.style.left = `${clipLeft + clipWidth}%`;
+                rightOverlay.style.width = `${100 - (clipLeft + clipWidth)}%`;
+                rightOverlay.style.top = '0';
+                rightOverlay.style.height = '100%';
+                selectedClip.closest('.track-content').appendChild(rightOverlay);
+            }
+
+            // Create in-point and out-point lines
+            const inLine = document.createElement('div');
+            inLine.className = 'clip-focus-line in-point';
+            inLine.style.left = selectedClip.style.left;
+            selectedClip.closest('.track-content').appendChild(inLine);
+
+            const outLine = document.createElement('div');
+            outLine.className = 'clip-focus-line out-point';
+            const clipLeft = parseFloat(selectedClip.style.left.replace('%', ''));
+            const clipWidth = parseFloat(selectedClip.style.width.replace('%', ''));
+            outLine.style.left = `${clipLeft + clipWidth}%`;
+            selectedClip.closest('.track-content').appendChild(outLine);
+        }
+
+        // Enter clip focus mode
+        function enterClipFocusMode(clipElement) {
+            if (!clipElement) return;
+
+            clipFocusMode = true;
+            clipElement.classList.add('clip-focused');
+
+            // Update visual indicators
+            updateClipFocusVisuals();
+
+            // Set focus boundaries for playback
+            const clipId = clipElement.dataset.clip;
+            // Focus boundaries would be calculated based on clip position
+            // This is a simplified version - in practice you'd calculate actual time positions
+        }
+
+        // Exit clip focus mode
+        function exitClipFocusMode() {
+            if (!clipFocusMode) return;
+
+            clipFocusMode = false;
+
+            // Remove focus styling from all clips
+            document.querySelectorAll('.audio-clip').forEach(clip => {
+                clip.classList.remove('clip-focused');
+            });
+
+            // Remove focus visuals
+            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(el => el.remove());
+        }
+
+        // Enable playback controls after analysis is complete
+        function enablePlaybackControls() {
+            // Enable all transport buttons
+            document.querySelectorAll('#main-buttons button').forEach(button => {
+                button.disabled = false;
+            });
+
+            // Enable loop checkbox
+            const loopCheckbox = document.getElementById('main-loop-checkbox');
+            if (loopCheckbox) {
+                loopCheckbox.disabled = false;
+            }
+
+            // Enable solo checkbox (though it starts disabled until a clip is selected)
+            const soloCheckbox = document.getElementById('main-solo-checkbox');
+            if (soloCheckbox) {
+                soloCheckbox.disabled = false;
+            }
+        }
 
     </script>
 </body>

@@ -1101,4 +1101,6 @@ const AUDIO_CONFIGS = {
 // Export for use in main application
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AUDIO_CONFIGS;
+} else if (typeof window !== 'undefined') {
+    window.AUDIO_CONFIGS = AUDIO_CONFIGS;
 } 
