@@ -277,12 +277,12 @@
         }
 
         .left-panel {
-            background: var(--bg-secondary);
+            background: var(--bg-darker);
             padding: 0;
             overflow-y: auto;
             overflow-x: hidden;
             flex-shrink: 0;
-            width: 220px;
+            flex: 1;
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -301,9 +301,11 @@
         .right-panel {
             background: var(--bg-secondary);
             padding: 0;
-            overflow-y: auto;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            /* Changed from auto to prevent scrolling */
             flex-shrink: 0;
-            width: 280px;
+            width: 240px;
             border-left: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -367,8 +369,8 @@
 
         /* Responsive Layout for Widescreen */
         @media (min-width: 1920px) {
-            .left-panel {
-                width: 260px;
+            .center-panel {
+                width: 55px;
             }
 
             .right-panel {
@@ -386,8 +388,8 @@
         }
 
         @media (min-width: 2560px) {
-            .left-panel {
-                width: 280px;
+            .center-panel {
+                width: 60px;
             }
 
             .right-panel {
@@ -408,12 +410,14 @@
 
         /* Center Panel */
         .center-panel {
-            flex: 1;
+            width: 50px;
             display: flex;
             flex-direction: column;
-            background: var(--bg-darker);
+            background: var(--bg-secondary);
             overflow: hidden;
             position: relative;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-color);
         }
 
         /* Timeline Header */
@@ -529,6 +533,56 @@
             font-size: 16px;
         }
 
+        /* Skinny VU Meters for left panel */
+        .vu-meters-full {
+            flex: 1 !important;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vu-meters-fullheight {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 8px 5px;
+        }
+
+        .vu-meters-skinny {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+            justify-content: center;
+        }
+
+        .vu-meter-skinny {
+            width: 12px;
+            height: 100%;
+            min-height: 300px;
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .vu-labels-skinny {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            justify-content: center;
+        }
+
+        .vu-label-skinny {
+            width: 12px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: bold;
+        }
+
         .main-playback-simple {
             display: flex;
             flex-direction: column;
@@ -543,28 +597,7 @@
             gap: 10px;
         }
 
-        .main-position-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-            position: relative;
-            cursor: pointer;
-            transition: height 0.2s ease;
-        }
 
-        .main-position-bar:hover {
-            height: 8px;
-        }
-
-        .main-position-fill {
-            height: 100%;
-            background: var(--primary-orange);
-            border-radius: 3px;
-            width: 0%;
-            transition: width 0.1s ease;
-            box-shadow: 0 0 8px rgba(243, 156, 18, 0.4);
-        }
 
         .main-controls-section {
             display: flex;
@@ -956,7 +989,7 @@
         }
 
         /* Analysis minigame styles */
-        .track-layer:not(#merged) {
+        .track-layer:not(#merged):not(#waveform-track) {
             display: none;
         }
 
@@ -2051,6 +2084,32 @@
             transition: opacity 0.3s ease;
         }
 
+        .tools-container-compact {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            max-height: none;
+            overflow: visible;
+        }
+
+        .tools-container-compact .plugin-section {
+            margin-bottom: 6px;
+            padding: 6px;
+            font-size: 12px;
+        }
+
+        .tools-container-compact .plugin-title {
+            font-size: 11px;
+        }
+
+        .tools-container-compact .slider-container {
+            margin: 4px 0;
+        }
+
+        .tools-container-compact .slider-labels {
+            font-size: 9px;
+        }
+
         /* Selected Clip Display */
         .selected-clip-display {
             background: var(--bg-secondary);
@@ -2113,9 +2172,11 @@
 
         /* Add slider styles */
         .slider-container {
-            margin: 8px 0;
+            margin-top: auto;
             position: relative;
             height: 20px;
+            width: 100%;
+            z-index: 2;
         }
 
         .slider-labels {
@@ -2195,6 +2256,11 @@
             cursor: pointer;
             transition: var(--transition-fast);
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 60px;
         }
 
         .plugin-section:has(.slider-container) {
@@ -2254,31 +2320,59 @@
             border-color: var(--text-muted) !important;
         }
 
+        .plugin-background-emoji {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 1;
+            user-select: none;
+        }
+
         .plugin-title {
+            font-size: 12px;
             font-weight: bold;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            color: var(--text-secondary);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            margin-bottom: auto;
         }
 
         .checkbox {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             width: 16px;
             height: 16px;
             border: 2px solid var(--border-color);
             border-radius: 3px;
             background: transparent;
+            position: relative;
+            z-index: 2;
+            margin-top: auto;
+        }
+
+        /* Waveform track specific styling */
+        #waveform-track {
+            height: 40px !important;
+        }
+
+        #waveform-track .track-content {
+            height: 20px !important;
+        }
+
+        /* Waveform zoom overlay styling */
+        .waveform-zoom-overlay {
+            transition: opacity 0.2s ease;
         }
 
         /* Ensure other track layers maintain their original height */
-        .track-layer:not(#merged) {
+        .track-layer:not(#merged):not(#waveform-track) {
             height: 60px !important;
         }
 
-        .track-layer:not(#merged) .track-content {
+        .track-layer:not(#merged):not(#waveform-track) .track-content {
             height: 30px !important;
         }
 
@@ -2782,93 +2876,24 @@
         </div>
 
         <div class="main-content">
-            <!-- Left Control Panel -->
+            <!-- Left Timeline Panel -->
             <div class="left-panel">
-                <!-- File Status Section -->
-                <!-- <div class="left-panel-section">
-                    <div class="section-header">📁 File Status</div>
-                    <div class="section-content">
-                        <div class="file-info">
-                            <div class="current-file" id="current-file-name">0_viola_first_track_demo.wav</div>
-                            <div class="file-stats" id="file-stats">Duration: 00:47.0 • 44.1kHz</div>
-                            <div class="file-goal" id="file-goal">Police forensics: clean up surveillance audio from
-                                evening bust</div>
-                        </div>
-                    </div>
-                </div> -->
-
-                <!-- Main Playback Section -->
-                <div class="left-panel-section">
-                    <div class="section-header">🎵 Playback</div>
-                    <div class="section-content">
-                        <div class="main-playback-simple">
-                            <div class="main-time-section">
-                                <div class="time-display">00:00.0 / 00:47.0</div>
-                                <div class="main-position-bar" onclick="seekToPosition(event)">
-                                    <div class="main-position-fill" id="main-position-fill"></div>
-                                </div>
-                            </div>
-
-                            <div class="main-controls-section">
-                                <div class="main-buttons" id="main-buttons">
-                                    <button class="transport-btn" onclick="toggleMainPlayback(event)"
-                                        disabled>▶</button>
-                                    <button class="transport-btn" onclick="stopMainPlayback(event)" disabled>⏹</button>
-                                    <button class="transport-btn" onclick="seekToStart(event)" disabled
-                                        title="Previous clip (Left arrow)">⏮</button>
-                                    <button class="transport-btn" onclick="seekToEnd(event)" disabled
-                                        title="Next clip (Right arrow)">⏭</button>
-                                </div>
-
-                                <div class="main-loop-container" id="main-loop-container">
-                                    <label class="main-loop-label">
-                                        <input type="checkbox" id="main-loop-checkbox" disabled>
-                                        <span class="loop-text">🔄 Loop</span>
-                                    </label>
-                                    <label class="main-solo-label">
-                                        <input type="checkbox" id="main-solo-checkbox" disabled>
-                                        <span class="solo-text">🎯 Clip solo</span>
-                                    </label>
-                                </div>
-
-                                <div class="playback-disabled-message">
-                                    Analyze the track to enable playback
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VU Meters Section -->
-                <div class="left-panel-section">
-                    <div class="section-header">📊 VU Meters</div>
-                    <div class="vu-meters-container">
-                        <div class="vu-meters">
-                            <div class="vu-meter vu-meter-large" id="vu-left">
-                                <div class="vu-fill"></div>
-                                <div class="vu-peak"></div>
-                            </div>
-                            <div class="vu-meter vu-meter-large" id="vu-right">
-                                <div class="vu-fill"></div>
-                                <div class="vu-peak"></div>
-                            </div>
-                        </div>
-                        <div class="vu-labels">
-                            <div class="vu-label vu-label-large">L</div>
-                            <div class="vu-label vu-label-large">R</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="center-panel">
                 <div class="timeline-header">
                     <div class="section-header">📈 Timeline </div>
                 </div>
 
+                <div class="timeline-instructions">
+                    <span class="instruction-item">▶️ <strong>Play/pause:</strong> Space bar</span>
+                    <span class="instruction-item">↔️ <strong>Jump to clip:</strong> Arrow keys</span>
+                    <span class="instruction-item">🔍 <strong>Zoom:</strong> Mouse wheel</span>
+                    <span class="instruction-item">🖐️ <strong>Pan:</strong> Middle mouse</span>
+                    <span class="instruction-item">🎯 <strong>Analyze:</strong> Drag left mouse</span>
+                </div>
+
                 <div class="track-layer" id="merged">
                     <div class="track-info">
-                        <span style="font-weight: bold; color: #ecf0f1;">Root Layer</span>
+                        <span style="font-weight: bold; color: #ecf0f1;">Spectrogram</span><br>
+                        <span style="font-size: 0.8em; color: #95a5a6;">5_medium_find_the_murderer.wav</span>
                     </div>
                     <div class="track-content"
                         style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative;"
@@ -2883,14 +2908,7 @@
                             <button class="analyze-btn" onclick="realTimeAnalysis(event)">Analyze Track</button>
                         </div>
 
-                        <!-- View mode opacity slider overlay (hidden initially) -->
-                        <div class="view-mode-overlay" id="view-mode-overlay" style="display: none;">
-                            <div class="opacity-slider-container">
-                                <label for="opacity-slider" class="slider-label">🌈 Spec ↔ 📊 Wave</label>
-                                <input type="range" id="opacity-slider" class="opacity-slider" min="0" max="100"
-                                    value="50" oninput="updateViewOpacity(this.value)">
-                            </div>
-                        </div>
+
                         <!-- Zoom controls -->
                         <div class="zoom-controls">
                             <button class="zoom-btn" onclick="zoomOut(event)"
@@ -2908,20 +2926,22 @@
                     </div>
                 </div>
 
-                <div class="timeline-instructions">
-                    <span class="instruction-item">▶️ <strong>Play/pause:</strong> Space bar</span>
-                    <span class="instruction-item">↔️ <strong>Jump to clip:</strong> Arrow keys</span>
-                    <span class="instruction-item">🔍 <strong>Zoom:</strong> Mouse wheel</span>
-                    <span class="instruction-item">🖐️ <strong>Pan:</strong> Middle mouse</span>
-                    <span class="instruction-item">🎯 <strong>Analyze:</strong> Drag box w/ left mouse</span>
+                <div class="track-layer" id="waveform-track">
+                    <div class="track-info">
+                        <span style="font-weight: bold; color: #ecf0f1;">Waveform</span>
+                    </div>
+                    <div class="track-content"
+                        style="background: linear-gradient(90deg, #2c3e50 0%, #2c3e50 100%); position: relative; height: 20px;">
+                        <!-- Playback marker for waveform track -->
+                        <div class="playback-marker-waveform"
+                            style="position: absolute; top: 0; bottom: 0; width: 2px; background: #f39c12; left: 0%; pointer-events: none; z-index: 100;">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="timeline-spacer" style="height: 30px">
                 </div>
 
-                <div class="timeline-header">
-                    <div class="section-header">🎵 Separated Layers</div>
-                </div>
 
                 <div class="track-layer" id="evidence-recording">
                     <div class="track-info">
@@ -3002,17 +3022,60 @@
                 </div>
             </div>
 
+            <!-- Center VU Meters Panel -->
+            <div class="center-panel">
+                <div class="left-panel-section vu-meters-full">
+                    <div class="section-header">📊</div>
+                    <div class="vu-meters-container vu-meters-fullheight">
+                        <div class="vu-meters vu-meters-skinny">
+                            <div class="vu-meter vu-meter-skinny" id="vu-left">
+                                <div class="vu-fill"></div>
+                                <div class="vu-peak"></div>
+                            </div>
+                            <div class="vu-meter vu-meter-skinny" id="vu-right">
+                                <div class="vu-fill"></div>
+                                <div class="vu-peak"></div>
+                            </div>
+                        </div>
+                        <div class="vu-labels vu-labels-skinny">
+                            <div class="vu-label vu-label-skinny">L</div>
+                            <div class="vu-label vu-label-skinny">R</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="right-panel">
-                <!-- Current Clip Section -->
+                <!-- Main Playback Section -->
                 <div class="right-panel-section">
-                    <div class="section-header">🎯 Current Clip</div>
+                    <div class="section-header">🎵 Playback</div>
                     <div class="section-content">
-                        <div id="tools-message" class="tools-message">Run Analyze Track to separate audio layers
-                            and unlock tools.</div>
-                        <div id="selected-clip-display" class="selected-clip-display" style="display: none;">
-                            <div class="selected-clip-title">Selected Clip:</div>
-                            <div class="selected-clip-name"></div>
-                            <div class="selected-clip-waveform">
+                        <div class="main-playback-simple">
+                            <div class="main-time-section">
+                                <div class="time-display">00:00.0 / 00:47.0</div>
+                            </div>
+
+                            <div class="main-controls-section">
+                                <div class="main-buttons" id="main-buttons">
+                                    <button class="transport-btn" onclick="toggleMainPlayback(event)"
+                                        disabled>▶</button>
+                                    <button class="transport-btn" onclick="stopMainPlayback(event)" disabled>⏹</button>
+                                    <button class="transport-btn" onclick="seekToStart(event)" disabled
+                                        title="Previous clip (Left arrow)">⏮</button>
+                                    <button class="transport-btn" onclick="seekToEnd(event)" disabled
+                                        title="Next clip (Right arrow)">⏭</button>
+                                </div>
+
+                                <div class="main-loop-container" id="main-loop-container">
+                                    <label class="main-loop-label">
+                                        <input type="checkbox" id="main-loop-checkbox" disabled>
+                                        <span class="loop-text">🔄 Loop</span>
+                                    </label>
+                                    <label class="main-solo-label">
+                                        <input type="checkbox" id="main-solo-checkbox" disabled>
+                                        <span class="solo-text">🎯 Clip solo</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3022,8 +3085,11 @@
                 <div class="right-panel-section">
                     <div class="section-header">🛠️ Tools</div>
                     <div class="section-content">
-                        <div id="tools-container" class="tools-container" style="display: none;">
+                        <div id="tools-container" class="tools-container tools-container-compact">
                             <!-- Plugins will be generated dynamically -->
+                        </div>
+                        <div id="tools-message" class="tools-message" style="display: none;">
+                            <!-- Hidden message for compatibility -->
                         </div>
                     </div>
                 </div>
@@ -3034,6 +3100,7 @@
     <script>
         // Global variable to store current layer configuration
         window.currentLayerConfig = null;
+        let currentAvailableTools = [];
 
         let selectedPlugin = null;
         let selectedClip = null;
@@ -3048,7 +3115,7 @@
         };
 
         // Solo preferences tracking - per clip basis
-        let userSoloPreferences = new Map(); // clipId -> boolean (user preference)
+        let globalSoloPreference = false; // Global solo preference across all clips
         let mergedMiscClips = []; // Track ??? clips in merged view
         let revealedMiscClips = new Set(); // Once revealed, always visible
         let specOnlyMiscClips = new Set(); // MISC clips only visible in Spec view
@@ -3091,8 +3158,8 @@
 
         // View mode state
         let currentViewMode = 'combined'; // Always combined mode with variable opacity
-        let waveformOpacity = 0.5; // 0.0 = invisible, 1.0 = fully visible (default 50/50)
-        let spectrogramOpacity = 0.5; // 0.0 = invisible, 1.0 = fully visible (default 50/50)
+        let waveformOpacity = 0.0; // Waveform not shown in spectrogram track
+        let spectrogramOpacity = 1.0; // Spectrogram always at full opacity
         let viewModePreferences = {}; // Store per-file opacity preferences
 
         // Manage loop state based on selection and user preferences
@@ -3125,17 +3192,16 @@
                 // Enable checkbox when clip is selected
                 soloCheckbox.disabled = false;
 
-                // Get clip ID and check for user preference
-                const clipId = selectedClip.dataset.clip;
-                const userPreference = userSoloPreferences.get(clipId);
-
-                // If user has made a choice for this clip, use it; otherwise default to true
-                soloCheckbox.checked = userPreference !== undefined ? userPreference : true;
+                // Use global solo preference
+                soloCheckbox.checked = globalSoloPreference;
             } else {
                 // Disable and uncheck when no clip selected
                 soloCheckbox.disabled = true;
                 soloCheckbox.checked = false;
             }
+
+            // Update clip focus visuals to reflect the new solo state
+            updateClipFocusVisuals();
         }
 
         // Track when user manually changes loop checkbox
@@ -3166,11 +3232,13 @@
             soloCheckbox.addEventListener('change', function () {
                 if (this.disabled || !selectedClip) return; // Don't track when disabled or no selection
 
-                const clipId = selectedClip.dataset.clip;
                 const newState = this.checked;
 
-                // Store user preference for this specific clip
-                userSoloPreferences.set(clipId, newState);
+                // Store global solo preference
+                globalSoloPreference = newState;
+
+                // Update clip focus visuals to show/hide top/bottom overlays
+                updateClipFocusVisuals();
             });
         }
 
@@ -4128,6 +4196,7 @@
             // Redraw visualization and update clip positions in the same frame
             requestAnimationFrame(() => {
                 drawVisualization();
+                drawWaveformTrack();
                 updateClipPositions();
                 updateClipFocusVisuals(); // Update clip focus overlays and lines after zoom
             });
@@ -4243,6 +4312,7 @@
             // Use requestAnimationFrame to ensure both updates happen in the same frame
             requestAnimationFrame(() => {
                 drawVisualization();
+                drawWaveformTrack();
                 updateClipPositions();
                 updateClipFocusVisuals(); // Update clip focus overlays and lines after zoom/pan
             });
@@ -4394,7 +4464,11 @@
             updateMiscClipVisibility();
         }
 
-        // Initialize waveform canvas
+        // Variables for waveform track
+        let waveformTrackCanvas = null;
+        let waveformTrackCtx = null;
+
+        // Initialize waveform canvas (for spectrogram track)
         function initializeWaveformCanvas() {
             const mergedTrack = document.querySelector('#merged .track-content');
             if (!mergedTrack) return;
@@ -4421,13 +4495,143 @@
             // Handle window resize
             window.addEventListener('resize', resizeCanvas);
 
-            // Canvas is now the primary waveform display
-
             // Generate waveform data based on current file
             const currentFile = document.querySelector('#merged .track-info span:first-child')?.textContent || '5_medium_find_the_murderer.wav';
             waveformData = generateWaveformData(currentFile, 10000);
             spectrogramData = generateSpectrogramData(currentFile);
             drawVisualization();
+        }
+
+        // Initialize waveform track canvas
+        function initializeWaveformTrackCanvas() {
+            const waveformTrack = document.querySelector('#waveform-track .track-content');
+            if (!waveformTrack) return;
+
+            // Create canvas element
+            waveformTrackCanvas = document.createElement('canvas');
+            waveformTrackCanvas.className = 'waveform-canvas';
+            waveformTrack.appendChild(waveformTrackCanvas);
+
+            // Get 2D context
+            waveformTrackCtx = waveformTrackCanvas.getContext('2d');
+
+            // Set canvas size to match container exactly
+            function resizeWaveformCanvas() {
+                const rect = waveformTrack.getBoundingClientRect();
+                waveformTrackCanvas.width = rect.width;
+                waveformTrackCanvas.height = rect.height;
+                drawWaveformTrack();
+            }
+
+            // Initial resize and setup
+            resizeWaveformCanvas();
+
+            // Handle window resize
+            window.addEventListener('resize', resizeWaveformCanvas);
+
+            // Draw initial waveform
+            drawWaveformTrack();
+        }
+
+        // Draw waveform in the dedicated waveform track
+        function drawWaveformTrack() {
+            if (!waveformTrackCanvas || !waveformTrackCtx) return;
+
+            const width = waveformTrackCanvas.width;
+            const height = waveformTrackCanvas.height;
+
+            // Clear canvas
+            waveformTrackCtx.clearRect(0, 0, width, height);
+
+            // Always draw the FULL waveform (ignore zoom)
+            const centerY = height / 2;
+            const waveformWidth = waveformData.length;
+
+            // Calculate revelation limit during analysis mode
+            let revealLimit = width;
+            if (isAnalyzing) {
+                const currentProgress = currentTime / totalDuration;
+                revealLimit = width * currentProgress;
+            }
+
+            // Set waveform style
+            waveformTrackCtx.strokeStyle = getCurrentWaveformColor();
+            waveformTrackCtx.lineWidth = 2;
+            waveformTrackCtx.beginPath();
+
+            // Draw the entire waveform from 0 to full width
+            for (let x = 0; x < width && x <= revealLimit; x++) {
+                const timeProgress = x / width; // 0 to 1 across entire track
+                const sampleIndex = Math.floor(timeProgress * waveformWidth);
+
+                if (sampleIndex >= 0 && sampleIndex < waveformWidth) {
+                    const amplitude = waveformData[sampleIndex];
+                    const y = centerY + amplitude * (centerY - 2); // Leave 2px margin for smaller height
+
+                    if (x === 0) {
+                        waveformTrackCtx.moveTo(x, y);
+                    } else {
+                        waveformTrackCtx.lineTo(x, y);
+                    }
+                }
+            }
+
+            waveformTrackCtx.stroke();
+
+            // Add zoom indication overlays when zoomed in
+            updateWaveformZoomOverlays();
+        }
+
+        // Update waveform track overlays to show what's not visible in spectrogram
+        function updateWaveformZoomOverlays() {
+            const waveformTrack = document.querySelector('#waveform-track .track-content');
+            if (!waveformTrack) return;
+
+            // Remove existing overlays
+            waveformTrack.querySelectorAll('.waveform-zoom-overlay').forEach(overlay => {
+                overlay.remove();
+            });
+
+            // Only add overlays if zoomed in
+            if (currentZoom <= 1.0) return;
+
+            // Calculate visible range in the spectrogram (as percentages)
+            const visibleStart = waveformOffsetX * 100;
+            const visibleEnd = visibleStart + (100 / currentZoom);
+
+            // Create left overlay (before visible area)
+            if (visibleStart > 0) {
+                const leftOverlay = document.createElement('div');
+                leftOverlay.className = 'waveform-zoom-overlay left-overlay';
+                leftOverlay.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    left: 0%;
+                    width: ${visibleStart}%;
+                    background: rgba(0, 0, 0, 0.6);
+                    pointer-events: none;
+                    z-index: 10;
+                `;
+                waveformTrack.appendChild(leftOverlay);
+            }
+
+            // Create right overlay (after visible area)
+            if (visibleEnd < 100) {
+                const rightOverlay = document.createElement('div');
+                rightOverlay.className = 'waveform-zoom-overlay right-overlay';
+                rightOverlay.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    left: ${visibleEnd}%;
+                    width: ${100 - visibleEnd}%;
+                    background: rgba(0, 0, 0, 0.6);
+                    pointer-events: none;
+                    z-index: 10;
+                `;
+                waveformTrack.appendChild(rightOverlay);
+            }
         }
 
         // Mouse wheel zoom functionality
@@ -4587,38 +4791,33 @@
                 updateTimeDisplay();
                 updatePlaybackMarker();
 
+                // Auto-pan to show the target clip if it's outside the current zoom viewport
+                autoPanToShowClip(targetClip, direction);
+
                 // If a clip was selected, update the selection to the target clip
                 if (selectedClip) {
-                    // Remove selection from current clip
-                    selectedClip.classList.remove('selected');
+                    // Exit current clip focus mode first
+                    if (clipFocusMode) {
+                        exitClipFocusMode();
+                    }
+
+                    // Remove selection from all clips
+                    document.querySelectorAll('.audio-clip').forEach(clip => {
+                        clip.classList.remove('selected');
+                    });
 
                     // Select the target clip
                     targetClip.element.classList.add('selected');
                     selectedClip = targetClip.element;
 
-                    // Update selected clip display
-                    const selectedClipDisplay = document.getElementById('selected-clip-display');
-                    const selectedClipName = selectedClipDisplay.querySelector('.selected-clip-name');
-                    const selectedClipWaveform = selectedClipDisplay.querySelector('.selected-clip-waveform');
+                    // Also highlight corresponding clips in other layers
+                    highlightCorrespondingClips(selectedClip.dataset.clip);
 
-                    selectedClipName.textContent = selectedClip.dataset.clip;
-
-                    // Get the correct color based on the clip's layer
-                    const clipLayerId = selectedClip.closest('.track-layer').id;
-                    const clipColor = getClipColorByLayer(clipLayerId);
-                    selectedClipWaveform.style.background = `linear-gradient(90deg, ${clipColor}22 0%, ${clipColor}11 100%)`;
-                    selectedClipWaveform.style.color = clipColor;
-
-                    // Apply waveform to selected clip display
-                    applyWaveformToClip(selectedClipWaveform);
-
-                    // Update clip focus mode if active
-                    if (clipFocusMode) {
-                        exitClipFocusMode();
-                        enterClipFocusMode(selectedClip);
-                    }
+                    // Enter clip focus mode for the new clip
+                    enterClipFocusMode(selectedClip);
 
                     // Update tools for the new selection
+                    updateToolStates();
                     const clipId = selectedClip.dataset.clip;
                     const activeEffects = clipEffects.get(clipId) || new Set();
 
@@ -4635,8 +4834,55 @@
 
                     // Update loop state when selection changes via arrow keys
                     updateLoopState();
+
+                    // Update solo state when selection changes via arrow keys
+                    updateSoloState();
                 }
             }
+        }
+
+        // Auto-pan to show a clip if it's outside the current zoom viewport
+        function autoPanToShowClip(targetClip, direction = null) {
+            if (currentZoom <= 1.0) return; // No need to pan if not zoomed in
+
+            const clipLeft = targetClip.left; // Already as percentage
+            const clipWidth = parseFloat(targetClip.element.style.width.replace('%', ''));
+            const clipEnd = clipLeft + clipWidth;
+
+            // Calculate current visible range
+            const visibleStart = waveformOffsetX * 100;
+            const visibleEnd = visibleStart + (100 / currentZoom);
+            const viewportWidth = 100 / currentZoom;
+
+            // Check if clip is already fully visible
+            const isFullyVisible = (clipLeft >= visibleStart) && (clipEnd <= visibleEnd);
+
+            if (isFullyVisible) return; // Already visible, no need to pan
+
+            let newOffset;
+
+            if (direction === 'left') {
+                // When going left, position so the clip's LEFT edge is fully visible
+                // Put the clip's left edge at the left side of the viewport (with small margin)
+                const margin = viewportWidth * 0.05; // 5% margin from edge
+                newOffset = Math.max(0, (clipLeft - margin) / 100);
+            } else if (direction === 'right') {
+                // When going right, position so the clip's RIGHT edge is fully visible
+                // Put the clip's right edge at the right side of the viewport (with small margin)
+                const margin = viewportWidth * 0.05; // 5% margin from edge
+                newOffset = Math.max(0, (clipEnd + margin - viewportWidth) / 100);
+            } else {
+                // Default behavior (center the clip) - used for non-directional navigation
+                const clipCenter = clipLeft + (clipWidth / 2);
+                newOffset = (clipCenter - (viewportWidth / 2)) / 100;
+            }
+
+            // Clamp to valid range
+            const maxOffset = 1 - (1 / currentZoom);
+            waveformOffsetX = Math.max(0, Math.min(maxOffset, newOffset));
+
+            // Update visualization with smooth animation
+            updateVisualizationAndClips();
         }
 
         // Middle mouse button drag for panning
@@ -5000,9 +5246,9 @@
         // Plugin factory functions
         function createTogglePlugin(plugin) {
             return `
-                <div class="plugin-section disabled" onclick="selectPlugin('${plugin.id}')">
-                    <div class="plugin-title">${plugin.icon} ${plugin.name}</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${plugin.description}</div>
+                <div class="plugin-section disabled" onclick="selectPlugin('${plugin.id}')" title="${plugin.description}">
+                    <div class="plugin-background-emoji">${plugin.icon}</div>
+                    <div class="plugin-title">${plugin.name}</div>
                     <div class="checkbox"></div>
                 </div>
             `;
@@ -5010,8 +5256,9 @@
 
         function createSliderPlugin(plugin) {
             return `
-                <div class="plugin-section disabled">
-                    <div class="plugin-title">${plugin.icon} ${plugin.name}</div>
+                <div class="plugin-section disabled" title="${plugin.description}">
+                    <div class="plugin-background-emoji">${plugin.icon}</div>
+                    <div class="plugin-title">${plugin.name}</div>
                     <div class="slider-container">
                         <div class="slider-labels">
                             <span>${plugin.range[0]}</span>
@@ -5023,18 +5270,13 @@
                             <div class="slider-thumb"></div>
                         </div>
                     </div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${plugin.description}</div>
                 </div>
             `;
         }
 
         function generatePluginsHTML(availableTools = []) {
-            // Filter plugins to only show available tools for current level
-            const filteredPlugins = PLUGIN_CONFIG.filter(plugin =>
-                availableTools.length === 0 || availableTools.includes(plugin.id)
-            );
-
-            return filteredPlugins.map(plugin =>
+            // Always show all plugins, enable/disable logic handled by updateToolStates
+            return PLUGIN_CONFIG.map(plugin =>
                 plugin.type === 'slider' ? createSliderPlugin(plugin) : createTogglePlugin(plugin)
             ).join('');
         }
@@ -5070,27 +5312,15 @@
         // Update playback marker position
         function updatePlaybackMarker() {
             const marker = document.getElementById('playback-marker');
-            const positionFill = document.getElementById('main-position-fill');
+            const waveformMarker = document.querySelector('.playback-marker-waveform');
             const percentage = (currentTime / totalDuration) * 100;
 
             if (marker) {
                 marker.style.left = `${percentage}%`;
             }
-            if (positionFill) {
-                positionFill.style.width = `${percentage}%`;
+            if (waveformMarker) {
+                waveformMarker.style.left = `${percentage}%`;
             }
-        }
-
-        function seekToPosition(event) {
-            event.stopPropagation();
-            const positionBar = event.currentTarget;
-            const rect = positionBar.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const percentage = clickX / rect.width;
-
-            currentTime = percentage * totalDuration;
-            updateTimeDisplay();
-            updatePlaybackMarker();
         }
 
         // Clip waveform generation
@@ -5364,7 +5594,7 @@
             revealedLayers.clear();
 
             // IMPORTANT: Remove all existing layers completely to ensure clean slate
-            const trackLayers = document.querySelectorAll('.track-layer:not(#merged)');
+            const trackLayers = document.querySelectorAll('.track-layer:not(#merged):not(#waveform-track)');
             trackLayers.forEach(layer => {
                 layer.remove();
             });
@@ -5488,6 +5718,7 @@
 
                 // Redraw waveform with progressive revelation
                 drawVisualization();
+                drawWaveformTrack();
 
                 // Check for clip revelation
                 checkClipRevelation(regularClips, miscClips, miscLayers);
@@ -6109,11 +6340,11 @@
         // Create a regular layer but keep it hidden initially
         function createRegularLayerHidden(layerId, layerClips) {
             const layerConfig = window.currentLayerConfig[layerId];
-            const centerPanel = document.querySelector('.center-panel');
+            const leftPanel = document.querySelector('.left-panel');
 
             // Find the last layer to insert after (to maintain order)
-            const existingLayers = centerPanel.querySelectorAll('.track-layer:not(#merged)');
-            const layersHeader = centerPanel.querySelector('.timeline-header:last-of-type');
+            const existingLayers = leftPanel.querySelectorAll('.track-layer:not(#merged)');
+            const layersHeader = leftPanel.querySelector('.timeline-header:last-of-type');
             let insertAfter = layersHeader || document.getElementById('merged');
 
             // If there are existing layers, insert after the last one
@@ -6128,7 +6359,7 @@
             };
 
             // Create the layer with only large clips
-            const trackLayer = createTrackLayer(layerId, filteredLayerConfig, centerPanel, insertAfter);
+            const trackLayer = createTrackLayer(layerId, filteredLayerConfig, leftPanel, insertAfter);
 
             // Hide all clips initially - they'll be revealed sequentially
             layerClips.forEach(clip => {
@@ -6178,11 +6409,11 @@
 
         // Create a MISC layer but keep it hidden initially
         function createMiscLayerHidden(miscLayer) {
-            const centerPanel = document.querySelector('.center-panel');
+            const leftPanel = document.querySelector('.left-panel');
 
             // Find the last layer to insert after (to maintain order)
-            const existingLayers = centerPanel.querySelectorAll('.track-layer:not(#merged)');
-            const layersHeader = centerPanel.querySelector('.timeline-header:last-of-type');
+            const existingLayers = leftPanel.querySelectorAll('.track-layer:not(#merged)');
+            const layersHeader = leftPanel.querySelector('.timeline-header:last-of-type');
             let insertAfter = layersHeader || document.getElementById('merged');
 
             // If there are existing layers, insert after the last one
@@ -6819,8 +7050,7 @@
 
         function enableTools() {
             isAnalyzed = true;
-            document.getElementById('tools-message').textContent = 'Select a clip in a layer to use available tools.';
-            document.getElementById('tools-container').style.display = 'block';
+            // Tools container is always visible now, no need to show/hide
 
             // Show view mode overlay
             const viewModeOverlay = document.getElementById('view-mode-overlay');
@@ -6833,6 +7063,9 @@
                 clip.style.pointerEvents = 'auto';
                 clip.style.cursor = 'pointer';
             });
+
+            // Update tool states - analysis is done but still need clip selection
+            updateToolStates();
 
             // Enable main playback controls
             enablePlaybackControls();
@@ -6861,6 +7094,42 @@
             if (disabledMessage) {
                 disabledMessage.style.display = 'none';
             }
+        }
+
+        function updateToolStates() {
+            const hasClipSelected = selectedClip !== null;
+            const isAnalysisComplete = isAnalyzed;
+
+            document.querySelectorAll('.plugin-section').forEach(section => {
+                const pluginTitle = section.querySelector('.plugin-title');
+                if (!pluginTitle) return;
+
+                // Get the plugin name from the title, removing emoji and spaces
+                const pluginName = pluginTitle.textContent
+                    .replace(/[^\w\s]/g, '') // Remove emojis
+                    .trim()
+                    .toLowerCase()
+                    .replace(/\s+/g, ''); // Remove spaces
+
+                // Check if this tool is available in the current level
+                const isAvailableInLevel = currentAvailableTools.length === 0 || currentAvailableTools.includes(pluginName);
+
+                // Tool should be enabled only if:
+                // 1. Analysis is complete AND
+                // 2. A clip is selected AND  
+                // 3. Tool is available in this level
+                const shouldEnable = isAnalysisComplete && hasClipSelected && isAvailableInLevel;
+
+                if (shouldEnable) {
+                    section.classList.remove('disabled');
+                    section.style.pointerEvents = 'auto';
+                    section.style.opacity = '1';
+                } else {
+                    section.classList.add('disabled');
+                    section.style.pointerEvents = 'none';
+                    section.style.opacity = '0.3';
+                }
+            });
         }
 
         // Clip Focus Mode Functions
@@ -6986,6 +7255,10 @@
 
             // Only create overlays and lines if the clip is visible
             if (isInVisibleRange && rootClip.style.display !== 'none') {
+                // Check if solo mode is active
+                const soloCheckbox = document.getElementById('main-solo-checkbox');
+                const isSoloActive = soloCheckbox && soloCheckbox.checked;
+
                 // Create darkening overlays
                 // Left side overlay
                 if (currentLeft > 0) {
@@ -6994,6 +7267,10 @@
                     leftOverlay.className = 'clip-focus-overlay left-overlay';
                     leftOverlay.style.left = '0%';
                     leftOverlay.style.width = `${leftOverlayWidth}%`;
+                    if (isSoloActive) {
+                        leftOverlay.style.top = '0%';
+                        leftOverlay.style.height = '100%';
+                    }
                     trackContent.appendChild(leftOverlay);
                 }
 
@@ -7006,7 +7283,54 @@
                     rightOverlay.className = 'clip-focus-overlay right-overlay';
                     rightOverlay.style.left = `${rightOverlayLeft}%`;
                     rightOverlay.style.width = `${rightOverlayWidth}%`;
+                    if (isSoloActive) {
+                        rightOverlay.style.top = '0%';
+                        rightOverlay.style.height = '100%';
+                    }
                     trackContent.appendChild(rightOverlay);
+                }
+
+                // Add top and bottom overlays when solo is active
+                if (isSoloActive) {
+                    // Get clip's vertical position and height
+                    const clipTop = parseFloat(rootClip.style.top.replace('px', '')) || 0;
+                    const clipHeight = 18; // Standard clip height
+                    const trackHeight = trackContent.offsetHeight;
+
+                    // Top overlay (above the clip)
+                    if (clipTop > 0) {
+                        const topOverlay = document.createElement('div');
+                        topOverlay.className = 'clip-focus-overlay top-overlay';
+                        topOverlay.style.cssText = `
+                            position: absolute;
+                            top: 0px;
+                            left: ${currentLeft}%;
+                            width: ${currentWidth}%;
+                            height: ${clipTop}px;
+                            background: rgba(0, 0, 0, 0.7);
+                            pointer-events: none;
+                            z-index: 50;
+                        `;
+                        trackContent.appendChild(topOverlay);
+                    }
+
+                    // Bottom overlay (below the clip)
+                    const clipBottom = clipTop + clipHeight;
+                    if (clipBottom < trackHeight) {
+                        const bottomOverlay = document.createElement('div');
+                        bottomOverlay.className = 'clip-focus-overlay bottom-overlay';
+                        bottomOverlay.style.cssText = `
+                            position: absolute;
+                            top: ${clipBottom}px;
+                            left: ${currentLeft}%;
+                            width: ${currentWidth}%;
+                            height: ${trackHeight - clipBottom}px;
+                            background: rgba(0, 0, 0, 0.7);
+                            pointer-events: none;
+                            z-index: 50;
+                        `;
+                        trackContent.appendChild(bottomOverlay);
+                    }
                 }
 
                 // Create loop point lines
@@ -7035,6 +7359,10 @@
 
         function selectClip(event) {
             if (!event.target.classList.contains('audio-clip')) {
+                // Clicked on empty space in track - deselect current clip
+                if (selectedClip) {
+                    deselectClip();
+                }
                 return;
             }
             if (!isAnalyzed) {
@@ -7063,6 +7391,9 @@
             event.target.classList.add('selected');
             selectedClip = event.target;
 
+            // Also highlight corresponding clips in other layers
+            highlightCorrespondingClips(event.target.dataset.clip);
+
             // Find corresponding clip in root layer for focus mode
             const rootLayer = document.getElementById('merged');
             const isInRootLayer = rootLayer.contains(event.target);
@@ -7079,51 +7410,19 @@
                 }
             }
 
-            // Update selected clip display
-            const selectedClipDisplay = document.getElementById('selected-clip-display');
-            const selectedClipName = selectedClipDisplay.querySelector('.selected-clip-name');
-            const selectedClipWaveform = selectedClipDisplay.querySelector('.selected-clip-waveform');
+            // Update tool states and their active state based on clip effects
+            updateToolStates();
 
-            // Set clip name and correct waveform color
-            selectedClipName.textContent = selectedClip.dataset.clip;
-
-            // Get the correct color based on the clip's layer
-            const clipLayerId = selectedClip.closest('.track-layer').id;
-            const clipColor = getClipColorByLayer(clipLayerId);
-            selectedClipWaveform.style.background = `linear-gradient(90deg, ${clipColor}22 0%, ${clipColor}11 100%)`;
-            selectedClipWaveform.style.color = clipColor;
-
-            // Apply waveform to selected clip display
-            applyWaveformToClip(selectedClipWaveform);
-
-            // Show the display and hide the tools message
-            selectedClipDisplay.style.display = 'block';
-            document.getElementById('tools-message').style.display = 'none';
-
-            // Enable tools and update their active state based on clip effects
             const clipId = selectedClip.dataset.clip;
             const activeEffects = clipEffects.get(clipId) || new Set();
 
-
-            const pluginSections = document.querySelectorAll('.plugin-section');
-
-            // Check if tools container is visible
-            const toolsContainer = document.getElementById('tools-container');
-
-            pluginSections.forEach(section => {
-                section.classList.remove('disabled');
-
-                // Explicitly enable pointer events and reset opacity to override any CSS rules
-                section.style.pointerEvents = 'auto';
-                section.style.opacity = '1';
-
+            document.querySelectorAll('.plugin-section').forEach(section => {
                 // Get the plugin name from the title, removing emoji and spaces
                 const pluginName = section.querySelector('.plugin-title').textContent
                     .replace(/[^\w\s]/g, '') // Remove emojis
                     .trim()
                     .toLowerCase()
                     .replace(/\s+/g, ''); // Remove spaces
-
 
                 // Toggle active state based on whether this effect is in the clip's active effects
                 const hasEffect = activeEffects.has(pluginName);
@@ -7137,9 +7436,20 @@
             updateSoloState();
         }
 
+        // Highlight corresponding clips in all layers
+        function highlightCorrespondingClips(clipId) {
+            // Find all clips with the same clip ID across all layers
+            document.querySelectorAll(`[data-clip="${clipId}"]`).forEach(clip => {
+                clip.classList.add('selected');
+            });
+        }
+
         function deselectClip() {
             if (selectedClip) {
-                selectedClip.classList.remove('selected');
+                // Remove selection from all clips (including corresponding ones in other layers)
+                document.querySelectorAll('.audio-clip').forEach(clip => {
+                    clip.classList.remove('selected');
+                });
                 selectedClip = null;
 
                 // Exit clip focus mode
@@ -7147,17 +7457,15 @@
                     exitClipFocusMode();
                 }
 
-                // Hide selected clip display and show tools message
+                // Hide selected clip display
                 document.getElementById('selected-clip-display').style.display = 'none';
-                const toolsMessage = document.getElementById('tools-message');
-                toolsMessage.style.display = 'block';
-                toolsMessage.textContent = 'Select a clip to use available tools';
 
-                // Disable tools and reset their appearance
+                // Update tool states (will disable them since no clip selected)
+                updateToolStates();
+
+                // Reset tool appearance
                 document.querySelectorAll('.plugin-section').forEach(section => {
-                    section.classList.add('disabled');
                     section.classList.remove('active'); // Remove active state to reset color
-                    section.style.pointerEvents = 'none'; // Explicitly disable pointer events
                 });
 
                 // Update loop state based on deselection
@@ -7294,10 +7602,11 @@
 
         // Initialize application
         function initializeApp() {
-            // Generate plugins dynamically (initially empty - will be populated when loading audio)
+            // Generate all plugins - they'll start disabled until analysis + clip selection
             const toolsContainer = document.getElementById('tools-container');
             if (toolsContainer) {
                 toolsContainer.innerHTML = generatePluginsHTML([]);
+                updateToolStates(); // Start with all tools disabled
             }
 
             // Initialize sliders
@@ -7308,6 +7617,7 @@
 
             // Initialize waveform canvas
             initializeWaveformCanvas();
+            initializeWaveformTrackCanvas();
 
             // Setup loop preference tracking
             setupLoopPreferenceTracking();
@@ -7420,7 +7730,7 @@
             clipEffects.clear();
 
             // Clear solo preferences
-            userSoloPreferences.clear();
+            globalSoloPreference = false;
 
             // Clear clip position data
             originalClipData.clear();
@@ -7511,9 +7821,6 @@
             }
 
             // Reset tools panel
-            document.getElementById('tools-message').textContent = 'Run Analyze Track to separate audio layers and unlock tools.';
-            document.getElementById('tools-message').style.display = 'block';
-            document.getElementById('tools-container').style.display = 'none';
             document.getElementById('selected-clip-display').style.display = 'none';
 
             // Disable all plugins and reset their state
@@ -7572,19 +7879,21 @@
 
             // Canvas-based waveform is already updated via generateWaveformData
 
-            // Update tools based on available tools for this level
+            // Store available tools globally and update tools display
+            currentAvailableTools = config.availableTools || [];
             const toolsContainer = document.getElementById('tools-container');
             if (toolsContainer) {
-                toolsContainer.innerHTML = generatePluginsHTML(config.availableTools || []);
+                toolsContainer.innerHTML = generatePluginsHTML(currentAvailableTools);
                 initSliders(); // Re-initialize sliders after regenerating tools
+                updateToolStates(); // Set initial disabled state
             }
 
             // Create track layers dynamically
-            const centerPanel = document.querySelector('.center-panel');
+            const leftPanel = document.querySelector('.left-panel');
             const mergedLayer = document.getElementById('merged');
 
             Object.entries(config.layers).forEach(([layerId, layerConfig]) => {
-                createTrackLayer(layerId, layerConfig, centerPanel, mergedLayer);
+                createTrackLayer(layerId, layerConfig, leftPanel, mergedLayer);
             });
 
             // Update global layer config for analysis game
