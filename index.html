@@ -7856,13 +7856,40 @@
             clipFocusMode = true;
             clipElement.classList.add('clip-focused');
 
+            // Calculate clip boundaries for constrained playback
+            const clipLeft = parseFloat(clipElement.style.left.replace('%', ''));
+            const clipWidth = parseFloat(clipElement.style.width.replace('%', ''));
+
+            // Convert percentages to absolute time positions
+            focusedClipStart = (clipLeft / 100) * totalDuration;
+            focusedClipEnd = ((clipLeft + clipWidth) / 100) * totalDuration;
+
+            // Jump playhead to the beginning of the selected clip
+            currentTime = focusedClipStart;
+            updateTimeDisplay();
+            updatePlaybackMarker();
+
+            // Auto-pan to show the clip if it's outside the current zoom viewport
+            if (currentZoom > 1.0) {
+                const clipGlobalPercentage = (focusedClipStart / totalDuration) * 100;
+                const visibleStart = waveformOffsetX * 100;
+                const visibleEnd = visibleStart + (100 / currentZoom);
+
+                // Check if clip start is outside current visible range
+                if (clipGlobalPercentage < visibleStart || clipGlobalPercentage > visibleEnd) {
+                    // Pan to show the clip
+                    const maxOffset = 1 - (1 / currentZoom);
+                    const targetOffset = (clipGlobalPercentage / 100) - (0.1 / currentZoom); // Position clip near left edge
+                    waveformOffsetX = Math.max(0, Math.min(maxOffset, targetOffset));
+
+                    // Update visualization immediately
+                    updateVisualizationAndClips();
+                    updatePanButtons();
+                }
+            }
+
             // Update visual indicators
             updateClipFocusVisuals();
-
-            // Set focus boundaries for playback
-            const clipId = clipElement.dataset.clip;
-            // Focus boundaries would be calculated based on clip position
-            // This is a simplified version - in practice you'd calculate actual time positions
         }
 
         // Exit clip focus mode
@@ -7871,13 +7898,17 @@
 
             clipFocusMode = false;
 
+            // Reset focused clip boundaries
+            focusedClipStart = 0;
+            focusedClipEnd = 0;
+
             // Remove focus styling from all clips
             document.querySelectorAll('.audio-clip').forEach(clip => {
                 clip.classList.remove('clip-focused');
             });
 
             // Remove focus visuals
-            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(el => el.remove());
+            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line, .clip-spectrogram-indicator').forEach(el => el.remove());
         }
 
         // Enable playback controls after analysis is complete
