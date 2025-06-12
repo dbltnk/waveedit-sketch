@@ -1504,9 +1504,27 @@
         }
 
         .audio-clip.selected {
-            border: 2px solid #f39c12;
-            box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+            border: 3px solid #f39c12;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.8), 0 0 30px rgba(243, 156, 18, 0.4);
+            background: linear-gradient(45deg, rgba(243, 156, 18, 0.2), rgba(243, 156, 18, 0.1));
+            transform: scale(1.05);
+            z-index: 10;
         }
+
+
+
+        /* Selected clip indicator in spectrogram */
+        .clip-spectrogram-indicator {
+            position: absolute;
+            background: linear-gradient(45deg, rgba(243, 156, 18, 0.4), rgba(243, 156, 18, 0.2));
+            border: 2px solid #f39c12;
+            border-radius: 3px;
+            pointer-events: none;
+            z-index: 10;
+            /* Above darkening overlays */
+        }
+
+
 
         .audio-clip.dragging {
             z-index: 1000;
@@ -7661,7 +7679,18 @@
             const shouldEnable = isAnalyzed && selectedClip;
 
             pluginSections.forEach(section => {
-                if (shouldEnable) {
+                const pluginTitle = section.querySelector('.plugin-title')?.textContent?.toLowerCase() || '';
+
+                // Check if this tool is available in the current level
+                const isToolAvailable = currentAvailableTools.some(tool =>
+                    pluginTitle.includes(tool.toLowerCase()) ||
+                    tool.toLowerCase().includes(pluginTitle)
+                );
+
+                // Tool is enabled only if: analysis complete + clip selected + tool available in level
+                const canEnable = shouldEnable && isToolAvailable;
+
+                if (canEnable) {
                     section.classList.remove('disabled');
                     section.style.pointerEvents = 'auto';
                     section.style.opacity = '1';
@@ -7680,57 +7709,85 @@
 
         // Update clip focus visuals and overlays
         function updateClipFocusVisuals() {
+            // Remove any existing focus visuals and spectrogram indicators
+            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line, .clip-spectrogram-indicator').forEach(el => el.remove());
+
             // If no clip focus mode, just return
             if (!clipFocusMode || !selectedClip) {
-                // Remove any existing focus visuals
-                document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(el => el.remove());
                 return;
             }
-
-            // Remove existing focus visuals
-            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line').forEach(el => el.remove());
 
             // Get the focused clip's position and dimensions
             const clipRect = selectedClip.getBoundingClientRect();
             const trackRect = selectedClip.closest('.track-content').getBoundingClientRect();
 
-            // Create focus overlay if solo mode is enabled
+            // Find the spectrogram/merged track where overlays should appear
+            const spectrogramTrack = document.querySelector('#merged .track-content');
+            if (!spectrogramTrack) return;
+
+            // Calculate clip position values once
+            const clipLeft = parseFloat(selectedClip.style.left.replace('%', ''));
+            const clipWidth = parseFloat(selectedClip.style.width.replace('%', ''));
+
+            // Create strong visual indicator in spectrogram for selected clip (matching clip size and position)
+            const spectrogramIndicator = document.createElement('div');
+            spectrogramIndicator.className = 'clip-spectrogram-indicator';
+            spectrogramIndicator.style.left = selectedClip.style.left;
+            spectrogramIndicator.style.width = selectedClip.style.width;
+            spectrogramIndicator.style.top = selectedClip.style.top || '6px'; // Use clip's actual vertical position
+            spectrogramIndicator.style.height = selectedClip.style.height || '18px'; // Use clip's actual height
+            spectrogramTrack.appendChild(spectrogramIndicator);
+
+            // Always create left and right dimming overlays when a clip is selected
+            const leftOverlay = document.createElement('div');
+            leftOverlay.className = 'clip-focus-overlay';
+            leftOverlay.style.left = '0';
+            leftOverlay.style.width = selectedClip.style.left;
+            leftOverlay.style.top = '0';
+            leftOverlay.style.height = '100%';
+            spectrogramTrack.appendChild(leftOverlay);
+
+            const rightOverlay = document.createElement('div');
+            rightOverlay.className = 'clip-focus-overlay';
+            rightOverlay.style.left = `${clipLeft + clipWidth}%`;
+            rightOverlay.style.width = `${100 - (clipLeft + clipWidth)}%`;
+            rightOverlay.style.top = '0';
+            rightOverlay.style.height = '100%';
+            spectrogramTrack.appendChild(rightOverlay);
+
+            // Additionally add vertical darkening only if Clip Solo is enabled
             const soloCheckbox = document.getElementById('main-solo-checkbox');
-            const showOverlay = soloCheckbox && soloCheckbox.checked;
+            const showVerticalOverlay = soloCheckbox && soloCheckbox.checked;
 
-            if (showOverlay) {
-                // Create dimming overlays for areas outside the focused clip
-                const leftOverlay = document.createElement('div');
-                leftOverlay.className = 'clip-focus-overlay';
-                leftOverlay.style.left = '0';
-                leftOverlay.style.width = selectedClip.style.left;
-                leftOverlay.style.top = '0';
-                leftOverlay.style.height = '100%';
-                selectedClip.closest('.track-content').appendChild(leftOverlay);
+            if (showVerticalOverlay) {
+                // Add vertical darkening (above and below the clip area)
+                const topOverlay = document.createElement('div');
+                topOverlay.className = 'clip-focus-overlay';
+                topOverlay.style.left = selectedClip.style.left;
+                topOverlay.style.width = selectedClip.style.width;
+                topOverlay.style.top = '0';
+                topOverlay.style.height = '50%'; // Top half of spectrogram
+                spectrogramTrack.appendChild(topOverlay);
 
-                const rightOverlay = document.createElement('div');
-                rightOverlay.className = 'clip-focus-overlay';
-                const clipLeft = parseFloat(selectedClip.style.left.replace('%', ''));
-                const clipWidth = parseFloat(selectedClip.style.width.replace('%', ''));
-                rightOverlay.style.left = `${clipLeft + clipWidth}%`;
-                rightOverlay.style.width = `${100 - (clipLeft + clipWidth)}%`;
-                rightOverlay.style.top = '0';
-                rightOverlay.style.height = '100%';
-                selectedClip.closest('.track-content').appendChild(rightOverlay);
+                const bottomOverlay = document.createElement('div');
+                bottomOverlay.className = 'clip-focus-overlay';
+                bottomOverlay.style.left = selectedClip.style.left;
+                bottomOverlay.style.width = selectedClip.style.width;
+                bottomOverlay.style.top = '50%';
+                bottomOverlay.style.height = '50%'; // Bottom half of spectrogram
+                spectrogramTrack.appendChild(bottomOverlay);
             }
 
-            // Create in-point and out-point lines
+            // Create in-point and out-point lines in the spectrogram
             const inLine = document.createElement('div');
             inLine.className = 'clip-focus-line in-point';
             inLine.style.left = selectedClip.style.left;
-            selectedClip.closest('.track-content').appendChild(inLine);
+            spectrogramTrack.appendChild(inLine);
 
             const outLine = document.createElement('div');
             outLine.className = 'clip-focus-line out-point';
-            const clipLeft = parseFloat(selectedClip.style.left.replace('%', ''));
-            const clipWidth = parseFloat(selectedClip.style.width.replace('%', ''));
             outLine.style.left = `${clipLeft + clipWidth}%`;
-            selectedClip.closest('.track-content').appendChild(outLine);
+            spectrogramTrack.appendChild(outLine);
         }
 
         // Enter clip focus mode
