@@ -6975,6 +6975,85 @@
             miscIdentificationDrawing = false;
         }
 
+        // Start analysis animation for identified MISC clips using existing animation system
+        function startAnalysisAnimation(overlappingClips) {
+            console.log('🎬 Starting MISC clip identification animation for', overlappingClips.length, 'clips');
+
+            overlappingClips.forEach((clip, index) => {
+                const clipId = clip.dataset.clip;
+
+                // Stagger the start of each clip's analysis
+                setTimeout(() => {
+                    console.log('🔬 Starting analysis for clip:', clipId);
+
+                    // Add existing analyzing classes for full animation (orange border, loading bar, etc.)
+                    clip.classList.add('analyzing');
+
+                    // Add existing analyzing label with pulsing animation
+                    const analyzingLabel = document.createElement('div');
+                    analyzingLabel.className = 'analyzing-label';
+                    analyzingLabel.textContent = 'ANALYZING...';
+                    clip.appendChild(analyzingLabel);
+
+                    // After CSS animation completes (2.5s), reveal the clip
+                    setTimeout(() => {
+                        console.log('✅ Analysis complete for clip:', clipId);
+
+                        // Remove analyzing state
+                        clip.classList.remove('analyzing');
+                        if (analyzingLabel.parentNode) {
+                            analyzingLabel.remove();
+                        }
+
+                        // Mark as identified and start dramatic reveal animation
+                        clip.classList.add('identified', 'first-reveal');
+                        clip.textContent = clipId; // Show real name instead of ???
+
+                        // Update styling to show it's now identified and clickable
+                        clip.style.background = '#6c7b7f';
+                        clip.style.color = '#fff';
+                        clip.style.border = '2px solid #95a5a6';
+                        clip.style.pointerEvents = 'auto';
+
+                        // Also reveal and animate corresponding MISC layer clip (reusing existing pattern)
+                        const miscLayerClip = document.querySelector(`.misc-layer .audio-clip[data-clip="${clipId}"]`);
+                        if (miscLayerClip && miscLayerClip.classList.contains('hidden-small')) {
+                            // Remove hidden state and show real name
+                            miscLayerClip.classList.remove('hidden-small');
+                            miscLayerClip.textContent = clipId;
+                            miscLayerClip.style.display = 'flex';
+                            miscLayerClip.classList.add('first-reveal');
+
+                            // Update styling to match identified state
+                            miscLayerClip.style.background = '#6c7b7f';
+                            miscLayerClip.style.color = '#fff';
+                            miscLayerClip.style.border = '2px solid #95a5a6';
+                            miscLayerClip.style.pointerEvents = 'auto';
+
+                            // Remove popup click handler and enable selection
+                            miscLayerClip.removeAttribute('onclick');
+                            miscLayerClip.title = clipId; // Update title to show clip name
+
+                            console.log('🎬 Also revealed in MISC layer:', clipId);
+
+                            // Clean up MISC layer animation
+                            setTimeout(() => {
+                                miscLayerClip.classList.remove('first-reveal');
+                            }, 1200);
+                        }
+
+                        // Clean up dramatic reveal animation after it completes
+                        setTimeout(() => {
+                            clip.classList.remove('first-reveal');
+                            console.log('🎯 Clip now selectable:', clipId);
+                        }, 1200); // Match existing first-reveal animation duration
+
+                    }, 2500); // Match CSS analyzing-loading-bar animation duration
+
+                }, index * 300); // Stagger the start by 300ms for each clip
+            });
+        }
+
         // Seek to position based on click location (accounting for zoom and pan)
         function seekToPosition(event, trackElement) {
             // Don't allow seeking during analysis
