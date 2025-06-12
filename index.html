@@ -4828,6 +4828,8 @@
                     targetClip.element.classList.add('selected');
                     selectedClip = targetClip.element;
 
+
+
                     // Also highlight corresponding clips in other layers
                     highlightCorrespondingClips(selectedClip.dataset.clip);
 
@@ -7081,6 +7083,8 @@
             event.target.classList.add('selected');
             selectedClip = event.target;
 
+
+
             // Also highlight corresponding clips in other layers
             highlightCorrespondingClips(event.target.dataset.clip);
 
@@ -7707,15 +7711,36 @@
             updateToolStates();
         }
 
+        // Prevent duplicate calls to updateClipFocusVisuals
+        let updateClipFocusVisualsScheduled = false;
+
         // Update clip focus visuals and overlays
         function updateClipFocusVisuals() {
-            // Remove any existing focus visuals and spectrogram indicators
-            document.querySelectorAll('.clip-focus-overlay, .clip-focus-line, .clip-spectrogram-indicator').forEach(el => el.remove());
-
-            // If no clip focus mode, just return
-            if (!clipFocusMode || !selectedClip) {
+            // If already scheduled, don't run again immediately
+            if (updateClipFocusVisualsScheduled) {
                 return;
             }
+
+            updateClipFocusVisualsScheduled = true;
+
+            // Use requestAnimationFrame to batch multiple calls
+            requestAnimationFrame(() => {
+                updateClipFocusVisualsScheduled = false;
+
+                // Remove any existing focus visuals and spectrogram indicators
+                document.querySelectorAll('.clip-focus-overlay, .clip-focus-line, .clip-spectrogram-indicator').forEach(el => el.remove());
+
+                // If no clip focus mode, just return
+                if (!clipFocusMode || !selectedClip) {
+                    return;
+                }
+
+                performClipFocusUpdate();
+            });
+        }
+
+        // The actual update logic, separated to prevent duplication
+        function performClipFocusUpdate() {
 
             // Get the focused clip's position and dimensions
             const clipRect = selectedClip.getBoundingClientRect();
@@ -7723,19 +7748,53 @@
 
             // Find the spectrogram/merged track where overlays should appear
             const spectrogramTrack = document.querySelector('#merged .track-content');
-            if (!spectrogramTrack) return;
+            if (!spectrogramTrack) {
+                return;
+            }
 
             // Calculate clip position values once
             const clipLeft = parseFloat(selectedClip.style.left.replace('%', ''));
             const clipWidth = parseFloat(selectedClip.style.width.replace('%', ''));
 
+            // Check if this is a clip in the merged track vs other layers
+            const isInMergedTrack = selectedClip.closest('#merged');
+
+            // If not in merged track, try to find corresponding clip in merged track
+            let referenceClip = selectedClip;
+            if (!isInMergedTrack) {
+                const clipId = selectedClip.dataset.clip;
+                const mergedClip = document.querySelector(`#merged .audio-clip[data-clip="${clipId}"]`);
+                if (mergedClip) {
+                    referenceClip = mergedClip;
+                }
+            }
+
+            // Get computed styles to get actual rendered values
+            const computedStyle = window.getComputedStyle(referenceClip);
+            const actualHeight = computedStyle.height;
+
             // Create strong visual indicator in spectrogram for selected clip (matching clip size and position)
             const spectrogramIndicator = document.createElement('div');
             spectrogramIndicator.className = 'clip-spectrogram-indicator';
-            spectrogramIndicator.style.left = selectedClip.style.left;
-            spectrogramIndicator.style.width = selectedClip.style.width;
-            spectrogramIndicator.style.top = selectedClip.style.top || '6px'; // Use clip's actual vertical position
-            spectrogramIndicator.style.height = selectedClip.style.height || '18px'; // Use clip's actual height
+            spectrogramIndicator.style.left = referenceClip.style.left;
+            spectrogramIndicator.style.width = referenceClip.style.width;
+
+            // Position indicator to match the reference clip's position exactly
+            // Get the reference clip's position relative to its track-content
+            const referenceTrackContent = referenceClip.closest('.track-content');
+            const referenceClipRect = referenceClip.getBoundingClientRect();
+            const referenceTrackRect = referenceTrackContent.getBoundingClientRect();
+
+            // Calculate the offset from track-content top to the clip
+            const relativeTop = referenceClipRect.top - referenceTrackRect.top;
+
+            spectrogramIndicator.style.top = `${relativeTop}px`;
+            spectrogramIndicator.style.height = actualHeight || referenceClip.style.height || '18px';
+
+            // Add debug attributes to help identify positioning issues
+            spectrogramIndicator.setAttribute('data-clip-id', selectedClip.dataset.clip);
+            spectrogramIndicator.setAttribute('data-expected-top', `${relativeTop}px`);
+
             spectrogramTrack.appendChild(spectrogramIndicator);
 
             // Always create left and right dimming overlays when a clip is selected
